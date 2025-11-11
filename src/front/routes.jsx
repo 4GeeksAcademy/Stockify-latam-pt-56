@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 import { Layout } from "./pages/Layout";
 import { SignUp } from "./pages/SignUp";
+import { CreateUser } from "./pages/CreateUser";
 
 
 export const router = createBrowserRouter(
@@ -22,6 +23,7 @@ export const router = createBrowserRouter(
 
       {/* Nested Routes: Defines sub-routes within the BaseHome component. */}
       <Route path="/signup" element={<SignUp />} />
+      <Route path="/createuser" element={<CreateUser />} />
     </Route>
   )
 );
