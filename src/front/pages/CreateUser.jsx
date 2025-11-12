@@ -1,38 +1,84 @@
 import React, { useState } from "react";
 
+const API_BASE_URL = "https://zany-waddle-wv74prjqpgq2qp9-3001.app.github.dev"
+const ROLES = ['Administrator', 'Seller']
 
-const role = ['Administrator', 'Seller']
-
-export const CreateUser = () => {
+export const CreateUser = ({ onCreationSuccess }) => {
 
     const [formData, setFormData] = useState({
+        full_name: '',
         username: '',
         password: '',
-        role: role[1]
+        role: ROLES[1]
     })
 
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null)
+
     const handleInputChange = (e) => {
-        const { id, value } = e.target;
+        const { id, value } = e.target
         setFormData(prev => ({
             ...prev,
             [id]: value
-        }));
-    };
+        }))
+    }
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true);
+        setError(null);
 
-        console.log("Datos del usuario a crear:", formData);
+        // --- CLAVE 1: Obtener el Token de Autenticación del Master ---
+        const token = localStorage.getItem('authToken');
 
-        // Aquí iría tu lógica real para enviar los datos a la API (fetch/axios)
-        alert(`Simulación: Usuario ${formData.username} creado con el rol: ${formData.role}`);
+        if (!token) {
+            setError("Error: Usuario Master no autenticado. Por favor, inicie sesión primero.");
+            setLoading(false);
+            return;
+        }
 
-        setFormData({
-            username: '',
-            password: '',
-            role: role[1],
-        });
-    };
+        const dataToSend = {
+            email: formData.username,    // Correo (el campo que en el frontend llamas 'username')
+            password: formData.password,
+            role: formData.role,
+            username: formData.full_name // Nombre completo (el campo que en el frontend llamas 'full_name')
+        }
+
+        console.log("Datos que se enviarán:", dataToSend);
+
+        try {
+            // --- CLAVE 2: Realizar la petición POST a /api/user ---
+            const response = await fetch(`${API_BASE_URL}/api/user`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // Incluir el token en la cabecera Authorization
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(dataToSend)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                alert(`✅ Usuario ${result.user.username} creado exitosamente con rol ${result.user.role}.`);
+                // Limpiar formulario y ejecutar callback si existe
+                setFormData({ full_name: '', username: '', password: '', role: ROLES[1] });
+                if (onCreationSuccess) onCreationSuccess(result.user);
+            } else {
+                // Manejar errores de la API (ej. 400 Bad Request, 403 Forbidden)
+                setError(`Error ${response.status}: ${result.msg || 'Error desconocido del servidor.'}`);
+                alert(`Error al crear usuario: ${result.msg || 'Verifica la consola para más detalles.'}`);
+            }
+
+        } catch (err) {
+            console.error("Error de red o servidor:", err);
+            setError("Error de conexión al servidor. Intente de nuevo.");
+            alert("Error de conexión al servidor.");
+        } finally {
+            setLoading(false);
+        }
+    }
 
     return (
         <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
@@ -50,6 +96,20 @@ export const CreateUser = () => {
                 </div>
                 <form onSubmit={handleSubmit}>
                     {/* Username */}
+                    <div className="mb-3 text-start">
+                        <label htmlFor="full_name" className="form-label fw-semibold">
+                            Full Name
+                        </label>
+                        <input
+                            type="text"
+                            className="form-control"
+                            id="full_name"
+                            placeholder="Enter full name for new user"
+                            value={formData.full_name}
+                            onChange={handleInputChange}
+                            required
+                        />
+                    </div>
                     <div className="mb-3 text-start">
                         <label htmlFor="username" className="form-label fw-semibold">
                             Username
@@ -99,7 +159,7 @@ export const CreateUser = () => {
                         >
                             <option value="" disabled>Seleccione un rol</option>
                             {/* Mapeamos la lista de roles definidos */}
-                            {role.map(role => (
+                            {ROLES.map(role => (
                                 <option key={role} value={role}>{role}</option>
                             ))}
                         </select>
