@@ -1,0 +1,177 @@
+.login-container{
+    display:flex;
+    max-width: 1200px;
+    margin:0 auto;
+    padding:20px;
+    font-family: 'amazon ember', Arial, sans-serif;
+    color:#232f3e;
+}
+
+.login-form-wrapper {
+  flex: 1;
+  max-width: 400px;
+  padding: 20px;
+}
+.login-title {
+  font-size: 24px;
+  font-weight: 400;
+  margin-bottom: 20px;
+  color: #232f3e;
+}
+.login-form {
+  border: 1px solid #d5dbdb;
+  border-radius: 4px;
+  padding: 20px;
+  background-color: #fff;
+}
+.form-group{
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 600;
+  font-size: 14px;
+}
+.form-group input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #879596;
+  border-radius: 3px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #0073bb;
+  box-shadow: 0 0 0 3px rgba(0, 115, 187, 0.2);
+}
+.form-group input.error {
+  border-color: #d13212;
+}
+
+.error-message {
+  color: #d13212;
+  font-size: 12px;
+  display: block;
+  margin-top: 5px;
+}
+
+.remember-account,
+.show-password {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.remember-account input,
+.show-password input {
+  width: auto;
+  margin-right: 8px;
+}
+.remember-account label,
+.show-password label {
+  margin-bottom: 0;
+  font-weight: normal;
+}
+.help-link {
+  margin-bottom: 15px;
+}
+
+.help-link a {
+  color: #0073bb;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.help-link a:hover {
+  text-decoration: underline;
+}
+
+.signin-button {
+  width: 100%;
+  padding: 10px;
+  background-color: #ff9900;
+  color: #232f3e;
+  border: 1px solid #a88734;
+  border-radius: 3px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 15px;
+}
+.signin-button:hover {
+  background-color: #f0c14b;
+}
+.alternative-signin {
+  margin-bottom: 15px;
+}
+.root-user-button {
+  width: 100%;
+  padding: 10px;
+  background-color: transparent;
+  color: #0073bb;
+  border: 1px solid #879596;
+  border-radius: 3px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.root-user-button:hover {
+  background-color: #f2f3f3;
+}
+
+.create-account {
+  text-align: center;
+  margin-bottom: 15px;
+}
+.create-account a {
+  color: #0073bb;
+  text-decoration: none;
+  font-size: 14px;
+}
+.create-account a:hover {
+  text-decoration: underline;
+}
+.terms {
+  font-size: 12px;
+  color: #545b64;
+  line-height: 1.4;
+}
+.promotional-banner {
+  flex: 1;
+  max-width: 400px;
+  background-color: #232f3e;
+  color: white;
+  padding: 30px;
+  border-radius: 4px;
+  margin-left: 40px;
+}
+
+.promotional-banner h2 {
+  font-size: 32px;
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+.promotional-banner h3 {
+  font-size: 18px;
+  margin-bottom: 20px;
+  font-weight: 400;
+}
+
+.promotional-banner p {
+  margin-bottom: 15px;
+  line-height: 1.4;
+}
+.register-link {
+  color: #ff9900;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.register-link:hover {
+  text-decoration: underline;
+}
+
