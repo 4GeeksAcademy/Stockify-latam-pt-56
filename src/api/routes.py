@@ -108,37 +108,38 @@ def login():
             'message': f'Error del servidor: {str(e)}'
         }), 500
 
-# @api.route('/tokens', methods=['POST'])
-# def login():
-#     data = request.get_json()  # body sent
-#     email = data.get('email')
 
-#     password = data.get('password')
+@api.route('/token/master', methods=['POST'])
+def login_master():
+    data = request.get_json()  # body sent
+    email = data.get('email')
 
-#     if email is None or password is None:
-#         return jsonify({
-#             'msg': 'Comuniquese con nosotros para obtener ingreso'
-#         }), 400
+    password = data.get('password')
 
-#     query = db.select(Master).filter_by(email=email)
-#     result = db.session.execute(query).scalars().first()
+    if email is None or password is None:
+        return jsonify({
+            'msg': 'Comuniquese con nosotros para obtener ingreso'
+        }), 400
 
-#     if result is None:
-#         return jsonify({"msg": "Comuniquese con nosotros para obtener ingreso"}), 400
+    query = db.select(Master).filter_by(email=email)
+    result = db.session.execute(query).scalars().first()
 
-#     master = result
-#     password_is_valid = check_password_hash(master.password, password)
-#     if not password_is_valid:
-#         return jsonify({"msg": "CREDENCIALES NO VALIDAS"}), 400
+    if result is None:
+        return jsonify({"msg": "Comuniquese con nosotros para obtener ingreso"}), 400
 
-#     access_token = create_access_token(identity=str(master.id))
+    master = result
+    password_is_valid = check_password_hash(master.password, password)
+    if not password_is_valid:
+        return jsonify({"msg": "CREDENCIALES NO VALIDAS"}), 400
 
-#     return jsonify({
-#         "token": access_token
-#     }), 201
+    access_token = create_access_token(identity=str(master.id))
+
+    return jsonify({
+        "token": access_token
+    }), 201
 
 
-@api.route('/user/<int=user_id>', methods=['GET'])
+@api.route('/user/<int:current_user_id>', methods=['GET'])
 @jwt_required()
 def protected():
     current_user_id = get_jwt_identity()
