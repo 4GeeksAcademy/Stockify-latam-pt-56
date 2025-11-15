@@ -37,6 +37,7 @@ const LoginForm = () => {
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
@@ -51,11 +52,53 @@ const LoginForm = () => {
             }));
         }
     }
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        if (validateForm()) {
+            setIsLoading(true);
+
+            try {
+                const response = await fetch(
+                    `${import.meta.env.VITE_BACKEND_URL}api/token`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: formData.email,
+                        username: formData.username,
+                        password: formData.password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Guardar el token JWT en localStorage
+                    localStorage.setItem('jwtToken', data.token);
+                    localStorage.setItem('userData', JSON.stringify(data.user));
+
+                    alert(`Bienvenido ${data.user.username}!`);
+
+                } else {
+                    // Mostrar error del backend
+                    setErrors({ submit: data.message });
+                }
+
+            } catch (error) {
+                setErrors({ submit: 'Error de conexión con el servidor' });
+            } finally {
+                setIsLoading(false);
+            }
+        }
+    };
     return (
         <div className='login-container' >
             <div className='login-form-wrapper' >
                 <h1 className='login-title'>IAM user sign in</h1>
-                <form className='login-form' onSubmit={'hadleSumit'} >
+                <form className='login-form' onSubmit={handleSubmit} >
                     <div className='form-group' >
                         <label htmlFor="email">Account ID or alias</label >
                         <input

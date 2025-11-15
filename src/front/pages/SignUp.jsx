@@ -10,7 +10,7 @@ export const SignUp = () => {
 
     try {
       const response = await fetch(
-        "https://zany-waddle-wv74prjqpgq2qp9-3001.app.github.dev/api/master",
+        `${import.meta.env.VITE_BACKEND_URL}api/master`,
         {
           method: "POST",
           headers: {

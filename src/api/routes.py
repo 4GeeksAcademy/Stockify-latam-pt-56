@@ -26,6 +26,7 @@ def handle_hello():
 
 # Post
 
+
 @api.route('/master', methods=['POST'])
 def create_master():
     data = request.get_json()
@@ -55,34 +56,97 @@ def create_master():
 # Post token
 
 
-@api.route('/tokens', methods=['POST'])
+@api.route('/token', methods=['POST'])
 def login():
-    data = request.get_json()  # body sent
-    email = data.get('email')
+    try:
+        data = request.get_json()
 
-    password = data.get('password')
+        if not data.get('email') or not data.get('username') or not data.get('password'):
+            return jsonify({
+                'success': False,
+                'message': 'Todos los campos son obligatorios'
+            }), 400
 
-    if email is None or password is None:
+        email = data['email'].strip().lower()
+        username = data['username'].strip()
+        password = data['password']
+
+        user_by_email = User.query.filter_by(email=email).first()
+        if not user_by_email:
+            return jsonify({
+                'success': False,
+                'message': 'Credenciales no validas'
+            }), 400
+
+        user_by_username = User.query.filter_by(username=username).first()
+
+        if not user_by_username:
+            return jsonify({
+                'success': False,
+                'message': 'Credenciales no validas'
+            }), 404
+
+        if not user_by_email.check_password(password):
+            return jsonify({
+                'success': False,
+                'message': 'Credencial no valida '
+            }), 401
+
+        # Crear token JWT
+        access_token = create_access_token(identity=user_by_email.id)
+
         return jsonify({
-            'msg': 'Comuniquese con nosotros para obtener ingreso'
-        }), 400
+            'success': True,
+            'message': 'Login exitoso',
+            'token': access_token,
+            'user': user_by_email.serialize()
+        }), 200
 
-    query = db.select(Master).filter_by(email=email)
-    result = db.session.execute(query).scalars().first()
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'Error del servidor: {str(e)}'
+        }), 500
 
-    if result is None:
-        return jsonify({"msg": "Comuniquese con nosotros para obtener ingreso"}), 400
+# @api.route('/tokens', methods=['POST'])
+# def login():
+#     data = request.get_json()  # body sent
+#     email = data.get('email')
 
-    master = result
-    password_is_valid = check_password_hash(master.password, password)
-    if not password_is_valid:
-        return jsonify({"msg": "CREDENCIALES NO VALIDAS"}), 400
+#     password = data.get('password')
 
-    access_token = create_access_token(identity=str(master.id))
+#     if email is None or password is None:
+#         return jsonify({
+#             'msg': 'Comuniquese con nosotros para obtener ingreso'
+#         }), 400
 
+#     query = db.select(Master).filter_by(email=email)
+#     result = db.session.execute(query).scalars().first()
+
+#     if result is None:
+#         return jsonify({"msg": "Comuniquese con nosotros para obtener ingreso"}), 400
+
+#     master = result
+#     password_is_valid = check_password_hash(master.password, password)
+#     if not password_is_valid:
+#         return jsonify({"msg": "CREDENCIALES NO VALIDAS"}), 400
+
+#     access_token = create_access_token(identity=str(master.id))
+
+#     return jsonify({
+#         "token": access_token
+#     }), 201
+
+
+@api.route('/user/<int=user_id>', methods=['GET'])
+@jwt_required()
+def protected():
+    current_user_id = get_jwt_identity()
+    user = User.query.get(current_user_id)
     return jsonify({
-        "token": access_token
-    }), 201
+        'message': f'Acceso concedido para {user.username}',
+        'user': user.serialize()
+    })
 
 # Get master
 
