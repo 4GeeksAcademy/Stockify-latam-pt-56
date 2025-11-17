@@ -232,39 +232,39 @@ def create_product():
         product_SKU = data.get('product_SKU')
         stock = data.get('stock')
 
-        # Validación de campos vacíos
+        # Valida sicampos vacíos
         if not all([product_name, category_id, price, product_SKU, stock]):
             return jsonify({'msg': 'Please fill all fields'}), 400
 
-        # Verificar SKU repetido
-        existing = db.session.execute(
+        # Verificar si hay un SKU repetido
+        exists = db.session.execute(
             db.select(Product).filter_by(product_SKU=product_SKU)
         ).scalars().first()
 
-        if existing:
+        if exists:
             return jsonify({'msg': 'Product already exists'}), 400
 
         # Crear nuevo producto
-        new_product = Product(
-            product_name=product_name,
+        new_product = Product(  #manda a llamar al modelo product
+            product_name=product_name, #adding all of this
             product_SKU=product_SKU,
             stock=stock,
             price=price,
             category_id=category_id
         )
 
-        db.session.add(new_product)
+        db.session.add(new_product) #agrega el nuevo producto a a la db 
         db.session.commit()
 
         return jsonify({"message": "Product created successfully"}), 201
 
-    except Exception as e:
-        # Si ocurre un error inesperado, lo mostramos en consola para debug
-        print("SERVER ERROR:", str(e))
+    except Exception as e: #saving the errorinside e
 
+        
+        print("SERVER ERROR:", str(e))  #printing the error to the console for debugging
         return jsonify({
             "error": "Internal Server Error",
-            "msg": "Something went wrong on the server"
+            "msg": "Server not working"
         }), 500
 
 

@@ -1,3 +1,5 @@
+import React, { useEffect } from "react";
+
 const ProductsComponent = () => {
      const response = [
         "Pinturas de Agua",
@@ -7,9 +9,56 @@ const ProductsComponent = () => {
         "Herramientas",
         "Tuercas"
     ];
+
+    useEffect(() => {     //to excute what is inside when the component is mounted
+    // Botón que confirma el modal
+const confirmBtn = document.getElementById("confirmCreate");
+const form = document.getElementById("productForm");
+
+if (confirmBtn && form) {
+    confirmBtn.addEventListener("click", async () => {
+ const preview = document.querySelector('.image-preview');
+        console.log("Product created successfully!");
+preview.innerHTML = '<i class="fas fa-image" style="color: var(--gray);"></i>';
+        // Cierra el modal de confirmación
+        const modal = bootstrap.Modal.getInstance(document.getElementById("exampleModal"));
+        modal.hide();
+
+        // Resetea el formulario
+        form.reset();
+    });
+}
+    
+        // Form Submissions
+        document.getElementById('productForm')?.addEventListener('submit', function (e) { //obtiene la etiqueta por Id, en este caso el product form y le pregunta si existe
+            e.preventDefault();  //le add el event listener para cuando se envie el formulario, al dat submit, se ejecuta la función que está adentro al send el form
+            console.log("enviar"); //print on console when I send the form
+        });
+
+        // hace que no se recargue la página al enviar el formulario, lin 21
+        const imageInput = document.getElementById('productImage');
+        if (imageInput) {
+            imageInput.addEventListener('change', function (e) {
+                const file = e.target.files[0];
+                const preview = document.querySelector('.image-preview');
+
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        preview.innerHTML = `<img src="${e.target.result}" alt="Vista previa" />`;
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    preview.innerHTML = '<i class="fas fa-image" style="color: var(--gray);"></i>';
+                }
+            });
+        }
+
+    }, []);
+
 return ( <div id="products-tab" className="tab-content active">
 
-                {/* Search and Filters */}
+                {/* Search and Filters*/}
                 <div className="search-section">
                     <div className="search-container">
                         <div className="form-group search-input">
@@ -17,10 +66,12 @@ return ( <div id="products-tab" className="tab-content active">
                         </div>
                         <div className="form-group filter-select">
                             <select className="form-control">
-                                <option>Todas las categorías</option>
-                                <option>Electrónicos</option>
-                                <option>Ropa y Accesorios</option>
-                                <option>Hogar y Jardín</option>
+                                <option value="">Seleccionar categoría</option>
+
+                                            {response.map((cat, index) => (
+                                                <option key={index} value={cat}>
+                                                    {cat}
+                                                </option> ))}
                             </select>
                         </div>
                         <button className="btn btn-primary">
@@ -164,13 +215,17 @@ return ( <div id="products-tab" className="tab-content active">
                                 <div className="modal-footer">
                                     <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
 
-                                    <button type="submit" className="btn btn-primary">
-                                        Confirmar
-                                    </button>
+                                    <button type="button" id="confirmCreate" className="btn btn-primary">
+  Confirmar
+</button>
+
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    
+
                     {/* Products List */}
                     <div className="panel">
                         <div className="panel-header">
@@ -182,19 +237,17 @@ return ( <div id="products-tab" className="tab-content active">
                                 <div className="product-card new">
                                     <div className="product-header">
                                         <div>
-                                            <div className="product-title">iPhone 14 Pro</div>
-                                            <div className="product-category">Electrónicos</div>
+                                            <div className="product-title">Pintura azul</div>
+                                            <div className="product-category">Pinturas de agua</div>
                                         </div>
-                                        <div className="product-price">$999.00</div>
+                                        <div className="product-price">$799.00</div>
                                     </div>
-                                    <div className="product-description">
-                                        iPhone 14 Pro Max 256GB, Pantalla Super Retina XDR.
-                                    </div>
+                                    
                                     <div className="product-meta">
                                         <div className="product-stock stock-in">
-                                            <i className="fas fa-check-circle"></i> En stock: 25 unidades
+                                            <i className="fas fa-check-circle"></i> Available stock: 25 units
                                         </div>
-                                        <div className="product-sku">SKU: APP-IP14P-256</div>
+                                        <div className="product-sku">SKU: PROD-256</div>
                                     </div>
                                 </div>
 

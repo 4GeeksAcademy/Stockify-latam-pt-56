@@ -100,7 +100,7 @@ button.nav-tab {
             color: var(--primary);
         }
 
-        /* Stats Cards */
+        /* Tarjetas de estadísticas */
         .stats-container {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -143,7 +143,7 @@ button.nav-tab {
             font-weight: 500;
         }
 
-        /* Main Layout */
+        /*  Layout Principal */
         .main-layout {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -156,7 +156,7 @@ button.nav-tab {
             }
         }
 
-        /* Panel Styles */
+        /* Estilos del panel */
         .panel {
             background: white;
             border-radius: 16px;
@@ -182,7 +182,7 @@ button.nav-tab {
             padding: 2rem;
         }
 
-        /* Form Styles */
+        /* Estilos para los formularios */
         .form-group {
             margin-bottom: 1.5rem;
         }
@@ -449,7 +449,7 @@ button.nav-tab {
             color: var(--dark);
         }
 
-        /* Search and Filters */
+        /* Búsqueda y filtros */
         .search-section {
             background: white;
             padding: 1.5rem;
@@ -534,7 +534,7 @@ button.nav-tab {
             }
         }
 
-        /* Animation */
+        /* Animación */
         @keyframes slideIn {
             from {
                 opacity: 0;

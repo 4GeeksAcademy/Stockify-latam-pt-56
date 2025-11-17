@@ -6,65 +6,20 @@ import { CreateInventory } from "../components/CreateInventory";
 import { CreateReports } from "../components/CreateReports";
 
 export const CreateProduct = () => {
-    const [activeTab, setActiveTab] = React.useState("products");
+    const [activeTab, setActiveTab] = React.useState("products");  /*save the button that I press*/
 
-    const navigate = useNavigate();
+    const navigate = useNavigate(); //para que pueda regresar a la página anterior
    
 
-    const goBack = () => {
+    const goBack = () => {    //function to go back
         navigate("/");    /*aquí va la ruta adonde dirigirá el botón regresar, aún por definir*/
     }
-    useEffect(() => {
-        // Navigation Tabs
-        // document.querySelectorAll('.nav-tab').forEach(tab => {
-        //     tab.addEventListener('click', function (e) {
-        //         e.preventDefault();
+    // useEffect(() => {     //to excute what is inside when the component is mounted
+        
+        
 
-        //         document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-        //         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-
-        //         this.classList.add('active');
-
-        //         const tabId = this.getAttribute('data-tab');
-        //         document.getElementById(`${tabId}-tab`).classList.add('active');
-        //     });
-        // });
-
-        // Form Submissions
-        document.getElementById('productForm')?.addEventListener('submit', function (e) {
-            e.preventDefault();
-            //             <div class="alert alert-warning" role="alert">
-            //   A simple warning alert—check it out!
-            // {/* </div> */}
-
-            // alert('En una implementación real, esto crearía un nuevo producto en la base de datos.');
-        });
-
-        // document.getElementById('categoryForm')?.addEventListener('submit', function (e) {
-        //     e.preventDefault();
-        //     alert('En una implementación real, esto crearía una nueva categoría en la base de datos.');
-        // });
-
-        // Image Preview
-        const imageInput = document.getElementById('productImage');
-        if (imageInput) {
-            imageInput.addEventListener('change', function (e) {
-                const file = e.target.files[0];
-                const preview = document.querySelector('.image-preview');
-
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function (e) {
-                        preview.innerHTML = `<img src="${e.target.result}" alt="Vista previa" />`;
-                    };
-                    reader.readAsDataURL(file);
-                } else {
-                    preview.innerHTML = '<i class="fas fa-image" style="color: var(--gray);"></i>';
-                }
-            });
-        }
-
-    }, []);
+        
+    // }, []);
 
     return (
         <div className="container">
@@ -88,7 +43,7 @@ export const CreateProduct = () => {
     </a>
 
     <a 
-        className={`nav-tab ${activeTab === "categories" ? "active" : ""}`} 
+        className={`nav-tab ${activeTab === "categories" ? "active" : ""}`}  /*active ltab son los buttons*/
         onClick={() => setActiveTab("categories")}
     >
         <i className="fas fa-tags"></i> Categorías
@@ -111,13 +66,13 @@ export const CreateProduct = () => {
 
 
 
-            {/* Statistics */}
+            {/* Estadísticas */}
             <div className="stats-container">
                 <div className="stat-card">
                     <div className="stat-icon">
                         <i className="fas fa-cube"></i>
                     </div>
-                    <div className="stat-number">156</div>
+                    <div className="stat-number">189</div>
                     <div className="stat-label">Total Productos</div>
                 </div>
                 <div className="stat-card">
@@ -131,21 +86,21 @@ export const CreateProduct = () => {
                     <div className="stat-icon">
                         <i className="fas fa-check-circle"></i>
                     </div>
-                    <div className="stat-number">142</div>
-                    <div className="stat-label">En Stock</div>
+                    <div className="stat-number">152</div>
+                    <div className="stat-label">Available units</div>
                 </div>
                 <div className="stat-card">
                     <div className="stat-icon">
                         <i className="fas fa-exclamation-triangle"></i>
                     </div>
-                    <div className="stat-number">14</div>
-                    <div className="stat-label">Stock Bajo</div>
+                    <div className="stat-number">2</div>
+                    <div className="stat-label">Stock Casi Agotado</div>
                 </div>
             </div>
 
             {/* Products Tab */}
             
-{activeTab === "products" && (
+{activeTab === "products" && (   /*if the active tab contains products then show us up the component and it provides color*/
     <ProductsComponent />  
 )}
 
