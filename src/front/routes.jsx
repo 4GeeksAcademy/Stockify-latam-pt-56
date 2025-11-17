@@ -8,6 +8,8 @@ import {
 import { Layout } from "./pages/Layout";
 import { SignUp } from "./pages/SignUp";
 import { CreateUser } from "./pages/CreateUser";
+import { CreateProduct } from "./pages/CreateProduct";
+
 
 
 export const router = createBrowserRouter(
@@ -25,6 +27,7 @@ export const router = createBrowserRouter(
       <Route index element={<SignUp />} />
       <Route path="/signup" element={<SignUp />} />
       <Route path="/createuser" element={<CreateUser />} />
+      <Route path="/createproduct" element={<CreateProduct />} />
     </Route>
   )
 );

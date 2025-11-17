@@ -218,3 +218,66 @@ def create_user():
         "msg": "User created successfully",
         "user": new_user.serialize()
     }), 201
+
+# POST PRODUCT
+
+@api.route('/product', methods=['POST'])
+def create_product():
+    try:
+        data = request.get_json()
+
+        product_name = data.get('product_name')
+        category_id = data.get('category_id')
+        price = data.get('price')
+        product_SKU = data.get('product_SKU')
+        stock = data.get('stock')
+
+        # Validación de campos vacíos
+        if not all([product_name, category_id, price, product_SKU, stock]):
+            return jsonify({'msg': 'Please fill all fields'}), 400
+
+        # Verificar SKU repetido
+        existing = db.session.execute(
+            db.select(Product).filter_by(product_SKU=product_SKU)
+        ).scalars().first()
+
+        if existing:
+            return jsonify({'msg': 'Product already exists'}), 400
+
+        # Crear nuevo producto
+        new_product = Product(
+            product_name=product_name,
+            product_SKU=product_SKU,
+            stock=stock,
+            price=price,
+            category_id=category_id
+        )
+
+        db.session.add(new_product)
+        db.session.commit()
+
+        return jsonify({"message": "Product created successfully"}), 201
+
+    except Exception as e:
+        # Si ocurre un error inesperado, lo mostramos en consola para debug
+        print("SERVER ERROR:", str(e))
+
+        return jsonify({
+            "error": "Internal Server Error",
+            "msg": "Something went wrong on the server"
+        }), 500
+
+
+
+        
+
+
+
+
+
+
+
+    
+
+
+

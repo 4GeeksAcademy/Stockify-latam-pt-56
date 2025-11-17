@@ -5,6 +5,9 @@ from bcrypt import hashpw, gensalt, checkpw
 import re
 from flask import Flask, request, jsonify
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+from sqlalchemy import Numeric
+
+from sqlalchemy.orm import relationship   #este servirá cuando se haga la relación con categoría
 
 db = SQLAlchemy()
 
@@ -52,6 +55,36 @@ class User(db.Model):
             "email": self.email,
             "role": self.role
         }
+
+class Product(db.Model):
+    id: Mapped[int] = mapped_column(primary_key=True)
+    product_name: Mapped[str] = mapped_column(String(120), nullable=False)
+    product_SKU: Mapped[str] = mapped_column(String(120), nullable=False)
+    stock: Mapped[int] = mapped_column(Integer, nullable=False)
+    price: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
+
+    # Precio con decimales exactos
+    category_id: Mapped[int] = mapped_column(ForeignKey("category.id"), nullable=False)
+   
+    # category = relationship("Category")   #Descomentar cuando se tenga la tabla de categoría, por favor
+    # image_url: Mapped[str] = mapped_column(String(1000), nullable=True) duda para el maestro, si hay que poner tabla la image
+
+ #es correcto poner category_id en vez de category_name_id    
+    def serialize(self):
+        return {
+            "id": self.id,
+            "product_name": self.product_name,
+            "product_SKU": self.product_SKU,
+            "stock": self.stock,
+            "price": self.price,
+            "category_id": self.category_id,
+            # "category": self.category  # Descomentar cuando se tenga la tabla de categoría, por favor
+          
+        }
+
+
+     
+    
 
 
 def validate_email_format(email):
