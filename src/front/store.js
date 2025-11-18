@@ -1,5 +1,6 @@
 export const initialStore=()=>{
   return{
+    token: localStorage.getItem('jwtToken'),
     message: null,
     todos: [
       {
@@ -18,6 +19,12 @@ export const initialStore=()=>{
 
 export default function storeReducer(store, action = {}) {
   switch(action.type){
+    case 'set_token':
+      localStorage.setItem('jwtToken', action.payload)
+      return {
+        ...store,
+        token: action.payload
+      }
     case 'set_hello':
       return {
         ...store,

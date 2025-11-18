@@ -9,6 +9,7 @@ import { Layout } from "./pages/Layout";
 import { SignUp } from "./pages/SignUp";
 import { CreateUser } from "./pages/CreateUser";
 import { CreateProduct } from "./pages/CreateProduct";
+import LoginForm from "./components/LoginForm";
 
 
 
@@ -28,6 +29,8 @@ export const router = createBrowserRouter(
       <Route path="/signup" element={<SignUp />} />
       <Route path="/createuser" element={<CreateUser />} />
       <Route path="/createproduct" element={<CreateProduct />} />
+      <Route path="/login" element={<LoginForm />} />
+
     </Route>
   )
 );

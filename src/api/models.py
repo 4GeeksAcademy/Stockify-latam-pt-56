@@ -7,7 +7,8 @@ from flask import Flask, request, jsonify
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from sqlalchemy import Numeric
 
-from sqlalchemy.orm import relationship   #este servirá cuando se haga la relación con categoría
+# este servirá cuando se haga la relación con categoría
+from sqlalchemy.orm import relationship
 
 db = SQLAlchemy()
 
@@ -56,6 +57,7 @@ class User(db.Model):
             "role": self.role
         }
 
+
 class Product(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     product_name: Mapped[str] = mapped_column(String(120), nullable=False)
@@ -64,12 +66,12 @@ class Product(db.Model):
     price: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
 
     # Precio con decimales exactos
-    category_id: Mapped[int] = mapped_column(ForeignKey("category.id"), nullable=False)
-   
+    # category_id: Mapped[int] = mapped_column(ForeignKey("category.id"), nullable=False)
+
     # category = relationship("Category")   #Descomentar cuando se tenga la tabla de categoría, por favor
     # image_url: Mapped[str] = mapped_column(String(1000), nullable=True) duda para el maestro, si hay que poner tabla la image
 
- #es correcto poner category_id en vez de category_name_id    
+    # es correcto poner category_id en vez de category_name_id
     def serialize(self):
         return {
             "id": self.id,
@@ -77,15 +79,11 @@ class Product(db.Model):
             "product_SKU": self.product_SKU,
             "stock": self.stock,
             "price": self.price,
-            "category_id": self.category_id,
+            # "category_id": self.category_id,
             # "category": self.category  # Descomentar cuando se tenga la tabla de categoría, por favor
-            # "category": self.category.serialize() o usar este en vez de línea 82 if  needed 
-          
+            # "category": self.category.serialize() o usar este en vez de línea 82 if  needed
+
         }
-
-
-     
-    
 
 
 def validate_email_format(email):

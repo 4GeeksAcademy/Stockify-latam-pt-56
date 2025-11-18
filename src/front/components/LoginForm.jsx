@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 import '../stylesheets/LoginForm.css';
+import useGlobalReducer from '../hooks/useGlobalReducer';
 
 
 const LoginForm = () => {
+
+    const { dispatch } = useGlobalReducer()
+
     const [formData, setFormData] = useState({
         email: '',
         username: '',
@@ -77,8 +81,10 @@ const LoginForm = () => {
 
                 if (data.success) {
                     // Guardar el token JWT en localStorage
-                    localStorage.setItem('jwtToken', data.token);
+
                     localStorage.setItem('userData', JSON.stringify(data.user));
+                    dispatch({ action: 'set_token', payload: data.token })
+
 
                     alert(`Bienvenido ${data.user.username}!`);
 

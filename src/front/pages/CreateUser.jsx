@@ -29,7 +29,7 @@ export const CreateUser = ({ onCreationSuccess }) => {
         setError(null);
 
         // --- CLAVE 1: Obtener el Token de Autenticación del Master ---
-        const token = localStorage.getItem('authToken');
+        const token = localStorage.getItem('jwtToken');
 
         if (!token) {
             setError("Error: Usuario Master no autenticado. Por favor, inicie sesión primero.");
