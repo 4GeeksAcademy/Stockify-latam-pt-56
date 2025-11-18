@@ -61,7 +61,6 @@ const LoginForm = () => {
         e.preventDefault();
 
         if (validateForm()) {
-            setIsLoading(true);
 
             try {
                 const response = await fetch(
@@ -95,99 +94,100 @@ const LoginForm = () => {
 
             } catch (error) {
                 setErrors({ submit: 'Error de conexión con el servidor' });
-            } finally {
-                setIsLoading(false);
             }
         }
     };
     return (
-        <div className='login-container' >
-            <div className='login-form-wrapper' >
-                <h1 className='login-title'>IAM user sign in</h1>
-                <form className='login-form' onSubmit={handleSubmit} >
-                    <div className='form-group' >
-                        <label htmlFor="email">Account ID or alias</label >
-                        <input
-                            type="email"
-                            id='email'
-                            name='email'
-                            value={formData.email}
-                            onChange={handleChange}
-                            placeholder='Ingrese tu correo electrónico'
-                            className={errors.email ? 'error' : ''}
-                            required
-                        />
-                        {errors.email && <span className="error-message">{errors.email}</span>}
-                    </div>
+        <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
 
-                    <div className='remember-account' >
-                        <input type='checkbox' id='remember' />
-                        <label htmlFor="remember">Remember this account</label>
-                    </div>
-
-                    <div className='form-group'>
-                        <label htmlFor='username'>IAM username</label>
-                        <input
-                            type="text"
-                            id='username'
-                            name='username'
-                            value={formData.username}
-                            onChange={handleChange}
-                            placeholder='Ingrese tu nombre de usuario'
-                            className={errors.username ? 'error' : ''}
-                            required
-                        />
-                        {errors.username && <span className="error-message">{errors.username}</span>}
-                    </div>
-
-                    <div className='form-group' >
-                        <label htmlFor='password'>Password</label>
-                        <input
-                            type={showPassword ? 'text' : 'password'}
-                            id='password'
-                            name='password'
-                            value={formData.password}
-                            onChange={handleChange}
-                            placeholder='Ingrese tu contraseña'
-                            className={errors.password ? 'error' : ''}
-                            required
-                        />
-                        {errors.password && <span className="error-message">{errors.password}</span>}
-                        <div className='show-password'>
+            <div className='login-container' >
+                <div className='login-form-wrapper' >
+                    <h1 className='login-title'>IAM user sign in</h1>
+                    <form className='login-form' onSubmit={handleSubmit} >
+                        <div className='form-group' >
+                            <label htmlFor="email">Account ID or alias</label >
                             <input
-                                type='checkbox'
-                                id='showPassword'
-                                checked={showPassword}
-                                onChange={() => setShowPassword(!showPassword)}
+                                type="email"
+                                id='email'
+                                name='email'
+                                value={formData.email}
+                                onChange={handleChange}
+                                placeholder='Ingrese tu correo electrónico'
+                                className={errors.email ? 'error' : ''}
+                                required
                             />
-                            <label htmlFor='showPassword'>Show Password</label>
+                            {errors.email && <span className="error-message">{errors.email}</span>}
                         </div>
-                    </div>
 
-                    <div className='help-link' >
-                        <a href='#'>Having trouble</a>
-                    </div>
+                        <div className='remember-account' >
+                            <input type='checkbox' id='remember' />
+                            <label htmlFor="remember">Remember this account</label>
+                        </div>
 
-                    <button type='submit' className='signin-button'>
-                        Sign in
-                    </button>
+                        <div className='form-group'>
+                            <label htmlFor='username'>IAM username</label>
+                            <input
+                                type="text"
+                                id='username'
+                                name='username'
+                                value={formData.username}
+                                onChange={handleChange}
+                                placeholder='Ingrese tu nombre de usuario'
+                                className={errors.username ? 'error' : ''}
+                                required
+                            />
+                            {errors.username && <span className="error-message">{errors.username}</span>}
+                        </div>
 
-                    <div className="alternative-signin">
-                        <button className="root-user-button">Sign in using root user email</button>
-                    </div>
+                        <div className='form-group' >
+                            <label htmlFor='password'>Password</label>
+                            <input
+                                type={showPassword ? 'text' : 'password'}
+                                id='password'
+                                name='password'
+                                value={formData.password}
+                                onChange={handleChange}
+                                placeholder='Ingrese tu contraseña'
+                                className={errors.password ? 'error' : ''}
+                                required
+                            />
+                            {errors.password && <span className="error-message">{errors.password}</span>}
+                            <div className='show-password'>
+                                <input
+                                    type='checkbox'
+                                    id='showPassword'
+                                    checked={showPassword}
+                                    onChange={() => setShowPassword(!showPassword)}
+                                />
+                                <label htmlFor='showPassword'>Show Password</label>
+                            </div>
+                        </div>
 
-                    <div className="create-account">
-                        <a href="#">Create a new AWS account</a>
+                        <div className='help-link' >
+                            <a href='#'>Having trouble</a>
+                        </div>
+
+                        <button type='submit' className='signin-button'>
+                            Sign in
+                        </button>
+
+                        <div className="alternative-signin">
+                            <button className="root-user-button">Sign in using root user email</button>
+                        </div>
+
+                        <div className="create-account">
+                            <a href="#">Create a new AWS account</a>
+                        </div>
+                    </form>
+                    <div className="terms">
+                        <p>
+                            By continuing, you agree to AWS Customer Agreement or other agreement for AWS services, and the Privacy Notice.
+                            This site uses essential cookies. See our Cookie Notice for more information.
+                        </p>
                     </div>
-                </form>
-                <div className="terms">
-                    <p>
-                        By continuing, you agree to AWS Customer Agreement or other agreement for AWS services, and the Privacy Notice.
-                        This site uses essential cookies. See our Cookie Notice for more information.
-                    </p>
                 </div>
-            </div>
 
+            </div>
         </div>
     )
 }
