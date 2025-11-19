@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import '../stylesheets/LoginForm.css';
 import useGlobalReducer from '../hooks/useGlobalReducer';
+import { useNavigate } from 'react-router-dom';
 
 
 const LoginForm = () => {
+
+    const navigate = useNavigate()
 
     const { dispatch } = useGlobalReducer()
 
@@ -80,8 +83,7 @@ const LoginForm = () => {
 
                 if (data.success) {
                     // Guardar el token JWT en localStorage
-
-                    localStorage.setItem('userData', JSON.stringify(data.user));
+                    dispatch({ action: 'set_user_data', payload: data.user })
                     dispatch({ action: 'set_token', payload: data.token })
 
 
@@ -91,6 +93,8 @@ const LoginForm = () => {
                     // Mostrar error del backend
                     setErrors({ submit: data.message });
                 }
+
+                navigate('/createuser')
 
             } catch (error) {
                 setErrors({ submit: 'Error de conexión con el servidor' });
@@ -102,10 +106,10 @@ const LoginForm = () => {
 
             <div className='login-container' >
                 <div className='login-form-wrapper' >
-                    <h1 className='login-title'>IAM user sign in</h1>
+                    <p className="text-start fs-2 fw-bold mb-4">Stockify user sign in</p>
                     <form className='login-form' onSubmit={handleSubmit} >
                         <div className='form-group' >
-                            <label htmlFor="email">Account ID or alias</label >
+                            <label htmlFor="email">Email address</label >
                             <input
                                 type="email"
                                 id='email'
@@ -125,7 +129,7 @@ const LoginForm = () => {
                         </div>
 
                         <div className='form-group'>
-                            <label htmlFor='username'>IAM username</label>
+                            <label htmlFor='username'>Account username</label>
                             <input
                                 type="text"
                                 id='username'
@@ -163,28 +167,14 @@ const LoginForm = () => {
                             </div>
                         </div>
 
-                        <div className='help-link' >
-                            <a href='#'>Having trouble</a>
-                        </div>
-
-                        <button type='submit' className='signin-button'>
+                        <button type='submit' className="btn btn-warning w-100 fw-bold mb-3">
                             Sign in
                         </button>
 
-                        <div className="alternative-signin">
-                            <button className="root-user-button">Sign in using root user email</button>
-                        </div>
-
-                        <div className="create-account">
-                            <a href="#">Create a new AWS account</a>
+                        <div>
+                            <button className="btn btn-outline-secondary w-100 fw-semibold" onClick={() => { navigate("/signup") }}>Create credentials for your Master account</button>
                         </div>
                     </form>
-                    <div className="terms">
-                        <p>
-                            By continuing, you agree to AWS Customer Agreement or other agreement for AWS services, and the Privacy Notice.
-                            This site uses essential cookies. See our Cookie Notice for more information.
-                        </p>
-                    </div>
                 </div>
 
             </div>

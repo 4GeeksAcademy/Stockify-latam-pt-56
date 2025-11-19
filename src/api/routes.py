@@ -109,34 +109,62 @@ def login():
         }), 500
 
 
-@api.route('/token/master', methods=['POST'])
+@api.route('/tokens', methods=['POST'])
 def login_master():
-    data = request.get_json()  # body sent
+    data = request.get_json()
     email = data.get('email')
-
     password = data.get('password')
 
     if email is None or password is None:
         return jsonify({
-            'msg': 'Comuniquese con nosotros para obtener ingreso'
+            'message': 'Password and email required'
         }), 400
 
-    query = db.select(Master).filter_by(email=email)
+    query = db.select(User).filter_by(email=email)
     result = db.session.execute(query).scalars().first()
 
     if result is None:
-        return jsonify({"msg": "Comuniquese con nosotros para obtener ingreso"}), 400
+        return jsonify({"message": "CREDENCIALES NO VALIDAS"}), 400
 
-    master = result
-    password_is_valid = check_password_hash(master.password, password)
+    user = result
+    password_is_valid = check_password_hash(user.password, password)
     if not password_is_valid:
-        return jsonify({"msg": "CREDENCIALES NO VALIDAS"}), 400
+        return jsonify({"message": "CREDENCIALES NO VALIDAS"}), 400
 
-    access_token = create_access_token(identity=str(master.id))
+    access_token = create_access_token(identity=str(user.id))
 
     return jsonify({
         "token": access_token
     }), 201
+
+# @api.route('/token/master', methods=['POST'])
+# def login_master():
+#     data = request.get_json()  # body sent
+#     email = data.get('email')
+
+#     password = data.get('password')
+
+#     if email is None or password is None:
+#         return jsonify({
+#             'msg': 'Comuniquese con nosotros para obtener ingreso'
+#         }), 400
+
+#     query = db.select(Master).filter_by(email=email)
+#     result = db.session.execute(query).scalars().first()
+
+#     if result is None:
+#         return jsonify({"msg": "Comuniquese con nosotros para obtener ingreso"}), 400
+
+#     master = result
+#     password_is_valid = check_password_hash(master.password, password)
+#     if not password_is_valid:
+#         return jsonify({"msg": "CREDENCIALES NO VALIDAS"}), 400
+
+#     access_token = create_access_token(identity=str(master.id))
+
+#     return jsonify({
+#         "token": access_token
+#     }), 201
 
 
 @api.route('/user/<int:current_user_id>', methods=['GET'])
@@ -166,6 +194,27 @@ def private():
         "acceso": "Successfuly access",
         "master": master.serialize()
     }), 201
+
+
+@api.route('/users', methods=['GET'])
+# @jwt_required()
+def get_all_users():
+    # 1. Verificar si la identidad actual es un 'Master' o 'Administrator' si es necesario.
+    #    Por ahora, solo requerimos que esté logeado (jwt_required()).
+
+    # 2. Consultar todos los registros de la tabla User
+    users = db.session.execute(db.select(User)).scalars().all()
+
+    # 3. Serializar la lista de objetos User
+    #    La función 'serialize()' definida en el modelo User se encarga de convertir el objeto
+    #    de la base de datos a un diccionario de Python.
+    serialized_users = [user.serialize() for user in users]
+
+    # 4. Devolver la respuesta en formato JSON
+    return jsonify({
+        "msg": "Users retrieved successfully",
+        "users": serialized_users
+    }), 200
 
 
 @api.route('/user', methods=['POST'])
@@ -206,7 +255,7 @@ def create_user():
     new_user = User(
         email=email,
         username=username,
-        password=password_hash,
+        password_hash=password_hash,
         role=role,
         master_id=master_id  # 👈 ¡ESTO LIGA EL USUARIO AL MASTER!
     )
@@ -220,6 +269,7 @@ def create_user():
     }), 201
 
 # POST PRODUCT
+
 
 @api.route('/product', methods=['POST'])
 def create_product():
@@ -245,39 +295,24 @@ def create_product():
             return jsonify({'msg': 'Product already exists'}), 400
 
         # Crear nuevo producto
-        new_product = Product(  #manda a llamar al modelo product
-            product_name=product_name, #adding all of this
+        new_product = Product(  # manda a llamar al modelo product
+            product_name=product_name,  # adding all of this
             product_SKU=product_SKU,
             stock=stock,
             price=price,
             category_id=category_id
         )
 
-        db.session.add(new_product) #agrega el nuevo producto a a la db 
+        db.session.add(new_product)  # agrega el nuevo producto a a la db
         db.session.commit()
 
         return jsonify({"message": "Product created successfully"}), 201
 
-    except Exception as e: #saving the errorinside e
+    except Exception as e:  # saving the errorinside e
 
-        
-        print("SERVER ERROR:", str(e))  #printing the error to the console for debugging
+        # printing the error to the console for debugging
+        print("SERVER ERROR:", str(e))
         return jsonify({
             "error": "Internal Server Error",
             "msg": "Server not working"
         }), 500
-
-
-
-        
-
-
-
-
-
-
-
-    
-
-
-

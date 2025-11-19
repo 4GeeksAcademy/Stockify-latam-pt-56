@@ -1,10 +1,10 @@
-.login-container{
-    display:flex;
-    max-width: 1200px;
-    margin:0 auto;
-    padding:20px;
-    font-family: 'amazon ember', Arial, sans-serif;
-    color:#232f3e;
+.login-container {
+  display: flex;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: "amazon ember", Arial, sans-serif;
+  color: #232f3e;
 }
 
 .login-form-wrapper {
@@ -24,7 +24,7 @@
   padding: 20px;
   background-color: #fff;
 }
-.form-group{
+.form-group {
   margin-bottom: 15px;
 }
 
@@ -90,7 +90,7 @@
   text-decoration: underline;
 }
 
-.signin-button {
+/* .signin-button {
   width: 100%;
   padding: 10px;
   background-color: #ff9900;
@@ -101,7 +101,7 @@
   font-weight: 600;
   cursor: pointer;
   margin-bottom: 15px;
-}
+} */
 .signin-button:hover {
   background-color: #f0c14b;
 }
@@ -174,4 +174,3 @@
 .register-link:hover {
   text-decoration: underline;
 }
-

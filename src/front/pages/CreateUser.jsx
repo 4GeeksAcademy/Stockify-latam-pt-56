@@ -1,9 +1,15 @@
 import React, { useState } from "react";
+import useGlobalReducer from "../hooks/useGlobalReducer";
+import { useNavigate } from "react-router-dom";
 
-const API_BASE_URL = "https://zany-waddle-wv74prjqpgq2qp9-3001.app.github.dev"
 const ROLES = ['Administrator', 'Seller']
 
 export const CreateUser = ({ onCreationSuccess }) => {
+
+    const navigate = useNavigate()
+
+    const { store } = useGlobalReducer()
+    const token = store.token
 
     const [formData, setFormData] = useState({
         full_name: '',
@@ -28,14 +34,11 @@ export const CreateUser = ({ onCreationSuccess }) => {
         setLoading(true);
         setError(null);
 
-        // --- CLAVE 1: Obtener el Token de Autenticación del Master ---
-        const token = localStorage.getItem('jwtToken');
-
-        if (!token) {
-            setError("Error: Usuario Master no autenticado. Por favor, inicie sesión primero.");
-            setLoading(false);
-            return;
-        }
+        // if (!token) {
+        //     setError("Error: Usuario Master no autenticado. Por favor, inicie sesión primero.");
+        //     setLoading(false);
+        //     return;
+        // }
 
         const dataToSend = {
             email: formData.username,    // Correo (el campo que en el frontend llamas 'username')
@@ -48,12 +51,12 @@ export const CreateUser = ({ onCreationSuccess }) => {
 
         try {
             // --- CLAVE 2: Realizar la petición POST a /api/user ---
-            const response = await fetch(`${API_BASE_URL}/api/user`, {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     // Incluir el token en la cabecera Authorization
-                    'Authorization': `Bearer ${token}`
+                    // 'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify(dataToSend)
             });
@@ -178,7 +181,7 @@ export const CreateUser = ({ onCreationSuccess }) => {
                         <hr className="flex-grow-1" />
                     </div>
 
-                    <button type="button" className="btn btn-outline-danger w-100 fw-semibold">
+                    <button type="button" className="btn btn-outline-danger w-100 fw-semibold" onClick={() => { navigate("/") }}>
                         Logout
                     </button>
                 </form>
