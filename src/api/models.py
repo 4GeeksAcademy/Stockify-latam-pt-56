@@ -58,6 +58,26 @@ class User(db.Model):
         }
 
 
+class Category(db.Model):
+    id: Mapped[int] = mapped_column(primary_key=True)
+    category_code: Mapped[int] = mapped_column(
+        Integer, unique=True, nullable=False)
+    category_name: Mapped[str] = mapped_column(
+        String(120), unique=True, nullable=False)
+    category_state: Mapped[bool] = mapped_column(
+        Boolean, default=True, nullable=False)
+    creation_date: Mapped[int] = mapped_column(Integer, nullable=False)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "category_code": self.category_code,
+            "category_name": self.category_name,
+            "category_state": self.category_state,
+            "creation_date": self.creation_date
+        }
+
+
 class Product(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     product_name: Mapped[str] = mapped_column(String(120), nullable=False)

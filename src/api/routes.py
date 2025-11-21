@@ -316,3 +316,74 @@ def create_product():
             "error": "Internal Server Error",
             "msg": "Server not working"
         }), 500
+
+
+@api.route('/category', methods=['POST'])
+def create_category():
+    try:
+        data = request.get_json()
+
+        category_code = data.get('category_code')
+        category_name = data.get('category_name')
+        category_state = data.get('category_state', True)
+        creation_date = data.get('creation_date')
+
+        # Validar campos requeridos
+        if not all([category_code, category_name, creation_date]):
+            return jsonify({'msg': 'Please fill all required fields'}), 400
+
+        # Verificar si el código de categoría ya existe
+        existing_code = db.session.execute(
+            db.select(Category).filter_by(category_code=category_code)
+        ).scalars().first()
+
+        if existing_code:
+            return jsonify({'msg': 'Category code already exists'}), 400
+
+        # Verificar si el nombre de categoría ya existe
+        existing_name = db.session.execute(
+            db.select(Category).filter_by(category_name=category_name)
+        ).scalars().first()
+
+        if existing_name:
+            return jsonify({'msg': 'Category name already exists'}), 400
+
+        # Crear nueva categoría
+        new_category = Category(
+            category_code=category_code,
+            category_name=category_name,
+            category_state=category_state,
+            creation_date=creation_date
+        )
+
+        db.session.add(new_category)
+        db.session.commit()
+
+        return jsonify({"msg": "Category created successfully"}), 201
+
+    except Exception as e:
+        print("SERVER ERROR:", str(e))
+        return jsonify({
+            "error": "Internal Server Error",
+            "msg": "Server not working"
+        }), 500
+
+
+@api.route('/categories', methods=['GET'])
+def get_all_categories():
+    try:
+        categories = db.session.execute(db.select(Category)).scalars().all()
+        serialized_categories = [category.serialize()
+                                 for category in categories]
+
+        return jsonify({
+            "msg": "Categories retrieved successfully",
+            "categories": serialized_categories
+        }), 200
+
+    except Exception as e:
+        print("SERVER ERROR:", str(e))
+        return jsonify({
+            "error": "Internal Server Error",
+            "msg": "Server not working"
+        }), 500
