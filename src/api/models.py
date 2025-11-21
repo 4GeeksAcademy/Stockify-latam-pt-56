@@ -7,10 +7,8 @@ from flask import Flask, request, jsonify
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from sqlalchemy import Numeric
 from werkzeug.security import generate_password_hash, check_password_hash
-
 # este servirá cuando se haga la relación con categoría
 from sqlalchemy.orm import relationship
-
 db = SQLAlchemy()
 
 
@@ -89,14 +87,12 @@ class Product(db.Model):
     product_SKU: Mapped[str] = mapped_column(String(120), nullable=False)
     stock: Mapped[int] = mapped_column(Integer, nullable=False)
     price: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
-
     # Precio con decimales exactos
     # category_id: Mapped[int] = mapped_column(ForeignKey("category.id"), nullable=False)
-
     # category = relationship("Category")   #Descomentar cuando se tenga la tabla de categoría, por favor
     # image_url: Mapped[str] = mapped_column(String(1000), nullable=True) duda para el maestro, si hay que poner tabla la image
-
     # es correcto poner category_id en vez de category_name_id
+
     def serialize(self):
         return {
             "id": self.id,
@@ -107,7 +103,6 @@ class Product(db.Model):
             # "category_id": self.category_id,
             # "category": self.category  # Descomentar cuando se tenga la tabla de categoría, por favor
             # "category": self.category.serialize() o usar este en vez de línea 82 if  needed
-
         }
 
 
@@ -116,7 +111,7 @@ def validate_email_format(email):
     return bool(re.match(email_regex, email))
 
 
-if _name_ == '_main_':
+if __name__ == '__main__':
     with db.app_context():
         db.create_all()
     db.run(debug=True, port=3000)
