@@ -78,9 +78,9 @@ class Product(db.Model):
             "stock": self.stock,
             "price": self.price,
             "category_id": self.category_id,
-            # "category": self.category  # Descomentar cuando se tenga la tabla de categoría, por favor
-            # "category": self.category.serialize() o usar este en vez de línea 82 if  needed 
-          
+                # "category": self.category  # Descomentar cuando se tenga la tabla de categoría, por favor
+                # "category": self.category.serialize() o usar este en vez de línea 82 if  needed 
+            
         }
 
 

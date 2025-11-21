@@ -45,7 +45,7 @@ preview.innerHTML = '<i class="fas fa-image" style="color: var(--gray);"></i>';
                 if (file) {
                     const reader = new FileReader();
                     reader.onload = function (e) {
-                        preview.innerHTML = `<img src="${e.target.result}" alt="Vista previa" />`;
+                        preview.innerHTML = <img src="${e.target.result}" alt="Vista previa" />;
                     };
                     reader.readAsDataURL(file);
                 } else {
