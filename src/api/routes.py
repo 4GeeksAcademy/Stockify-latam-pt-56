@@ -75,7 +75,7 @@ def login():
         if not user_by_email:
             return jsonify({
                 'success': False,
-                'message': 'Credenciales no validas'
+                'message': 'Credenciales no validas email'
             }), 400
 
         user_by_username = User.query.filter_by(username=username).first()
@@ -83,7 +83,7 @@ def login():
         if not user_by_username:
             return jsonify({
                 'success': False,
-                'message': 'Credenciales no validas'
+                'message': 'Credenciales no validas username'
             }), 404
 
         if not user_by_email.check_password(password):
@@ -92,8 +92,16 @@ def login():
                 'message': 'Credencial no valida '
             }), 401
 
+        # Creae identity
+
+        user_identity = {
+            'id': user_by_email.id,
+            'rol': user_by_email.role
+        }
+
         # Crear token JWT
-        access_token = create_access_token(identity=user_by_email.id)
+
+        access_token = create_access_token(identity=str(user_identity))
 
         return jsonify({
             'success': True,
@@ -103,68 +111,77 @@ def login():
         }), 200
 
     except Exception as e:
+        print(e)
         return jsonify({
             'success': False,
             'message': f'Error del servidor: {str(e)}'
         }), 500
 
 
-@api.route('/tokens', methods=['POST'])
-def login_master():
-    data = request.get_json()
-    email = data.get('email')
-    password = data.get('password')
-
-    if email is None or password is None:
-        return jsonify({
-            'message': 'Password and email required'
-        }), 400
-
-    query = db.select(User).filter_by(email=email)
-    result = db.session.execute(query).scalars().first()
-
-    if result is None:
-        return jsonify({"message": "CREDENCIALES NO VALIDAS"}), 400
-
-    user = result
-    password_is_valid = check_password_hash(user.password, password)
-    if not password_is_valid:
-        return jsonify({"message": "CREDENCIALES NO VALIDAS"}), 400
-
-    access_token = create_access_token(identity=str(user.id))
-
-    return jsonify({
-        "token": access_token
-    }), 201
-
-# @api.route('/token/master', methods=['POST'])
+# @api.route('/tokens', methods=['POST'])
 # def login_master():
-#     data = request.get_json()  # body sent
+#     data = request.get_json()
 #     email = data.get('email')
-
 #     password = data.get('password')
 
 #     if email is None or password is None:
 #         return jsonify({
-#             'msg': 'Comuniquese con nosotros para obtener ingreso'
+#             'message': 'Password and email required'
 #         }), 400
 
-#     query = db.select(Master).filter_by(email=email)
+#     query = db.select(User).filter_by(email=email)
 #     result = db.session.execute(query).scalars().first()
 
 #     if result is None:
-#         return jsonify({"msg": "Comuniquese con nosotros para obtener ingreso"}), 400
+#         return jsonify({"message": "CREDENCIALES NO VALIDAS"}), 400
 
-#     master = result
-#     password_is_valid = check_password_hash(master.password, password)
+#     user = result
+#     password_is_valid = check_password_hash(user.password, password)
 #     if not password_is_valid:
-#         return jsonify({"msg": "CREDENCIALES NO VALIDAS"}), 400
+#         return jsonify({"message": "CREDENCIALES NO VALIDAS"}), 400
 
-#     access_token = create_access_token(identity=str(master.id))
+#     access_token = create_access_token(identity=str(user.id))
 
 #     return jsonify({
 #         "token": access_token
 #     }), 201
+
+@api.route('/token/master', methods=['POST'])
+def login_master():
+    data = request.get_json()  # body sent
+    email = data.get('email')
+
+    password = data.get('password')
+
+    if email is None or password is None:
+        return jsonify({
+            'msg': 'Comuniquese con nosotros para obtener ingreso'
+        }), 400
+
+    query = db.select(Master).filter_by(email=email)
+    result = db.session.execute(query).scalars().first()
+
+    if result is None:
+        return jsonify({"msg": "Comuniquese con nosotros para obtener ingreso"}), 400
+
+    master = result
+    password_is_valid = check_password_hash(master.password, password)
+    if not password_is_valid:
+        return jsonify({"msg": "CREDENCIALES NO VALIDAS"}), 400
+
+    master_identity = {
+        'id': master.id,
+        'rol': 'master'
+    }
+
+    access_token = create_access_token(identity=str(master_identity))
+
+    return jsonify({
+        "success": True,
+        "message": "Master login exitoso",
+        "token": access_token,
+        "user": master.serialize()
+    }), 201
 
 
 @api.route('/user/<int:current_user_id>', methods=['GET'])
@@ -183,9 +200,12 @@ def protected():
 @api.route('/master')
 @jwt_required()
 def private():
-    master_id = get_jwt_identity()
+    master_identity = dict(get_jwt_identity())
 
-    query = db.select(Master).filter_by(id=master_id)
+    if master_identity.get('rol') != 'master':
+        return jsonify({"msg": "Comuniquese con nosotros para obtener ingreso"}), 403
+
+    query = db.select(Master).filter_by(id=master_identity.get('id'))
     result = db.session.execute(query).scalars().first()
     if result is None:
         return jsonify({"msg": "Comuniquese con nosotros para obtener ingreso"}), 400
@@ -193,7 +213,7 @@ def private():
     return jsonify({
         "acceso": "Successfuly access",
         "master": master.serialize()
-    }), 201
+    }), 200
 
 
 @api.route('/users', methods=['GET'])
@@ -221,7 +241,7 @@ def get_all_users():
 @jwt_required()  # 👈 ¡SEGURIDAD! Solo accesible con un token válido.
 def create_user():
     # 1. OBTENER EL ID DEL MASTER LOGEADO
-    master_id = get_jwt_identity()
+    # master_id = get_jwt_identity()
 
     # 2. OBTENER DATOS DEL FORMULARIO DE REACT
     data = request.get_json()
@@ -257,7 +277,7 @@ def create_user():
         username=username,
         password_hash=password_hash,
         role=role,
-        master_id=master_id  # 👈 ¡ESTO LIGA EL USUARIO AL MASTER!
+        # master_id=master_id  # 👈 ¡ESTO LIGA EL USUARIO AL MASTER!
     )
 
     db.session.add(new_user)
