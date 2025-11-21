@@ -1,7 +1,8 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import  { CreateCategory }  from "../components/CreateCategory";
-import  ProductsComponent  from "../components/ProductsComponent";
+import { CreateCategory } from "../components/CreateCategory";
+import ProductsComponent from "../components/ProductsComponent";
+import ProductComponent2 from "../components/ProductComponent2";
 import { CreateInventory } from "../components/CreateInventory";
 import { CreateReports } from "../components/CreateReports";
 
@@ -9,16 +10,16 @@ export const CreateProduct = () => {
     const [activeTab, setActiveTab] = React.useState("products");  /*save the button that I press*/
 
     const navigate = useNavigate(); //para que pueda regresar a la página anterior
-   
+
 
     const goBack = () => {    //function to go back
         navigate("/");    /*aquí va la ruta adonde dirigirá el botón regresar, aún por definir*/
     }
     // useEffect(() => {     //to excute what is inside when the component is mounted
-        
-        
 
-        
+
+
+
     // }, []);
 
     return (
@@ -35,34 +36,34 @@ export const CreateProduct = () => {
 
             {/* Navigation Tabs */}
             <div className="nav-tabs">
-    <a 
-        className={`nav-tab ${activeTab === "products" ? "active" : ""}`} 
-        onClick={() => setActiveTab("products")}
-    >
-        <i className="fas fa-cube"></i> Productos
-    </a>
+                <a
+                    className={`nav-tab ${activeTab === "products" ? "active" : ""}`}
+                    onClick={() => setActiveTab("products")}
+                >
+                    <i className="fas fa-cube"></i> Productos
+                </a>
 
-    <a 
-        className={`nav-tab ${activeTab === "categories" ? "active" : ""}`}  /*active ltab son los buttons*/
-        onClick={() => setActiveTab("categories")}
-    >
-        <i className="fas fa-tags"></i> Categorías
-    </a>
+                <a
+                    className={`nav-tab ${activeTab === "categories" ? "active" : ""}`}  /*active ltab son los buttons*/
+                    onClick={() => setActiveTab("categories")}
+                >
+                    <i className="fas fa-tags"></i> Categorías
+                </a>
 
-    <a 
-        className={`nav-tab ${activeTab === "inventory" ? "active" : ""}`} 
-        onClick={() => setActiveTab("inventory")}
-    >
-        <i className="fas fa-boxes"></i> Inventario
-    </a>
+                <a
+                    className={`nav-tab ${activeTab === "inventory" ? "active" : ""}`}
+                    onClick={() => setActiveTab("inventory")}
+                >
+                    <i className="fas fa-boxes"></i> Inventario
+                </a>
 
-    <a 
-        className={`nav-tab ${activeTab === "reports" ? "active" : ""}`} 
-        onClick={() => setActiveTab("reports")}
-    >
-        <i className="fas fa-chart-bar"></i> Reportes
-    </a>
-</div>
+                <a
+                    className={`nav-tab ${activeTab === "reports" ? "active" : ""}`}
+                    onClick={() => setActiveTab("reports")}
+                >
+                    <i className="fas fa-chart-bar"></i> Reportes
+                </a>
+            </div>
 
 
 
@@ -99,24 +100,24 @@ export const CreateProduct = () => {
             </div>
 
             {/* Products Tab */}
-            
-{activeTab === "products" && (   /*if the active tab contains products then show us up the component and it provides color*/
-    <ProductsComponent />  
-)}
 
-{activeTab === "categories" && (
-    <CreateCategory />
-)}
+            {activeTab === "products" && (   /*if the active tab contains products then show us up the component and it provides color*/
+                <ProductComponent2 />
+            )}
 
-{activeTab === "inventory" && (
-    <CreateInventory />
-)}
+            {activeTab === "categories" && (
+                <CreateCategory />
+            )}
 
-{activeTab === "reports" && (
-    <CreateReports />
-)}
+            {activeTab === "inventory" && (
+                <CreateInventory />
+            )}
 
-            
+            {activeTab === "reports" && (
+                <CreateReports />
+            )}
+
+
 
         </div>
     );
