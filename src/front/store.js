@@ -34,6 +34,7 @@ export default function storeReducer(store, action = {}) {
         ),
       };
     default:
+      console.log(action.type);
       throw Error("Unknown action.");
   }
 }

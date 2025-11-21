@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import '../stylesheets/LoginForm.css';
+// import '../stylesheets/LoginForm.css';
 import useGlobalReducer from '../hooks/useGlobalReducer';
 import { useNavigate } from 'react-router-dom';
 
@@ -13,7 +13,8 @@ const LoginForm = () => {
     const [formData, setFormData] = useState({
         email: '',
         username: '',
-        password: ''
+        password: '',
+        isMaster: false
     });
 
     const [errors, setErrors] = useState({});
@@ -66,8 +67,9 @@ const LoginForm = () => {
         if (validateForm()) {
 
             try {
+                const PATH = formData.isMaster ? 'token/master' : 'token'
                 const response = await fetch(
-                    `${import.meta.env.VITE_BACKEND_URL}api/token`, {
+                    `${import.meta.env.VITE_BACKEND_URL}api/${PATH}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -81,20 +83,22 @@ const LoginForm = () => {
 
                 const data = await response.json();
 
-                if (data.success) {
+                if (data.token && data.user) {
                     // Guardar el token JWT en localStorage
-                    dispatch({ action: 'set_user_data', payload: data.user })
-                    dispatch({ action: 'set_token', payload: data.token })
-
-
+                    dispatch({ type: 'set_user_data', payload: data.user })
+                    dispatch({ type: 'set_token', payload: data.token })
                     alert(`Bienvenido ${data.user.username}!`);
 
-                } else {
-                    // Mostrar error del backend
-                    setErrors({ submit: data.message });
-                }
+                    if (data.user.rol == 'master') {
+                        navigate('/createuser')
+                        return
+                    }
 
-                navigate('/createuser')
+                    navigate('/admin')
+
+                } else {
+                    setErrors({ submit: data.msg || 'Credenciales no válidas o error del servidor.' });
+                }
 
             } catch (error) {
                 setErrors({ submit: 'Error de conexión con el servidor' });
@@ -103,80 +107,93 @@ const LoginForm = () => {
     };
     return (
         <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
-
-            <div className='login-container' >
-                <div className='login-form-wrapper' >
-                    <p className="text-start fs-2 fw-bold mb-4">Stockify user sign in</p>
-                    <form className='login-form' onSubmit={handleSubmit} >
-                        <div className='form-group' >
-                            <label htmlFor="email">Email address</label >
-                            <input
-                                type="email"
-                                id='email'
-                                name='email'
-                                value={formData.email}
-                                onChange={handleChange}
-                                placeholder='Ingrese tu correo electrónico'
-                                className={errors.email ? 'error' : ''}
-                                required
-                            />
-                            {errors.email && <span className="error-message">{errors.email}</span>}
-                        </div>
-
-                        <div className='remember-account' >
-                            <input type='checkbox' id='remember' />
-                            <label htmlFor="remember">Remember this account</label>
-                        </div>
-
-                        <div className='form-group'>
-                            <label htmlFor='username'>Account username</label>
-                            <input
-                                type="text"
-                                id='username'
-                                name='username'
-                                value={formData.username}
-                                onChange={handleChange}
-                                placeholder='Ingrese tu nombre de usuario'
-                                className={errors.username ? 'error' : ''}
-                                required
-                            />
-                            {errors.username && <span className="error-message">{errors.username}</span>}
-                        </div>
-
-                        <div className='form-group' >
-                            <label htmlFor='password'>Password</label>
-                            <input
-                                type={showPassword ? 'text' : 'password'}
-                                id='password'
-                                name='password'
-                                value={formData.password}
-                                onChange={handleChange}
-                                placeholder='Ingrese tu contraseña'
-                                className={errors.password ? 'error' : ''}
-                                required
-                            />
-                            {errors.password && <span className="error-message">{errors.password}</span>}
-                            <div className='show-password'>
+            <div className="card shadow-lg p-4" style={{ width: "380px", borderRadius: "1rem" }}>
+                <div className='login-container' >
+                    <div className='login-form-wrapper' >
+                        <p className="text-start fs-2 fw-bold mb-4">Stockify user sign in</p>
+                        <form className='login-form' onSubmit={handleSubmit} >
+                            <div className='' >
+                                <label htmlFor="email" className="form-label fw-semibold">Email address</label >
                                 <input
-                                    type='checkbox'
-                                    id='showPassword'
-                                    checked={showPassword}
-                                    onChange={() => setShowPassword(!showPassword)}
+                                    type="email"
+                                    id='email'
+                                    name='email'
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    placeholder='Ingrese tu correo electrónico'
+                                    className={errors.email ? 'error' : 'form-control'}
+                                    required
                                 />
-                                <label htmlFor='showPassword'>Show Password</label>
+                                {errors.email && <span className="error-message">{errors.email}</span>}
                             </div>
-                        </div>
 
-                        <button type='submit' className="btn btn-warning w-100 fw-bold mb-3">
-                            Sign in
-                        </button>
+                            <div className='d-flex gap-2 justify-content-start align-items-center py-2'>
+                                <input type='checkbox' id='remember' />
+                                <label htmlFor="remember" className="form-label fw-lighter m-0">Remember this account</label>
+                            </div>
 
-                        <div>
-                            <button className="btn btn-outline-secondary w-100 fw-semibold" onClick={() => { navigate("/signup") }}>Create credentials for your Master account</button>
-                        </div>
-                    </form>
+                            <div className='mb-3 text-start pt-2'>
+                                <label htmlFor='username' className="form-label fw-semibold">Account username</label>
+                                <input
+                                    type="text"
+                                    id='username'
+                                    name='username'
+                                    value={formData.username}
+                                    onChange={handleChange}
+                                    placeholder='Ingrese tu nombre de usuario'
+                                    className={errors.username ? 'error' : 'form-control'}
+                                    required
+                                />
+                                {errors.username && <span className="error-message">{errors.username}</span>}
+                            </div>
+
+                            <div className='mb-3 text-start' >
+                                <label htmlFor='password' className="form-label fw-semibold">Password</label>
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    id='password'
+                                    name='password'
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    placeholder='Ingrese tu contraseña'
+                                    className={errors.password ? 'error' : 'form-control'}
+                                    required
+                                />
+                                {errors.password && <span className="error-message">{errors.password}</span>}
+                                <div className='d-flex gap-4 justify-content-start align-items-center pt-2 flex-column'>
+
+                                    <div className='d-flex gap-2 justify-content-start align-items-center pt-2'>
+                                        <input
+                                            type='checkbox'
+                                            id='showPassword'
+                                            checked={showPassword}
+                                            onChange={() => setShowPassword(!showPassword)}
+                                        />
+                                        <label htmlFor='showPassword' className="form-label fw-lighter m-0">Show Password</label>
+                                    </div>
+                                    <div className='d-flex gap-2 justify-content-start align-items-center pt-2'>
+                                        <input
+                                            type='checkbox'
+                                            id='showMaster'
+                                            checked={formData.isMaster}
+                                            onChange={() => setFormData({ ...formData, isMaster: !formData.isMaster })}
+                                        />
+                                        <label htmlFor='showMaster' className="form-label fw-lighter m-0">Is master</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type='submit' className="btn btn-warning w-100 fw-bold mb-3">
+                                Sign in
+                            </button>
+
+                            <div className='col'>
+                                <button className="btn btn-outline-secondary w-100 fw-lighter fs-6" onClick={() => { navigate("/signup") }}>Create credentials for Master</button>
+                            </div>
+                        </form>
+                    </div>
+
                 </div>
-
             </div>
         </div>
     )

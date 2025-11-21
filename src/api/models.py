@@ -6,6 +6,7 @@ import re
 from flask import Flask, request, jsonify
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from sqlalchemy import Numeric
+from werkzeug.security import generate_password_hash, check_password_hash
 
 # este servirá cuando se haga la relación con categoría
 from sqlalchemy.orm import relationship
@@ -25,7 +26,7 @@ class Master(db.Model):
             "id": self.id,
             "username": self.username,
             "email": self.email,
-            "token": self.token
+            "rol": 'master'
             # do not serialize the password, its a security breach
         }
 
@@ -39,11 +40,15 @@ class User(db.Model):
     role: Mapped[str] = mapped_column(String(50), nullable=False)
 
     def set_password(self, password):
-        self.password_hash = hashpw(password.encode(
-            'utf-8'), gensalt()).decode('utf-8')
+        self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
-        return checkpw(password.encode('utf-8'), self.password_hash.encode('utf-8'))
+        return check_password_hash(pwhash=self.password_hash, password=password)
+        # try:
+        #     return checkpw(password.encode('utf-8'), self.password_hash.encode('utf-8'))
+        # except Exception as e:
+        #     print(e)
+        #     return False
 
     @staticmethod
     def is_valid_password(password):
