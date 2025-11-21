@@ -1,12 +1,19 @@
 import React, { useState } from "react";
+import useGlobalReducer from "../hooks/useGlobalReducer";
+import { useNavigate } from "react-router-dom";
 
-const API_BASE_URL = "https://zany-waddle-wv74prjqpgq2qp9-3001.app.github.dev"
 const ROLES = ['Administrator', 'Seller']
 
 export const CreateUser = ({ onCreationSuccess }) => {
 
+    const navigate = useNavigate()
+
+    const { store } = useGlobalReducer()
+    const token = store.token
+
     const [formData, setFormData] = useState({
         full_name: '',
+        email: '',
         username: '',
         password: '',
         role: ROLES[1]
@@ -28,9 +35,6 @@ export const CreateUser = ({ onCreationSuccess }) => {
         setLoading(true);
         setError(null);
 
-        // --- CLAVE 1: Obtener el Token de Autenticación del Master ---
-        const token = localStorage.getItem('authToken');
-
         if (!token) {
             setError("Error: Usuario Master no autenticado. Por favor, inicie sesión primero.");
             setLoading(false);
@@ -38,17 +42,18 @@ export const CreateUser = ({ onCreationSuccess }) => {
         }
 
         const dataToSend = {
-            email: formData.username,    // Correo (el campo que en el frontend llamas 'username')
+            email: formData.email,
+            username: formData.username,
             password: formData.password,
             role: formData.role,
-            username: formData.full_name // Nombre completo (el campo que en el frontend llamas 'full_name')
+            full_name: formData.full_name // Nombre completo (el campo que en el frontend llamas 'full_name')
         }
 
         console.log("Datos que se enviarán:", dataToSend);
 
         try {
             // --- CLAVE 2: Realizar la petición POST a /api/user ---
-            const response = await fetch(`${API_BASE_URL}/api/user`, {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -95,6 +100,20 @@ export const CreateUser = ({ onCreationSuccess }) => {
                     </div>
                 </div>
                 <form onSubmit={handleSubmit}>
+                    <div className="mb-3 text-start">
+                        <label htmlFor="email" className="form-label fw-semibold">
+                            Email address
+                        </label>
+                        <input
+                            type="email"
+                            className="form-control"
+                            id="email"
+                            placeholder="Enter address for new user"
+                            value={formData.email}
+                            onChange={handleInputChange}
+                            required
+                        />
+                    </div>
                     {/* Username */}
                     <div className="mb-3 text-start">
                         <label htmlFor="full_name" className="form-label fw-semibold">
@@ -178,7 +197,7 @@ export const CreateUser = ({ onCreationSuccess }) => {
                         <hr className="flex-grow-1" />
                     </div>
 
-                    <button type="button" className="btn btn-outline-danger w-100 fw-semibold">
+                    <button type="button" className="btn btn-outline-danger w-100 fw-semibold" onClick={() => { navigate("/") }}>
                         Logout
                     </button>
                 </form>

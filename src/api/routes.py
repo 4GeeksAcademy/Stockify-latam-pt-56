@@ -2,7 +2,7 @@
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
 from flask import Flask, request, jsonify, url_for, Blueprint
-from api.models import db, User, Master
+from api.models import db, User, Master, Category, Product
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
@@ -75,7 +75,7 @@ def login():
         if not user_by_email:
             return jsonify({
                 'success': False,
-                'message': 'Credenciales no validas'
+                'message': 'Credenciales no validas email'
             }), 400
 
         user_by_username = User.query.filter_by(username=username).first()
@@ -83,7 +83,7 @@ def login():
         if not user_by_username:
             return jsonify({
                 'success': False,
-                'message': 'Credenciales no validas'
+                'message': 'Credenciales no validas username'
             }), 404
 
         if not user_by_email.check_password(password):
@@ -92,8 +92,16 @@ def login():
                 'message': 'Credencial no valida '
             }), 401
 
+        # Creae identity
+
+        user_identity = {
+            'id': user_by_email.id,
+            'rol': user_by_email.role
+        }
+
         # Crear token JWT
-        access_token = create_access_token(identity=user_by_email.id)
+
+        access_token = create_access_token(identity=str(user_identity))
 
         return jsonify({
             'success': True,
@@ -103,11 +111,40 @@ def login():
         }), 200
 
     except Exception as e:
+        print(e)
         return jsonify({
             'success': False,
             'message': f'Error del servidor: {str(e)}'
         }), 500
 
+
+# @api.route('/tokens', methods=['POST'])
+# def login_master():
+#     data = request.get_json()
+#     email = data.get('email')
+#     password = data.get('password')
+
+#     if email is None or password is None:
+#         return jsonify({
+#             'message': 'Password and email required'
+#         }), 400
+
+#     query = db.select(User).filter_by(email=email)
+#     result = db.session.execute(query).scalars().first()
+
+#     if result is None:
+#         return jsonify({"message": "CREDENCIALES NO VALIDAS"}), 400
+
+#     user = result
+#     password_is_valid = check_password_hash(user.password, password)
+#     if not password_is_valid:
+#         return jsonify({"message": "CREDENCIALES NO VALIDAS"}), 400
+
+#     access_token = create_access_token(identity=str(user.id))
+
+#     return jsonify({
+#         "token": access_token
+#     }), 201
 
 @api.route('/token/master', methods=['POST'])
 def login_master():
@@ -132,10 +169,18 @@ def login_master():
     if not password_is_valid:
         return jsonify({"msg": "CREDENCIALES NO VALIDAS"}), 400
 
-    access_token = create_access_token(identity=str(master.id))
+    master_identity = {
+        'id': master.id,
+        'rol': 'master'
+    }
+
+    access_token = create_access_token(identity=str(master_identity))
 
     return jsonify({
-        "token": access_token
+        "success": True,
+        "message": "Master login exitoso",
+        "token": access_token,
+        "user": master.serialize()
     }), 201
 
 
@@ -155,9 +200,12 @@ def protected():
 @api.route('/master')
 @jwt_required()
 def private():
-    master_id = get_jwt_identity()
+    master_identity = dict(get_jwt_identity())
 
-    query = db.select(Master).filter_by(id=master_id)
+    if master_identity.get('rol') != 'master':
+        return jsonify({"msg": "Comuniquese con nosotros para obtener ingreso"}), 403
+
+    query = db.select(Master).filter_by(id=master_identity.get('id'))
     result = db.session.execute(query).scalars().first()
     if result is None:
         return jsonify({"msg": "Comuniquese con nosotros para obtener ingreso"}), 400
@@ -165,14 +213,35 @@ def private():
     return jsonify({
         "acceso": "Successfuly access",
         "master": master.serialize()
-    }), 201
+    }), 200
+
+
+@api.route('/users', methods=['GET'])
+# @jwt_required()
+def get_all_users():
+    # 1. Verificar si la identidad actual es un 'Master' o 'Administrator' si es necesario.
+    #    Por ahora, solo requerimos que esté logeado (jwt_required()).
+
+    # 2. Consultar todos los registros de la tabla User
+    users = db.session.execute(db.select(User)).scalars().all()
+
+    # 3. Serializar la lista de objetos User
+    #    La función 'serialize()' definida en el modelo User se encarga de convertir el objeto
+    #    de la base de datos a un diccionario de Python.
+    serialized_users = [user.serialize() for user in users]
+
+    # 4. Devolver la respuesta en formato JSON
+    return jsonify({
+        "msg": "Users retrieved successfully",
+        "users": serialized_users
+    }), 200
 
 
 @api.route('/user', methods=['POST'])
 @jwt_required()  # 👈 ¡SEGURIDAD! Solo accesible con un token válido.
 def create_user():
     # 1. OBTENER EL ID DEL MASTER LOGEADO
-    master_id = get_jwt_identity()
+    # master_id = get_jwt_identity()
 
     # 2. OBTENER DATOS DEL FORMULARIO DE REACT
     data = request.get_json()
@@ -206,9 +275,9 @@ def create_user():
     new_user = User(
         email=email,
         username=username,
-        password=password_hash,
+        password_hash=password_hash,
         role=role,
-        master_id=master_id  # 👈 ¡ESTO LIGA EL USUARIO AL MASTER!
+        # master_id=master_id  # 👈 ¡ESTO LIGA EL USUARIO AL MASTER!
     )
 
     db.session.add(new_user)
@@ -220,6 +289,7 @@ def create_user():
     }), 201
 
 # POST PRODUCT
+
 
 @api.route('/product', methods=['POST'])
 def create_product():
@@ -245,39 +315,95 @@ def create_product():
             return jsonify({'msg': 'Product already exists'}), 400
 
         # Crear nuevo producto
-        new_product = Product(  #manda a llamar al modelo product
-            product_name=product_name, #adding all of this
+        new_product = Product(  # manda a llamar al modelo product
+            product_name=product_name,  # adding all of this
             product_SKU=product_SKU,
             stock=stock,
             price=price,
             category_id=category_id
         )
 
-        db.session.add(new_product) #agrega el nuevo producto a a la db 
+        db.session.add(new_product)  # agrega el nuevo producto a a la db
         db.session.commit()
 
         return jsonify({"message": "Product created successfully"}), 201
 
-    except Exception as e: #saving the errorinside e
+    except Exception as e:  # saving the errorinside e
 
-        
-        print("SERVER ERROR:", str(e))  #printing the error to the console for debugging
+        # printing the error to the console for debugging
+        print("SERVER ERROR:", str(e))
         return jsonify({
             "error": "Internal Server Error",
             "msg": "Server not working"
         }), 500
 
 
+@api.route('/category', methods=['POST'])
+def create_category():
+    try:
+        data = request.get_json()
 
-        
+        category_code = data.get('category_code')
+        category_name = data.get('category_name')
+        category_state = data.get('category_state', True)
+        creation_date = data.get('creation_date')
+
+        # Validar campos requeridos
+        if not all([category_code, category_name, creation_date]):
+            return jsonify({'msg': 'Please fill all required fields'}), 400
+
+        # Verificar si el código de categoría ya existe
+        existing_code = db.session.execute(
+            db.select(Category).filter_by(category_code=category_code)
+        ).scalars().first()
+
+        if existing_code:
+            return jsonify({'msg': 'Category code already exists'}), 400
+
+        # Verificar si el nombre de categoría ya existe
+        existing_name = db.session.execute(
+            db.select(Category).filter_by(category_name=category_name)
+        ).scalars().first()
+
+        if existing_name:
+            return jsonify({'msg': 'Category name already exists'}), 400
+
+        # Crear nueva categoría
+        new_category = Category(
+            category_code=category_code,
+            category_name=category_name,
+            category_state=category_state,
+            creation_date=creation_date
+        )
+
+        db.session.add(new_category)
+        db.session.commit()
+
+        return jsonify({"msg": "Category created successfully"}), 201
+
+    except Exception as e:
+        print("SERVER ERROR:", str(e))
+        return jsonify({
+            "error": "Internal Server Error",
+            "msg": "Server not working"
+        }), 500
 
 
+@api.route('/categories', methods=['GET'])
+def get_all_categories():
+    try:
+        categories = db.session.execute(db.select(Category)).scalars().all()
+        serialized_categories = [category.serialize()
+                                 for category in categories]
 
+        return jsonify({
+            "msg": "Categories retrieved successfully",
+            "categories": serialized_categories
+        }), 200
 
-
-
-
-    
-
-
-
+    except Exception as e:
+        print("SERVER ERROR:", str(e))
+        return jsonify({
+            "error": "Internal Server Error",
+            "msg": "Server not working"
+        }), 500

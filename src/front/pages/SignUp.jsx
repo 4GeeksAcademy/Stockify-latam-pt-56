@@ -1,6 +1,10 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export const SignUp = () => {
+
+  const navigate = useNavigate()
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
@@ -33,6 +37,7 @@ export const SignUp = () => {
         console.error("Error en el registro:", errorData);
         alert("Error at creating master");
       }
+      navigate('/')
     } catch (error) {
       console.error("Error connection:", error);
       alert("Cannot connect with server");
@@ -112,7 +117,7 @@ export const SignUp = () => {
             <hr className="flex-grow-1" />
           </div>
 
-          <button type="button" className="btn btn-outline-secondary w-100 fw-semibold">
+          <button type="button" className="btn btn-outline-secondary w-100 fw-semibold" onClick={() => { navigate("/") }}>
             Sign in to an existing Stockify account
           </button>
         </form>
