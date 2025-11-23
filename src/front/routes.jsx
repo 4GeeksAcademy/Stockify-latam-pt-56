@@ -13,6 +13,7 @@ import LoginForm from "./components/LoginForm";
 
 
 
+
 export const router = createBrowserRouter(
   createRoutesFromElements(
     // CreateRoutesFromElements function allows you to build route elements declaratively.
@@ -30,6 +31,10 @@ export const router = createBrowserRouter(
       <Route path="/createuser" element={<CreateUser />} />
       <Route path="/createproduct" element={<CreateProduct />} />
       <Route path="/login" element={<LoginForm />} />
+
+
+
+
 
     </Route>
   )
