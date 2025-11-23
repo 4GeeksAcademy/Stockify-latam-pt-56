@@ -5,6 +5,7 @@ import ProductsComponent from "../components/ProductsComponent";
 import ProductComponent2 from "../components/ProductComponent2";
 import { CreateInventory } from "../components/CreateInventory";
 import { CreateReports } from "../components/CreateReports";
+import { ShoppingCart } from "../components/ShoppingCart";
 
 
 export const CreateProduct = () => {
@@ -52,9 +53,7 @@ export const CreateProduct = () => {
                                 <i className="fa-sharp fa-solid fa-arrow-left"></i> Regresar
                             </button>
                             {/* Boton Modal */}
-
-                            {/* modal */}
-
+                            <ShoppingCart />
                         </div>
 
                     </header>
