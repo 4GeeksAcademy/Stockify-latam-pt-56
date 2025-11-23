@@ -1,17 +1,13 @@
 import React from "react";
 import { ProductInList } from "./ProductInList";
 import { ProductShoppingCard } from "./ProductShoppingCard";
+import useGlobalReducer from "../hooks/useGlobalReducer";
 
-const response = [
-    "Pinturas de Agua",
-    "Pinturas de Aceite",
-    "Tornillos, Remaches y Clavos",
-    "Cubetas",
-    "Herramientas",
-    "Tuercas"
-]
 
 export const ModalShoppingCart = () => {
+
+    const { store } = useGlobalReducer()
+    const categories = store.categories || []
 
     return (
         <div
@@ -21,7 +17,7 @@ export const ModalShoppingCart = () => {
             aria-labelledby="exampleModalLabel"
             aria-hidden="true"
         >
-            <div className="modal-dialog modal-fullscreen">
+            <div className="modal-dialog modal-xl">
                 <div className="modal-content">
                     <div className="modal-header">
                         <div className="d-flex justify-content-center align-items-center gap-3 px-3">
@@ -43,7 +39,7 @@ export const ModalShoppingCart = () => {
                         <div className="row">
                             <div className="col">
                                 <div className="row">
-                                    <div className="col-7">
+                                    <div className="col-6">
                                         <div className="d-flex justify-content-start align-items-center gap-3 px-3 pt-4">
                                             <i className="fa-regular fa-user fs-3 fw-lighter"></i>
                                             <h5 className="fs-3 fw-bold m-0">Client info</h5>
@@ -103,7 +99,7 @@ export const ModalShoppingCart = () => {
 
                                     </div>
                                     {/* Parte derecha del modal */}
-                                    <div className="col-5">
+                                    <div className="col-6">
                                         <div className="d-flex justify-content-start align-items-center gap-3 px-3 pt-4">
                                             <i className="fa-solid fa-magnifying-glass fs-3"></i>
                                             <h5 className="fs-3 fw-bold m-0">Product Catalog</h5>
@@ -111,37 +107,27 @@ export const ModalShoppingCart = () => {
                                         <div>
                                             {/* Barra de busqueda */}
                                             <div className="pt-4">
-                                                <div className="search-container d-flex justify-content-center align-items-center">
-                                                    <div className="form-group search-input m-0">
+                                                <div className="d-flex justify-content-start align-items-center gap-2">
+                                                    <div className="form-group w-50 m-0">
                                                         <input type="text" className="form-control" placeholder="Buscar productos..." />
                                                     </div>
-                                                    <div className="form-group filter-select m-0">
+                                                    <div className="m-0">
                                                         <select className="form-control">
-                                                            <option value="">Seleccionar categoría</option>
-                                                            {response.map((cat, index) => (
-                                                                <option key={cat} value={index}>
-                                                                    {cat}
+                                                            <option value="">Category</option>
+                                                            {categories.map((cat) => (
+                                                                <option key={cat.id} value={cat.id}>
+                                                                    {cat.category_name}
                                                                 </option>
                                                             ))}
                                                         </select>
                                                     </div>
-                                                    <button className="btn">
-                                                        <i className="fas fa-search"></i> Buscar
+                                                    <button className="btn m-0">
+                                                        <i className="fs-6 fas fa-search p-0"></i>
                                                     </button>
                                                 </div>
                                             </div>
                                             {/* Lista de productos */}
                                             <div className="row row-cols-1 row-cols-md-2 g-4">
-                                                <ProductShoppingCard />
-                                                <ProductShoppingCard />
-                                                <ProductShoppingCard />
-                                                <ProductShoppingCard />
-                                                <ProductShoppingCard />
-                                                <ProductShoppingCard />
-                                                <ProductShoppingCard />
-                                                <ProductShoppingCard />
-                                                <ProductShoppingCard />
-                                                <ProductShoppingCard />
                                                 <ProductShoppingCard />
                                             </div>
                                         </div>

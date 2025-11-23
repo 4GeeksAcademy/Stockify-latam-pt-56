@@ -6,6 +6,7 @@ export const initialStore = () => {
   return {
     token: token,
     userData: userData,
+    categories: [],
   };
 };
 
@@ -22,6 +23,12 @@ export default function storeReducer(store, action = {}) {
       return {
         ...store,
         userData: action.payload,
+      };
+
+    case "set_categories":
+      return {
+        ...store,
+        categories: action.payload,
       };
 
     case "add_task":

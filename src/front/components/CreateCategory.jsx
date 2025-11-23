@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import useGlobalReducer from '../hooks/useGlobalReducer';
 
 export const CreateCategory = () => {
+    const { dispatch, store } = useGlobalReducer()
     const navigate = useNavigate();
-    const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
+    const categories = store.categories || []
 
     const [formData, setFormData] = useState({
         category_code: '',
@@ -21,7 +23,7 @@ export const CreateCategory = () => {
             const result = await response.json();
 
             if (response.ok) {
-                setCategories(result.categories);
+                dispatch({ type: 'set_categories', payload: result.categories })
             }
         } catch (error) {
             console.error('Error loading categories:', error);
