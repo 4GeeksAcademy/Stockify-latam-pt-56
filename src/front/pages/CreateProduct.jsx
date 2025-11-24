@@ -1,13 +1,27 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CreateCategory } from "../components/CreateCategory";
 import ProductsComponent from "../components/ProductsComponent";
 import ProductComponent2 from "../components/ProductComponent2";
 import { CreateInventory } from "../components/CreateInventory";
 import { CreateReports } from "../components/CreateReports";
+import { ShoppingCart } from "../components/ShoppingCart";
+
 
 export const CreateProduct = () => {
+    const response = [
+        "Pinturas de Agua",
+        "Pinturas de Aceite",
+        "Tornillos, Remaches y Clavos",
+        "Cubetas",
+        "Herramientas",
+        "Tuercas"
+    ];
     const [activeTab, setActiveTab] = React.useState("products");  /*save the button that I press*/
+    const [showModal, setShowModal] = useState(false);
+
+    const handleShow = () => setShowModal(true);
+    const handleClose = () => setShowModal(false)
 
     const navigate = useNavigate(); //para que pueda regresar a la página anterior
 
@@ -26,13 +40,25 @@ export const CreateProduct = () => {
         <div className="container">
 
             {/* Header */}
-            <header className="app-header">
-                <button className="btn btn-primary btn-position " onClick={goBack}>
-                    <i className="fa-sharp fa-solid fa-arrow-left"></i> Regresar
-                </button>
-                <h1><i className="fas fa-store"></i> Sistema de Gestión de Productos</h1>
-                <p>Administra productos y categorías de tu inventario</p>
-            </header>
+            <div className="row">
+                <div className="col">
+
+                    <header className="app-header d-flex">
+                        <div className="col-11 d-flex flex-column">
+                            <h1><i className="fas fa-store"></i> Sistema de Gestión de Productos</h1>
+                            <p>Administra productos y categorías de tu inventario</p>
+                        </div>
+                        <div className="col-1 d-flex align-items-end flex-column gap-3">
+                            <button className="btn btn-primary" onClick={goBack}>
+                                <i className="fa-sharp fa-solid fa-arrow-left"></i> Regresar
+                            </button>
+                            {/* Boton Modal */}
+                            <ShoppingCart />
+                        </div>
+
+                    </header>
+                </div>
+            </div>
 
             {/* Navigation Tabs */}
             <div className="nav-tabs">

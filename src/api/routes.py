@@ -309,6 +309,30 @@ def create_product():
         }), 500
 
 
+@api.route('/products', methods=['GET'])
+def get_all_products():
+    try:
+        # 1. Consultar todos los registros de la tabla Product
+        products = db.session.execute(db.select(Product)).scalars().all()
+
+        # 2. Serializar la lista de objetos Product
+        # Asumiendo que tu modelo Product tiene un método .serialize()
+        serialized_products = [product.serialize() for product in products]
+
+        # 3. Devolver la respuesta en formato JSON
+        return jsonify({
+            "msg": "Products retrieved successfully",
+            "products": serialized_products.serialize()
+        }), 200
+
+    except Exception as e:
+        print("SERVER ERROR (get_all_products):", str(e))
+        return jsonify({
+            "error": "Internal Server Error",
+            "msg": "Server not working or database error"
+        }), 500
+
+
 @api.route('/category', methods=['POST'])
 def create_category():
     try:
