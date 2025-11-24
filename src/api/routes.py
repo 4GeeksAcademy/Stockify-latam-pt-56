@@ -118,34 +118,6 @@ def login():
         }), 500
 
 
-# @api.route('/tokens', methods=['POST'])
-# def login_master():
-#     data = request.get_json()
-#     email = data.get('email')
-#     password = data.get('password')
-
-#     if email is None or password is None:
-#         return jsonify({
-#             'message': 'Password and email required'
-#         }), 400
-
-#     query = db.select(User).filter_by(email=email)
-#     result = db.session.execute(query).scalars().first()
-
-#     if result is None:
-#         return jsonify({"message": "CREDENCIALES NO VALIDAS"}), 400
-
-#     user = result
-#     password_is_valid = check_password_hash(user.password, password)
-#     if not password_is_valid:
-#         return jsonify({"message": "CREDENCIALES NO VALIDAS"}), 400
-
-#     access_token = create_access_token(identity=str(user.id))
-
-#     return jsonify({
-#         "token": access_token
-#     }), 201
-
 @api.route('/token/master', methods=['POST'])
 def login_master():
     data = request.get_json()  # body sent
@@ -215,9 +187,8 @@ def private():
         "master": master.serialize()
     }), 200
 
-
 @api.route('/users', methods=['GET'])
-# @jwt_required()
+# @jwt_required() 
 def get_all_users():
     # 1. Verificar si la identidad actual es un 'Master' o 'Administrator' si es necesario.
     #    Por ahora, solo requerimos que esté logeado (jwt_required()).
@@ -407,3 +378,66 @@ def get_all_categories():
             "error": "Internal Server Error",
             "msg": "Server not working"
         }), 500
+
+@api.route('/user', methods=['GET'])
+@jwt_required()
+def get_users():
+    try:
+        users = db.session.execute(db.select(User)).scalars().all()
+        result = users
+        if result is None:
+            return jsonify({
+                "msg": "there's no users to display"
+            }), 400 
+        serialized_users = [user.serialize() for user in users]
+        return jsonify({
+            "user": serialized_users
+        }), 200
+    except Exception as e:
+        print("SERVER ERROR:", str(e))
+        return jsonify({
+            "msg": "Server not working",
+            "error numero 2": str(e)
+        }), 500
+
+#Delete 
+@api.route('/user', methods=['DELETE'])
+@jwt_required()
+def delete_user():
+    try:
+
+        data = request.get_json()
+
+        user_id = data.get('user_id')
+        user_name = data.get('user_name')
+
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({"msg" : "there's no users to display"}), 400 
+
+        db.session.delete(user)
+        db.session.commit()
+        return jsonify({
+            "msg": "User delete correctly",
+            "user": user_name, 
+            "id": user_id
+                        }), 201
+    except Exception as e:
+        # print("SERVER ERROR:", str(e))
+        return jsonify({
+            "msg": "Server not working"
+        }), 500
+
+
+
+
+
+#     'user_id' : Int, para el frontend
+#     'username' : Str
+
+
+
+ 
+
+
+

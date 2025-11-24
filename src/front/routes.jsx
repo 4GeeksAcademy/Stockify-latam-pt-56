@@ -8,6 +8,8 @@ import {
 import { Layout } from "./pages/Layout";
 import { SignUp } from "./pages/SignUp";
 import { CreateUser } from "./pages/CreateUser";
+import { DeleteUser } from "./pages/DeleteUser";
+import { UsersList } from "./pages/UsersList";
 import { CreateProduct } from "./pages/CreateProduct";
 import LoginForm from "./components/LoginForm";
 
@@ -28,6 +30,8 @@ export const router = createBrowserRouter(
       <Route index element={<LoginForm />} />
       <Route path="/signup" element={<SignUp />} />
       <Route path="/createuser" element={<CreateUser />} />
+      <Route path="/deleteuser" element={<DeleteUser />} />
+      <Route path="/UsersList" element={<UsersList />} />
       <Route path="/createproduct" element={<CreateProduct />} />
       <Route path="/login" element={<LoginForm />} />
 
