@@ -7,6 +7,8 @@ export const initialStore = () => {
     token: token,
     userData: userData,
     categories: [],
+    products: [],
+    cart: [],
   };
 };
 
@@ -29,6 +31,17 @@ export default function storeReducer(store, action = {}) {
       return {
         ...store,
         categories: action.payload,
+      };
+
+    case "set_products":
+      return {
+        ...store,
+        products: action.payload,
+      };
+    case "ADD_PRODUCT_TO_CART":
+      return {
+        ...store,
+        cart: action.payload,
       };
 
     case "add_task":

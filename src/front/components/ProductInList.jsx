@@ -59,7 +59,7 @@ export const ProductInList = () => {
                     <div className="py-1">
                         {/* Muestra el nombre y precio del primer producto */}
                         <p className="fs-6 fw-bold text-start m-0">{firstProduct.product_name || "Nombre de Producto"}</p>
-                        <p className="fs-6 text-start fw-lighter m-0">Price: ${firstProduct.price ? firstProduct.price.toFixed(2) : "0.00"}</p>
+                        {/* <p className="fs-6 text-start fw-lighter m-0">Price: ${firstProduct.price ? firstProduct.price.toFixed(2) : "0.00"}</p> */}
                     </div>
                     <div>
                         <div className="d-flex justify-content-between align-items-center gap-2">
