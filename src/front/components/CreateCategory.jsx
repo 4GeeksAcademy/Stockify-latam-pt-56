@@ -111,7 +111,7 @@ export const CreateCategory = () => {
                     </button>
                 </div>
             </div>
-
+            {store.userData.role == "Administrator" && "Soy administrador"}
             <div className="main-layout">
                 {/* Create Category Panel */}
                 <div className="panel">
