@@ -39,7 +39,7 @@
 
             if (!token) {
                 setError("Error: Usuario Master no autenticado. Por favor, inicie sesión primero.");
-                setLoading(false);
+                
                 return;
             }
 

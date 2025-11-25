@@ -29,21 +29,18 @@ export const UsersList = () => {
 
     // Eliminar usuario por ID
     const deleteUser = async (userId, username) => {
-        // if (!confirm("¿Seguro que quieres eliminar este usuario?")) return;
-
         try {
             const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user`, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",
-                    'Authorization': `Bearer ${store.token}` // si mi backend requiere token
+                    'Authorization': `Bearer ${store.token}`
                 },
                 body: JSON.stringify({ user_id: userId, user_name: username }),
             });
 
             if (!response.ok) throw new Error("Error eliminando usuario");
 
-            // Filtrar y actualizar lista local sin recargar
             setUsers(users.filter(user => user.id !== userId));
             alert("Usuario eliminado correctamente");
         } catch (error) {
@@ -55,21 +52,18 @@ export const UsersList = () => {
     useEffect(() => {
         fetchUsers();
     }, []);
+
     return (
         <div className="container mt-4">
-            
+
             <nav className="navbar navbar-expand-lg mb-4" style={{ backgroundColor: "#FFD700" }}>
-  <div className="container-fluid justify-content-center">
-    <span className="navbar-brand fw-bold text-danger">
-      Users List
-    </span>
-    
+                <div className="container-fluid justify-content-center">
+                    <span className="m-0 mt-2 fs-4 fw-bold">
+                        Users List
 
-    
-  </div>
-</nav>
-
-           
+                    </span>
+                </div>
+            </nav>
 
             <div className="row">
                 {users.map((user) => (
@@ -85,7 +79,7 @@ export const UsersList = () => {
                                 <hr />
 
                                 {/* Botón Eliminar */}
-                                <button 
+                                <button
                                     className="btn btn-success btn-sm w-100"
                                     onClick={() => deleteUser(user.id, user.username)}
                                 >
@@ -97,6 +91,23 @@ export const UsersList = () => {
                     </div>
                 ))}
             </div>
+
+            {/*  Botón  */}
+            <div className="d-flex justify-content-center my-4">
+                <button
+                    className="btn btn-warning fw-semibold px-4"
+                    onClick={() => navigate("/createuser")}
+                    style={{ borderRadius: "0.5rem" }}
+                >
+                    <i className="fa-solid fa-arrow-left"></i>
+
+                    Go back to Add New Users
+                </button>
+            </div>
+
         </div>
     );
 };
+
+
+

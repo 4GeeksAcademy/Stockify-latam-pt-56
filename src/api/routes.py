@@ -456,9 +456,6 @@ def delete_user():
 
 
 
-#     'user_id' : Int, para el frontend
-#     'username' : Str
-
 
 
  

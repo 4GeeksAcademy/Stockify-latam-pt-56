@@ -2,14 +2,13 @@ import React, { useState } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import { useNavigate } from "react-router-dom";
 
-const ROLES = ['Administrator', 'Seller']
+const ROLES = ['Administrator', 'Seller'];
 
 export const CreateUser = ({ onCreationSuccess }) => {
 
-    const navigate = useNavigate()
-
-    const { store } = useGlobalReducer()
-    const token = store.token
+    const navigate = useNavigate();
+    const { store } = useGlobalReducer();
+    const token = store.token;
 
     const [formData, setFormData] = useState({
         full_name: '',
@@ -17,18 +16,18 @@ export const CreateUser = ({ onCreationSuccess }) => {
         username: '',
         password: '',
         role: ROLES[1]
-    })
+    });
 
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null)
+    const [error, setError] = useState(null);
 
     const handleInputChange = (e) => {
-        const { id, value } = e.target
+        const { id, value } = e.target;
         setFormData(prev => ({
             ...prev,
             [id]: value
-        }))
-    }
+        }));
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -46,18 +45,16 @@ export const CreateUser = ({ onCreationSuccess }) => {
             username: formData.username,
             password: formData.password,
             role: formData.role,
-            full_name: formData.full_name // Nombre completo (el campo que en el frontend llamas 'full_name')
-        }
+            full_name: formData.full_name
+        };
 
         console.log("Datos que se enviarán:", dataToSend);
 
         try {
-            // --- CLAVE 2: Realizar la petición POST a /api/user ---
             const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    // Incluir el token en la cabecera Authorization
                     'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify(dataToSend)
@@ -67,11 +64,9 @@ export const CreateUser = ({ onCreationSuccess }) => {
 
             if (response.ok) {
                 alert(`✅ Usuario ${result.user.username} creado exitosamente con rol ${result.user.role}.`);
-                // Limpiar formulario y ejecutar callback si existe
                 setFormData({ full_name: '', username: '', password: '', role: ROLES[1] });
                 if (onCreationSuccess) onCreationSuccess(result.user);
             } else {
-                // Manejar errores de la API (ej. 400 Bad Request, 403 Forbidden)
                 setError(`Error ${response.status}: ${result.msg || 'Error desconocido del servidor.'}`);
                 alert(`Error al crear usuario: ${result.msg || 'Verifica la consola para más detalles.'}`);
             }
@@ -83,7 +78,7 @@ export const CreateUser = ({ onCreationSuccess }) => {
         } finally {
             setLoading(false);
         }
-    }
+    };
 
     return (
         <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
@@ -99,6 +94,22 @@ export const CreateUser = ({ onCreationSuccess }) => {
                         </div>
                     </div>
                 </div>
+
+               
+
+                <div className="d-flex justify-content-end mb-3">
+    <button
+        type="button"
+        className="btn btn-warning fw-semibold"
+        onClick={() => navigate("/userslist")}
+        style={{ borderRadius: "0.5rem" }}
+    >
+        <i className="fa-solid fa-trash-can"></i>
+    </button>
+</div>
+
+
+
                 <form onSubmit={handleSubmit}>
                     <div className="mb-3 text-start">
                         <label htmlFor="email" className="form-label fw-semibold">
@@ -114,7 +125,7 @@ export const CreateUser = ({ onCreationSuccess }) => {
                             required
                         />
                     </div>
-                    {/* Username */}
+
                     <div className="mb-3 text-start">
                         <label htmlFor="full_name" className="form-label fw-semibold">
                             Full Name
@@ -129,6 +140,7 @@ export const CreateUser = ({ onCreationSuccess }) => {
                             required
                         />
                     </div>
+
                     <div className="mb-3 text-start">
                         <label htmlFor="username" className="form-label fw-semibold">
                             Username
@@ -143,11 +155,10 @@ export const CreateUser = ({ onCreationSuccess }) => {
                             required
                         />
                         <small className="form-text text-muted">
-                            Used for log in youy account
+                            Used for log in your account
                         </small>
                     </div>
 
-                    {/* Password */}
                     <div className="mb-3 text-start">
                         <label htmlFor="password" className="form-label fw-semibold">
                             User password
@@ -165,6 +176,7 @@ export const CreateUser = ({ onCreationSuccess }) => {
                             Used for account creation
                         </small>
                     </div>
+
                     <div className="mb-3 text-start">
                         <label htmlFor="role" className="form-label fw-semibold">
                             User Role
@@ -177,7 +189,6 @@ export const CreateUser = ({ onCreationSuccess }) => {
                             required
                         >
                             <option value="" disabled>Seleccione un rol</option>
-                            {/* Mapeamos la lista de roles definidos */}
                             {ROLES.map(role => (
                                 <option key={role} value={role}>{role}</option>
                             ))}
@@ -203,5 +214,5 @@ export const CreateUser = ({ onCreationSuccess }) => {
                 </form>
             </div>
         </div>
-    )
-}
+    );
+};
