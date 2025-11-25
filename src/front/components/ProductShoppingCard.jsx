@@ -39,7 +39,7 @@ export const ProductShoppingCard = () => {
                             </div>
                         </div>
                         <div className="mt-auto pt-2 text-end">
-                            <button className="btn btn-outline-warning rounded-4" onClick={() => handleAddProduct(product)}>
+                            <button className="btn btn-outline-warning rounded-4 p-2" onClick={() => handleAddProduct(product)}>
                                 <i className="fa-solid fa-plus"></i> Add
                             </button>
                         </div>

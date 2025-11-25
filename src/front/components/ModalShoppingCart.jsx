@@ -86,12 +86,7 @@ export const ModalShoppingCart = () => {
                                                 boxShadow: 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.2)',
                                             }}
                                         >
-                                            <ProductInList />
-                                            <ProductInList />
-                                            <ProductInList />
-                                            <ProductInList />
-                                            <ProductInList />
-                                            <ProductInList />
+                                            {/* Productos en la orden de compra */}
                                             <ProductInList />
 
                                         </div>

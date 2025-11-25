@@ -16,24 +16,6 @@ export const CreateCategory = () => {
         creation_date: Math.floor(Date.now() / 1000) // Timestamp actual
     });
 
-    // Cargar categorías existentes
-    const fetchCategories = async () => {
-        try {
-            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/categories`);
-            const result = await response.json();
-
-            if (response.ok) {
-                dispatch({ type: 'set_categories', payload: result.categories })
-            }
-        } catch (error) {
-            console.error('Error loading categories:', error);
-        }
-    };
-
-    useEffect(() => {
-        fetchCategories();
-    }, []);
-
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
         setFormData(prev => ({
@@ -82,8 +64,7 @@ export const CreateCategory = () => {
                     category_name: '',
                     category_state: true,
                     creation_date: Math.floor(Date.now() / 1000)
-                });
-                fetchCategories(); // Recargar la lista
+                })
             } else {
                 setMessage({ type: 'error', text: result.msg || 'Error al crear categoría' });
             }
@@ -111,106 +92,109 @@ export const CreateCategory = () => {
                     </button>
                 </div>
             </div>
-            {store.userData.role == "Administrator" && "Soy administrador"}
-            <div className="main-layout">
-                {/* Create Category Panel */}
-                <div className="panel">
-                    <div className="panel-header">
-                        <h2><i className="fas fa-plus-circle"></i> Crear Nueva Categoría</h2>
-                    </div>
-                    <div className="panel-body">
-                        {message.text && (
-                            <div className={`alert ${message.type === 'success' ? 'alert-success' : 'alert-danger'}`}>
-                                {message.text}
-                            </div>
-                        )}
+            <div className="d-flex main-layout">
+                {store.userData.role == "Administrator" &&
 
-                        <form id="categoryForm" onSubmit={handleSubmit}>
-                            <div className="form-group">
-                                <label className="form-label" htmlFor="category_code">
-                                    Código de Categoría *
-                                </label>
-                                <input
-                                    type="number"
-                                    className="form-control"
-                                    id="category_code"
-                                    name="category_code"
-                                    value={formData.category_code}
-                                    onChange={handleChange}
-                                    placeholder="Ej: 1001"
-                                    required
-                                />
-                                <div className="form-text">Código único numérico para la categoría</div>
-                            </div>
-
-                            <div className="form-group">
-                                <label className="form-label" htmlFor="category_name">
-                                    Nombre de la Categoría *
-                                </label>
-                                <input
-                                    type="text"
-                                    className="form-control"
-                                    id="category_name"
-                                    name="category_name"
-                                    value={formData.category_name}
-                                    onChange={handleChange}
-                                    placeholder="Ej: Electrónicos, Ropa, Hogar..."
-                                    required
-                                />
-                                <div className="form-text">Nombre descriptivo de la categoría</div>
-                            </div>
-
-                            <div className="form-group">
-                                <div className="form-check form-switch">
-                                    <input
-                                        className="form-check-input"
-                                        type="checkbox"
-                                        id="category_state"
-                                        name="category_state"
-                                        checked={formData.category_state}
-                                        onChange={handleChange}
-                                    />
-                                    <label className="form-check-label" htmlFor="category_state">
-                                        Categoría activa
-                                    </label>
+                    <div className="col-6 panel">
+                        <div className="panel-header">
+                            <h2><i className="fas fa-plus-circle"></i> Crear Nueva Categoría</h2>
+                        </div>
+                        <div className="panel-body">
+                            {message.text && (
+                                <div className={`alert ${message.type === 'success' ? 'alert-success' : 'alert-danger'}`}>
+                                    {message.text}
                                 </div>
-                                <div className="form-text">Desactiva esta opción para ocultar la categoría</div>
-                            </div>
+                            )}
 
-                            <div className="d-grid gap-2">
-                                <button
-                                    type="submit"
-                                    className="btn btn-primary btn-block"
-                                    disabled={loading}
-                                >
-                                    {loading ? (
-                                        <>
-                                            <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                                            Creando...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <i className="fas fa-save me-2"></i>
-                                            Crear Categoría
-                                        </>
-                                    )}
-                                </button>
+                            <form id="categoryForm" onSubmit={handleSubmit}>
+                                <div className="form-group">
+                                    <label className="form-label" htmlFor="category_code">
+                                        Código de Categoría *
+                                    </label>
+                                    <input
+                                        type="number"
+                                        className="form-control"
+                                        id="category_code"
+                                        name="category_code"
+                                        value={formData.category_code}
+                                        onChange={handleChange}
+                                        placeholder="Ej: 1001"
+                                        required
+                                    />
+                                    <div className="form-text">Código único numérico para la categoría</div>
+                                </div>
 
-                                <button
-                                    type="button"
-                                    className="btn btn-outline-secondary btn-block"
-                                    onClick={goBack}
-                                >
-                                    <i className="fas fa-arrow-left me-2"></i>
-                                    Volver
-                                </button>
-                            </div>
-                        </form>
+                                <div className="form-group">
+                                    <label className="form-label" htmlFor="category_name">
+                                        Nombre de la Categoría *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        className="form-control"
+                                        id="category_name"
+                                        name="category_name"
+                                        value={formData.category_name}
+                                        onChange={handleChange}
+                                        placeholder="Ej: Electrónicos, Ropa, Hogar..."
+                                        required
+                                    />
+                                    <div className="form-text">Nombre descriptivo de la categoría</div>
+                                </div>
+
+                                <div className="form-group">
+                                    <div className="form-check form-switch">
+                                        <input
+                                            className="form-check-input"
+                                            type="checkbox"
+                                            id="category_state"
+                                            name="category_state"
+                                            checked={formData.category_state}
+                                            onChange={handleChange}
+                                        />
+                                        <label className="form-check-label" htmlFor="category_state">
+                                            Categoría activa
+                                        </label>
+                                    </div>
+                                    <div className="form-text">Desactiva esta opción para ocultar la categoría</div>
+                                </div>
+
+                                <div className="d-grid gap-2">
+                                    <button
+                                        type="submit"
+                                        className="btn btn-primary btn-block"
+                                        disabled={loading}
+                                    >
+                                        {loading ? (
+                                            <>
+                                                <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                                                Creando...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <i className="fas fa-save me-2"></i>
+                                                Crear Categoría
+                                            </>
+                                        )}
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline-secondary btn-block"
+                                        onClick={goBack}
+                                    >
+                                        <i className="fas fa-arrow-left me-2"></i>
+                                        Volver
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                </div>
+
+                }
+                {/* Create Category Panel */}
 
                 {/* Categories List Panel */}
-                <div className="panel">
+                <div className="col panel">
                     <div className="panel-header">
                         <h2><i className="fas fa-list"></i> Lista de Categorías</h2>
                     </div>
