@@ -83,6 +83,53 @@ export default function storeReducer(store, action = {}) {
     //   cart: action.payload,
     // };
 
+    case "INCREMENT_CART_ITEM":
+      const incrementedCart = store.cart.map((item) => {
+        if (item.product.id === action.payload) {
+          return {
+            ...item, // Copiar propiedades del item (product, etc.)
+            quantity: item.quantity + 1, // Aumentar cantidad
+          };
+        }
+        return item;
+      });
+
+      return {
+        ...store,
+        cart: incrementedCart,
+      };
+
+    case "DECREMENT_CART_ITEM":
+      const itemToDecrement = store.cart.find(
+        (item) => item.product.id === action.payload
+      );
+
+      if (itemToDecrement && itemToDecrement.quantity > 1) {
+        // Reducir la cantidad
+        const decrementedCart = store.cart.map((item) => {
+          if (item.product.id === action.payload) {
+            return { ...item, quantity: item.quantity - 1 };
+          }
+          return item;
+        });
+        return { ...store, cart: decrementedCart };
+      } else if (itemToDecrement && itemToDecrement.quantity === 1) {
+        // Eliminar el producto del carrito (filtrar)
+        const filteredCart = store.cart.filter(
+          (item) => item.product.id !== action.payload
+        );
+        return { ...store, cart: filteredCart };
+      }
+      return store;
+
+    case "CLEAR_CART":
+      // 1. Devolver una copia del estado (...state).
+      // 2. Sobrescribir la propiedad 'cart' con un array vacío.
+      return {
+        ...store,
+        cart: [],
+      };
+
     case "add_task":
       const { id, color } = action.payload;
 
