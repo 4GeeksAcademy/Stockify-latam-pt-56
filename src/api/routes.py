@@ -581,3 +581,29 @@ def approve_order(order_id):
         db.session.rollback()
         print(f"Error al aprobar la orden: {e}")
         return jsonify({"msg": "Error interno del servidor."}), 500
+
+
+@api.route('/product/<int:product_id>', methods=['DELETE'])
+def delete_product(product_id):
+    try:
+        # Buscar el producto por ID
+        product = db.session.execute(
+            db.select(Product).filter_by(id=product_id)
+        ).scalars().first()
+
+        if not product:
+            return jsonify({'msg': 'Product not found'}), 404
+
+        # Eliminar el producto
+        db.session.delete(product)
+        db.session.commit()
+
+        return jsonify({"msg": "Product deleted successfully"}), 200
+
+    except Exception as e:
+        print("SERVER ERROR:", str(e))
+        db.session.rollback()
+        return jsonify({
+            "error": "Internal Server Error",
+            "msg": "Server not working"
+        }), 500
