@@ -46,7 +46,7 @@ def create_master():
 
     password_hash = generate_password_hash(password)
     new_master = Master(email=email, username=username,
-                        password=password_hash)  # hash de la contraseña
+                        password=password_hash)
 
     db.session.add(new_master)
     db.session.commit()
@@ -100,7 +100,6 @@ def login():
         }
 
         # Crear token JWT
-
         access_token = create_access_token(identity=str(user_identity))
 
         return jsonify({
@@ -187,21 +186,14 @@ def private():
         "master": master.serialize()
     }), 200
 
+
 @api.route('/users', methods=['GET'])
-# @jwt_required() 
+# @jwt_required()
 def get_all_users():
-    # 1. Verificar si la identidad actual es un 'Master' o 'Administrator' si es necesario.
-    #    Por ahora, solo requerimos que esté logeado (jwt_required()).
 
-    # 2. Consultar todos los registros de la tabla User
     users = db.session.execute(db.select(User)).scalars().all()
-
-    # 3. Serializar la lista de objetos User
-    #    La función 'serialize()' definida en el modelo User se encarga de convertir el objeto
-    #    de la base de datos a un diccionario de Python.
     serialized_users = [user.serialize() for user in users]
 
-    # 4. Devolver la respuesta en formato JSON
     return jsonify({
         "msg": "Users retrieved successfully",
         "users": serialized_users
@@ -209,38 +201,34 @@ def get_all_users():
 
 
 @api.route('/user', methods=['POST'])
-@jwt_required()  # 👈 ¡SEGURIDAD! Solo accesible con un token válido.
+@jwt_required()
 def create_user():
+
     # 1. OBTENER EL ID DEL MASTER LOGEADO
     # master_id = get_jwt_identity()
 
-    # 2. OBTENER DATOS DEL FORMULARIO DE REACT
     data = request.get_json()
     email = data.get('email')
     username = data.get('username')
     password = data.get('password')
-    role = data.get('role')  # 👈 Campo añadido: 'Administrador' o 'Vendedor'
+    role = data.get('role')
 
-    # 3. VALIDACIÓN DE DATOS REQUERIDOS
     if email is None or password is None or username is None or role is None:
         return jsonify({
             'msg': 'Email, username, password y role son campos requeridos.'
         }), 400
 
-    # 4. VERIFICAR ROL VÁLIDO (opcional, pero recomendado)
     if role not in ['Administrator', 'Seller']:
         return jsonify({
             'msg': 'El rol debe ser "Administrator" o "Seller".'
         }), 400
 
-    # 5. VERIFICAR QUE EL EMAIL NO EXISTA YA (para el modelo User)
     query = db.select(User).filter_by(email=email)
     result = db.session.execute(query).scalars().first()
 
     if result:
         return jsonify({"msg": "Ya existe un usuario con este email."}), 400
 
-    # 6. CREACIÓN DEL NUEVO USUARIO
     password_hash = generate_password_hash(password)
 
     new_user = User(
@@ -248,7 +236,6 @@ def create_user():
         username=username,
         password_hash=password_hash,
         role=role,
-        # master_id=master_id  # 👈 ¡ESTO LIGA EL USUARIO AL MASTER!
     )
 
     db.session.add(new_user)
@@ -273,11 +260,9 @@ def create_product():
         product_SKU = data.get('product_SKU')
         stock = data.get('stock')
 
-        # Valida sicampos vacíos
         if not all([product_name, category_id, price, product_SKU, stock]):
             return jsonify({'msg': 'Please fill all fields'}), 400
 
-        # Verificar si hay un SKU repetido
         exists = db.session.execute(
             db.select(Product).filter_by(product_SKU=product_SKU)
         ).scalars().first()
@@ -285,26 +270,24 @@ def create_product():
         if exists:
             return jsonify({'msg': 'Product already exists'}), 400
 
-        # Crear nuevo producto
-        new_product = Product(  # manda a llamar al modelo product
-            product_name=product_name,  # adding all of this
+        new_product = Product(
+            product_name=product_name,
             product_SKU=product_SKU,
             stock=stock,
             price=price,
             category_id=category_id
         )
 
-        db.session.add(new_product)  # agrega el nuevo producto a a la db
+        db.session.add(new_product)
         db.session.commit()
 
         return jsonify({"message": "Product created successfully"}), 201
 
-    except Exception as e:  # saving the errorinside e
+    except Exception as e:
 
-        # printing the error to the console for debugging
         print("SERVER ERROR:", str(e))
         return jsonify({
-            "error": "Internal Server Error",
+            "error": "Internal Server Error ON PRODUCTS",
             "msg": "Server not working"
         }), 500
 
@@ -312,17 +295,12 @@ def create_product():
 @api.route('/products', methods=['GET'])
 def get_all_products():
     try:
-        # 1. Consultar todos los registros de la tabla Product
         products = db.session.execute(db.select(Product)).scalars().all()
-
-        # 2. Serializar la lista de objetos Product
-        # Asumiendo que tu modelo Product tiene un método .serialize()
         serialized_products = [product.serialize() for product in products]
 
-        # 3. Devolver la respuesta en formato JSON
         return jsonify({
             "msg": "Products retrieved successfully",
-            "products": serialized_products.serialize()
+            "products": serialized_products
         }), 200
 
     except Exception as e:
@@ -343,11 +321,9 @@ def create_category():
         category_state = data.get('category_state', True)
         creation_date = data.get('creation_date')
 
-        # Validar campos requeridos
         if not all([category_code, category_name, creation_date]):
             return jsonify({'msg': 'Please fill all required fields'}), 400
 
-        # Verificar si el código de categoría ya existe
         existing_code = db.session.execute(
             db.select(Category).filter_by(category_code=category_code)
         ).scalars().first()
@@ -355,7 +331,6 @@ def create_category():
         if existing_code:
             return jsonify({'msg': 'Category code already exists'}), 400
 
-        # Verificar si el nombre de categoría ya existe
         existing_name = db.session.execute(
             db.select(Category).filter_by(category_name=category_name)
         ).scalars().first()
@@ -363,7 +338,6 @@ def create_category():
         if existing_name:
             return jsonify({'msg': 'Category name already exists'}), 400
 
-        # Crear nueva categoría
         new_category = Category(
             category_code=category_code,
             category_name=category_name,
@@ -403,6 +377,7 @@ def get_all_categories():
             "msg": "Server not working"
         }), 500
 
+
 @api.route('/user', methods=['GET'])
 @jwt_required()
 def get_users():
@@ -412,7 +387,7 @@ def get_users():
         if result is None:
             return jsonify({
                 "msg": "there's no users to display"
-            }), 400 
+            }), 400
         serialized_users = [user.serialize() for user in users]
         return jsonify({
             "user": serialized_users
@@ -424,7 +399,9 @@ def get_users():
             "error numero 2": str(e)
         }), 500
 
-#Delete 
+# Delete
+
+
 @api.route('/user', methods=['DELETE'])
 @jwt_required()
 def delete_user():
@@ -437,15 +414,15 @@ def delete_user():
 
         user = User.query.get(user_id)
         if not user:
-            return jsonify({"msg" : "there's no users to display"}), 400 
+            return jsonify({"msg": "there's no users to display"}), 400
 
         db.session.delete(user)
         db.session.commit()
         return jsonify({
             "msg": "User delete correctly",
-            "user": user_name, 
+            "user": user_name,
             "id": user_id
-                        }), 201
+        }), 201
     except Exception as e:
         # print("SERVER ERROR:", str(e))
         return jsonify({
@@ -453,6 +430,7 @@ def delete_user():
         }), 500
 
 
+<<<<<<< HEAD
 
 
 
@@ -462,3 +440,7 @@ def delete_user():
 
 
 
+=======
+#     'user_id' : Int, para el frontend
+#     'username' : Str
+>>>>>>> 0c00a03af411b15d5c4f591cf9a3d25af26edf9b

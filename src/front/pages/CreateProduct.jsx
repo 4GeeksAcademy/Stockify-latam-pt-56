@@ -6,35 +6,45 @@ import ProductComponent2 from "../components/ProductComponent2";
 import { CreateInventory } from "../components/CreateInventory";
 import { CreateReports } from "../components/CreateReports";
 import { ShoppingCart } from "../components/ShoppingCart";
+import useGlobalReducer from "../hooks/useGlobalReducer";
 
 
 export const CreateProduct = () => {
-    const response = [
-        "Pinturas de Agua",
-        "Pinturas de Aceite",
-        "Tornillos, Remaches y Clavos",
-        "Cubetas",
-        "Herramientas",
-        "Tuercas"
-    ];
+
+    const { dispatch, store } = useGlobalReducer()
+    const products = store.products
+    const categories = store.categories
+    const userData = store.userData
     const [activeTab, setActiveTab] = React.useState("products");  /*save the button that I press*/
     const [showModal, setShowModal] = useState(false);
+    console.log(userData)
 
     const handleShow = () => setShowModal(true);
     const handleClose = () => setShowModal(false)
 
     const navigate = useNavigate(); //para que pueda regresar a la página anterior
 
+    const fetchCategories = async () => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/categories`);
+            const result = await response.json();
 
-    const goBack = () => {    //function to go back
-        navigate("/");    /*aquí va la ruta adonde dirigirá el botón regresar, aún por definir*/
+            if (response.ok) {
+                dispatch({ type: 'set_categories', payload: result.categories })
+            }
+        } catch (error) {
+            console.error('Error loading categories:', error);
+        }
+    };
+
+    useEffect(() => {
+        fetchCategories();
+    }, []);
+
+
+    const goBack = () => {
+        navigate("/");
     }
-    // useEffect(() => {     //to excute what is inside when the component is mounted
-
-
-
-
-    // }, []);
 
     return (
         <div className="container">
@@ -99,14 +109,14 @@ export const CreateProduct = () => {
                     <div className="stat-icon">
                         <i className="fas fa-cube"></i>
                     </div>
-                    <div className="stat-number">189</div>
+                    <div className="stat-number">{products.length}</div>
                     <div className="stat-label">Total Productos</div>
                 </div>
                 <div className="stat-card">
                     <div className="stat-icon">
                         <i className="fas fa-tags"></i>
                     </div>
-                    <div className="stat-number">12</div>
+                    <div className="stat-number">{categories.length}</div>
                     <div className="stat-label">Categorías</div>
                 </div>
                 <div className="stat-card">
@@ -118,10 +128,10 @@ export const CreateProduct = () => {
                 </div>
                 <div className="stat-card">
                     <div className="stat-icon">
-                        <i className="fas fa-exclamation-triangle"></i>
+                        <i className="fa-solid fa-user"></i>
                     </div>
-                    <div className="stat-number">2</div>
-                    <div className="stat-label">Stock Casi Agotado</div>
+                    <div className="stat-number">{ }</div>
+                    <div className="stat-label">Vendors</div>
                 </div>
             </div>
 

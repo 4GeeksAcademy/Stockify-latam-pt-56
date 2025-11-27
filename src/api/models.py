@@ -88,8 +88,10 @@ class Product(db.Model):
     stock: Mapped[int] = mapped_column(Integer, nullable=False)
     price: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
     # Precio con decimales exactos
-    # category_id: Mapped[int] = mapped_column(ForeignKey("category.id"), nullable=False)
-    # category = relationship("Category")   #Descomentar cuando se tenga la tabla de categoría, por favor
+    category_id: Mapped[int] = mapped_column(
+        ForeignKey("category.id"), nullable=False)
+    # Descomentar cuando se tenga la tabla de categoría, por favor
+    category = relationship("Category")
     # image_url: Mapped[str] = mapped_column(String(1000), nullable=True) duda para el maestro, si hay que poner tabla la image
     # es correcto poner category_id en vez de category_name_id
 
@@ -102,7 +104,7 @@ class Product(db.Model):
             "price": self.price,
             # "category_id": self.category_id,
             # "category": self.category  # Descomentar cuando se tenga la tabla de categoría, por favor
-            # "category": self.category.serialize() o usar este en vez de línea 82 if  needed
+            "category": self.category.serialize()
         }
 
 

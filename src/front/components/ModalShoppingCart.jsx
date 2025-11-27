@@ -12,9 +12,9 @@ export const ModalShoppingCart = () => {
     return (
         <div
             className="modal fade"
-            id="exampleModal"
+            id="shoppingCartModal"
             tabIndex={-1}
-            aria-labelledby="exampleModalLabel"
+            aria-labelledby="shoppingCartModalLabel"
             aria-hidden="true"
         >
             <div className="modal-dialog modal-xl">
@@ -86,7 +86,9 @@ export const ModalShoppingCart = () => {
                                                 boxShadow: 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.2)',
                                             }}
                                         >
+                                            {/* Productos en la orden de compra */}
                                             <ProductInList />
+
                                         </div>
                                         {/* Total de la compra */}
                                         <div className="d-flex justify-content-between align-items-center gap-3 px-3 pt-5">
@@ -127,7 +129,7 @@ export const ModalShoppingCart = () => {
                                                 </div>
                                             </div>
                                             {/* Lista de productos */}
-                                            <div className="row row-cols-1 row-cols-md-2 g-4">
+                                            <div className="row g-2 pt-4">
                                                 <ProductShoppingCard />
                                             </div>
                                         </div>

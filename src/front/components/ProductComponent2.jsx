@@ -2,10 +2,66 @@
 // revisar con el grupo, antonio y gustavo
 
 import React, { useEffect, useState } from "react";
+import useGlobalReducer from "../hooks/useGlobalReducer";
 
 const ProductsComponent = () => {
+    const { dispatch, store } = useGlobalReducer()
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(false);
+    const products = store.products
+    const [productData, setProductData] = useState({
+        product_name: "",
+        price: "",
+        stock: "",
+        product_SKU: "",
+        category_id: "",
+        // product_image: null, // Puedes manejar la imagen por separado si es un file
+    })
+
+
+    const handleInputChange = (e) => {
+        const { id, value } = e.target;
+        // Mapea los IDs de los inputs a las claves del objeto productData
+        const nameMap = {
+            productName: "product_name",
+            productPrice: "price",
+            productStock: "stock",
+            productSKU: "product_SKU",
+            productCategory: "category_id",
+        };
+
+        const fieldName = nameMap[id] || id;
+
+        // Limpieza de valores (ej: convertir a número si es necesario)
+        let cleanedValue = value;
+
+        if (fieldName === "price" || fieldName === "stock") {
+            // Asegurar que category_id sea un número (si es un select)
+            cleanedValue = parseFloat(value) || 0; // O usar Number(value) para stock si es un entero estricto
+        } else if (fieldName === "category_id") {
+            cleanedValue = Number(value);
+        }
+
+        setProductData((prevData) => ({
+            ...prevData,
+            [fieldName]: cleanedValue,
+        }));
+    };
+
+    const fetchProducts = async () => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/products`);
+            const result = await response.json();
+
+            if (response.ok) {
+                dispatch({ type: 'set_products', payload: result.products })
+            } else {
+                console.error('Error al cargar productos:', result.msg);
+            }
+        } catch (error) {
+            console.error('Error del servidor al cargar productos:', error);
+        }
+    }
 
     // Cargar categorías desde la API
     const fetchCategories = async () => {
@@ -21,47 +77,61 @@ const ProductsComponent = () => {
         }
     };
 
-    useEffect(() => {
-        fetchCategories();
+    const createProduct = async () => {
+        setLoading(true); // Opcional: Para mostrar un spinner
 
-        // Resto del código existente para productos...
-        const confirmBtn = document.getElementById("confirmCreate");
-        const form = document.getElementById("productForm");
+        try {
+            const url = `${import.meta.env.VITE_BACKEND_URL}/api/product`;
 
-        if (confirmBtn && form) {
-            confirmBtn.addEventListener("click", async () => {
-                const preview = document.querySelector('.image-preview');
-                console.log("Product created successfully!");
-                preview.innerHTML = '<i class="fas fa-image" style="color: var(--gray);"></i>';
-
-                const modal = bootstrap.Modal.getInstance(document.getElementById("exampleModal"));
-                modal.hide();
-                form.reset();
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // Incluye headers de autenticación si son necesarios (ej: 'Authorization': `Bearer ${token}`)
+                },
+                // productData contiene las 5 claves que espera tu endpoint:
+                // product_name, price, stock, product_SKU, category_id
+                body: JSON.stringify(productData),
             });
-        }
 
-        document.getElementById('productForm')?.addEventListener('submit', function (e) {
-            e.preventDefault();
-            console.log("enviar");
-        });
+            const result = await response.json();
 
-        const imageInput = document.getElementById('productImage');
-        if (imageInput) {
-            imageInput.addEventListener('change', function (e) {
-                const file = e.target.files[0];
-                const preview = document.querySelector('.image-preview');
+            if (response.ok) {
+                console.log('Product created successfully!', result.message);
+                alert("Producto creado con éxito!"); // Usar una notificación real
 
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function (e) {
-                        preview.innerHTML = `<img src="${e.target.result}" alt="Vista previa" />`;
-                    };
-                    reader.readAsDataURL(file);
-                } else {
-                    preview.innerHTML = '<i class="fas fa-image" style="color: var(--gray);"></i>';
+                // Limpiar formulario y cerrar modal después de la creación exitosa
+                setProductData({
+                    product_name: "",
+                    price: "",
+                    stock: "",
+                    product_SKU: "",
+                    category_id: "",
+                });
+
+                // CERRAR MODAL
+                const modalElement = document.getElementById("exampleModal");
+                if (modalElement) {
+                    const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+                    modal.hide();
                 }
-            });
+
+            } else {
+                console.error('Error creating product:', result.msg);
+                alert(`Error: ${result.msg}`); // Mostrar el error del backend
+            }
+
+        } catch (error) {
+            console.error('SERVER ERROR:', error);
+            alert("Error del servidor. Revisa la consola.");
+        } finally {
+            setLoading(false);
         }
+    }
+
+    useEffect(() => {
+        fetchCategories()
+        fetchProducts()
     }, []);
 
     return (
@@ -99,7 +169,7 @@ const ProductsComponent = () => {
                         <form id="productForm">
                             <div className="form-group">
                                 <label className="form-label" htmlFor="productName">Nombre del Producto</label>
-                                <input type="text" className="form-control" id="productName" placeholder="Ej: iPhone 14 Pro" />
+                                <input type="text" className="form-control" id="productName" placeholder="Ej: iPhone 14 Pro" value={productData.product_name} onChange={handleInputChange} />
                                 <div className="form-text">Nombre descriptivo del producto.</div>
                             </div>
 
@@ -122,6 +192,8 @@ const ProductsComponent = () => {
                                             }
                                             e.target.value = value;
                                         }}
+                                        value={productData.price}
+                                        onChange={handleInputChange}
                                     />
                                 </div>
 
@@ -131,7 +203,7 @@ const ProductsComponent = () => {
                                         type="text"
                                         className="form-control"
                                         id="productStock"
-                                        placeholder="0.00"
+                                        placeholder="0"
                                         onInput={(e) => {
                                             let value = e.target.value;
                                             value = value.replace(/[^0-9.]/g, "");
@@ -143,6 +215,8 @@ const ProductsComponent = () => {
                                             }
                                             e.target.value = value;
                                         }}
+                                        value={productData.stock}
+                                        onChange={handleInputChange}
                                     />
                                 </div>
                             </div>
@@ -150,11 +224,11 @@ const ProductsComponent = () => {
                             <div className="form-row">
                                 <div className="form-group">
                                     <label className="form-label" htmlFor="productSKU">SKU</label>
-                                    <input type="text" className="form-control" id="productSKU" placeholder="PROD-001" />
+                                    <input type="text" className="form-control" id="productSKU" placeholder="PROD-001" value={productData.product_SKU} onChange={handleInputChange} />
                                 </div>
                                 <div className="form-group">
                                     <label className="form-label" htmlFor="productCategory">Categoría</label>
-                                    <select className="form-control" id="productCategory">
+                                    <select className="form-control" id="productCategory" value={productData.category_id} onChange={handleInputChange}>
                                         <option value="">Seleccionar categoría</option>
                                         {categories.map((cat) => (
                                             <option key={cat.id} value={cat.id}>
@@ -200,8 +274,8 @@ const ProductsComponent = () => {
                             </div>
                             <div className="modal-footer">
                                 <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                <button type="button" id="confirmCreate" className="btn btn-primary">
-                                    Confirmar
+                                <button type="button" id="confirmCreate" className="btn btn-primary" onClick={createProduct} disabled={loading}>
+                                    {loading ? 'Creando...' : 'Confirmar'}
                                 </button>
                             </div>
                         </div>
@@ -211,25 +285,42 @@ const ProductsComponent = () => {
                 {/* Products List */}
                 <div className="panel">
                     <div className="panel-header">
-                        <h2><i className="fas fa-list"></i> Productos Recientes</h2>
+                        <h2><i className="fas fa-list"></i> Lista de productos</h2>
                     </div>
                     <div className="panel-body">
                         <div className="products-grid">
-                            <div className="product-card new">
-                                <div className="product-header">
-                                    <div>
-                                        <div className="product-title">Pintura azul</div>
-                                        <div className="product-category">Pinturas de agua</div>
+                            {products.length > 0 ? (
+                                // Mapeamos sobre la lista de productos
+                                products.map((product) => (
+                                    <div className="product-card new" key={product.id}>
+                                        <div className="product-header">
+                                            <div>
+                                                {/* Mostrar el nombre del producto */}
+                                                <div className="product-title">{product.product_name}</div>
+
+                                                {/* Nota: Para mostrar el nombre de la categoría, 
+                                necesitarías mapear product.category_id al nombre 
+                                usando el estado 'categories' o traer la categoría serializada en el GET.
+                                Por ahora, dejaremos el ID o un placeholder. */}
+                                                <div className="product-category">Category: {product.category.category_name}</div>
+                                            </div>
+                                            {/* Mostrar el precio del producto */}
+                                            <div className="product-price">${parseFloat(product.price).toFixed(2)}</div>
+                                        </div>
+                                        <div className="product-meta">
+                                            <div className={`product-stock ${product.stock > 0 ? 'stock-in' : 'stock-out'}`}>
+                                                {/* Mostrar el stock */}
+                                                <i className="fas fa-check-circle"></i> Available stock: {product.stock} units
+                                            </div>
+                                            {/* Mostrar el SKU del producto */}
+                                            <div className="product-sku">SKU: {product.product_SKU}</div>
+                                        </div>
                                     </div>
-                                    <div className="product-price">$799.00</div>
-                                </div>
-                                <div className="product-meta">
-                                    <div className="product-stock stock-in">
-                                        <i className="fas fa-check-circle"></i> Available stock: 25 units
-                                    </div>
-                                    <div className="product-sku">SKU: PROD-256</div>
-                                </div>
-                            </div>
+                                ))
+                            ) : (
+                                // Mensaje si no hay productos
+                                <p>No hay productos registrados.</p>
+                            )}
                         </div>
                     </div>
                 </div>
