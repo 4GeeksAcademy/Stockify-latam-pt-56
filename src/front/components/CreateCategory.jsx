@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useGlobalReducer from '../hooks/useGlobalReducer';
 
-export const CreateCategory = () => {
+export const CreateCategory = ({ onCategoryCreated }) => {
     const { dispatch, store } = useGlobalReducer()
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
@@ -59,6 +59,9 @@ export const CreateCategory = () => {
 
             if (response.status === 201) {
                 setMessage({ type: 'success', text: 'Categoría creada exitosamente' });
+                if (onCategoryCreated) {
+                    onCategoryCreated();
+                }
                 setFormData({
                     category_code: '',
                     category_name: '',

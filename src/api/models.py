@@ -1,5 +1,6 @@
+from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import String, Boolean, ForeignKey, Integer
+from sqlalchemy import String, Boolean, ForeignKey, Integer, DateTime
 from sqlalchemy.orm import Mapped, mapped_column
 from bcrypt import hashpw, gensalt, checkpw
 import re
@@ -101,7 +102,7 @@ class Product(db.Model):
             "product_name": self.product_name,
             "product_SKU": self.product_SKU,
             "stock": self.stock,
-            "price": self.price,
+            "price": float(self.price),
             # "category_id": self.category_id,
             # "category": self.category  # Descomentar cuando se tenga la tabla de categoría, por favor
             "category": self.category.serialize()
@@ -111,6 +112,68 @@ class Product(db.Model):
 def validate_email_format(email):
     email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     return bool(re.match(email_regex, email))
+
+
+class Order(db.Model):
+    __tablename__ = 'order'
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    # Datos del Cliente
+    client_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    delivery_address: Mapped[str] = mapped_column(String(250), nullable=False)
+
+    # Datos Financieros
+    total_amount: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
+
+    # Estado y Fechas
+    # 'Pending', 'Completed', 'Cancelled'
+    status: Mapped[str] = mapped_column(String(50), default='Pending')
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.now)
+
+    # Relación con OrderItem (para obtener los detalles del pedido)
+    items: Mapped[list["OrderItem"]] = relationship(
+        back_populates="order", cascade="all, delete-orphan")
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "client_name": self.client_name,
+            "total_amount": float(self.total_amount),
+            "status": self.status,
+            "items": [item.serialize() for item in self.items]
+        }
+
+
+class OrderItem(db.Model):
+    __tablename__ = 'order_item'
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    # Relación con la Cabecera (Order)
+    order_id: Mapped[int] = mapped_column(
+        ForeignKey('order.id'), nullable=False)
+    order: Mapped["Order"] = relationship(back_populates="items")
+
+    # Relación con el Producto
+    product_id: Mapped[int] = mapped_column(
+        ForeignKey('product.id'), nullable=False)
+    product: Mapped["Product"] = relationship()
+
+    # Datos de la Venta (Cruciales)
+    quantity_sold: Mapped[int] = mapped_column(Integer, nullable=False)
+
+    # Precio de venta en el momento exacto (inmutable)
+    price_at_sale: Mapped[float] = mapped_column(
+        Numeric(10, 2), nullable=False)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "product_id": self.product_id,
+            "product_name": self.product.product_name,  # Opcional: para serialización
+            "quantity_sold": self.quantity_sold,
+            "price_at_sale": float(self.price_at_sale)
+        }
 
 
 if __name__ == '__main__':

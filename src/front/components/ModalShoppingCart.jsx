@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { ProductInList } from "./ProductInList";
 import { ProductShoppingCard } from "./ProductShoppingCard";
 import useGlobalReducer from "../hooks/useGlobalReducer";
@@ -6,8 +6,93 @@ import useGlobalReducer from "../hooks/useGlobalReducer";
 
 export const ModalShoppingCart = () => {
 
-    const { store } = useGlobalReducer()
+    const { dispatch, store } = useGlobalReducer()
     const categories = store.categories || []
+    const cartItems = store?.cart || [];
+    const [clientData, setClientData] = useState({
+        full_name: '',
+        address: '',
+    });
+    const [loading, setLoading] = useState(false);
+
+    const calculateTotalAmount = () => {
+        return cartItems.reduce((sum, item) => {
+            const itemSubtotal = item.quantity * parseFloat(item.product.price);
+            return sum + itemSubtotal;
+        }, 0);
+    };
+
+    const totalAmount = calculateTotalAmount()
+
+    const handleInputChange = (e) => {
+        const { id, value } = e.target;
+        setClientData(prevData => ({
+            ...prevData,
+            [id]: value,
+        }));
+    };
+
+    const handleOrderSubmit = async () => {
+
+        // 4.1. Validaciones mínimas
+        if (!clientData.full_name || !clientData.address) {
+            alert("Por favor, complete el nombre y la dirección del cliente.");
+            return;
+        }
+
+        if (cartItems.length === 0) {
+            alert("El carrito está vacío. Agregue productos para crear una orden.");
+            return;
+        }
+
+        // 4.2. Preparar los ítems de la orden para el backend
+        // Solo enviamos los datos necesarios: product_id, quantity y price_at_sale (opcional pero muy recomendado)
+        const order_items = cartItems.map(item => ({
+            product_id: item.product.id,
+            quantity_sold: item.quantity,
+            // Guardar el precio de venta en el momento de la orden (importante para contabilidad)
+            price_at_sale: parseFloat(item.product.price)
+        }));
+
+        // 4.3. Construir el cuerpo de la solicitud POST
+        const orderData = {
+            client_name: clientData.full_name,
+            delivery_address: clientData.address,
+            total_amount: totalAmount.toFixed(2),
+            order_items: order_items,
+            // Puedes añadir más campos como user_id, status, etc.
+        };
+
+        setLoading(true);
+        console.log("Datos a enviar:", orderData); // Puedes revisar esto en la consola
+
+        try {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/orders`, { // Asumo un endpoint /api/orders
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(orderData),
+            });
+
+            if (response.ok) {
+                // 4.4. Éxito: Limpiar el formulario y el carrito
+                alert("Orden creada exitosamente. El stock ha sido actualizado.");
+                setClientData({ full_name: '', address: '' });
+                dispatch({ type: 'CLEAR_CART' }); // Necesitas implementar esta acción en tu reducer
+                // Cierra el modal (si usas Bootstrap, puede ser necesario usar JS o data-bs-dismiss en el botón)
+            } else {
+                const result = await response.json();
+                alert(`Error al crear la orden: ${result.msg || 'Error del servidor.'}`);
+            }
+
+        } catch (error) {
+            console.error("Error al enviar la orden:", error);
+            alert("Error de conexión con el servidor.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div
@@ -54,6 +139,8 @@ export const ModalShoppingCart = () => {
                                                 className="form-control"
                                                 id="full_name"
                                                 placeholder="Enter full name for new user"
+                                                value={clientData.full_name}
+                                                onChange={handleInputChange}
                                                 required
                                             />
                                         </div>
@@ -67,6 +154,8 @@ export const ModalShoppingCart = () => {
                                                 className="form-control"
                                                 id="address"
                                                 placeholder="Address facturation"
+                                                value={clientData.address}
+                                                onChange={handleInputChange}
                                                 required
                                             />
                                         </div>
@@ -96,7 +185,7 @@ export const ModalShoppingCart = () => {
                                                 <i className="fa-solid fa-dollar-sign fs-3 fw-bold"></i>
                                                 <h5 className="fs-3 fw-bold m-0">TOTAL AMOUNT:</h5>
                                             </div>
-                                            <p className="fs-3 fw-bold">$0.00</p>
+                                            <p className="fs-3 fw-bold">${totalAmount.toFixed(2)}</p>
                                         </div>
 
                                     </div>
@@ -147,8 +236,13 @@ export const ModalShoppingCart = () => {
                         >
                             Close
                         </button>
-                        <button type="button" className="btn btn-outline-warning">
-                            Send order
+                        <button
+                            type="button"
+                            className="btn btn-outline-warning"
+                            onClick={handleOrderSubmit}
+                            disabled={loading || cartItems.length === 0} // Deshabilitar si está cargando o el carrito está vacío
+                        >
+                            {loading ? 'Enviando...' : 'Send order'}
                         </button>
                     </div>
                 </div>

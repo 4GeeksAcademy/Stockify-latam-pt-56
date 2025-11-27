@@ -2,11 +2,14 @@
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
 from flask import Flask, request, jsonify, url_for, Blueprint
-from api.models import db, User, Master, Category, Product
+from sqlalchemy import select
+from sqlalchemy.orm import joinedload
+from api.models import db, User, Master, Category, Product, Order, OrderItem
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy.exc import SQLAlchemyError
 
 api = Blueprint('api', __name__)
 
@@ -431,6 +434,7 @@ def delete_user():
 
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 
 
@@ -444,3 +448,179 @@ def delete_user():
 #     'user_id' : Int, para el frontend
 #     'username' : Str
 >>>>>>> 0c00a03af411b15d5c4f591cf9a3d25af26edf9b
+=======
+@api.route('/orders', methods=['POST'])
+def create_order():
+    data = request.get_json()
+
+    # 1. Validación de campos obligatorios
+    if not data or not all(k in data for k in ['client_name', 'delivery_address', 'order_items']):
+        return jsonify({"msg": "Faltan datos obligatorios del pedido."}), 400
+
+    if not isinstance(data.get('order_items'), list) or not data['order_items']:
+        return jsonify({"msg": "La lista de productos (order_items) es inválida o está vacía."}), 400
+
+    # 2. INICIO DE LA TRANSACCIÓN
+    try:
+        # A. Recalcular el total y verificar el stock
+        calculated_total = 0
+
+        # B. Consultar los productos para VALIDAR PRECIOS y EXISTENCIA (No Stock)
+        product_ids = [item['product_id'] for item in data['order_items']]
+        products_query = db.session.execute(
+            select(Product).where(Product.id.in_(product_ids))
+        ).scalars().all()
+        products_map = {p.id: p for p in products_query}
+
+        for item in data['order_items']:
+            product_id = item.get('product_id')
+            quantity_sold = item.get('quantity_sold')
+
+            product = products_map.get(product_id)
+
+            # C. Validación y Cálculo
+            if not product:
+                return jsonify({"msg": f"Producto con ID {product_id} no encontrado."}), 404
+
+            price = float(product.price)
+            calculated_total += quantity_sold * price
+
+        new_order = Order(
+            client_name=data['client_name'],
+            delivery_address=data['delivery_address'],
+            total_amount=calculated_total,
+            status='Pending'  # El estado inicial es Pendiente
+        )
+
+        db.session.add(new_order)
+        db.session.flush()
+
+        # E. Crear los Detalles de la Orden y Actualizar el Stock
+        for item in data['order_items']:
+            product_id = item['product_id']
+            quantity_sold = item['quantity_sold']
+            # Usamos el mapa para obtener el objeto
+            product_info = products_map[product_id]
+            price_at_sale = float(product_info.price)
+
+            new_order_item = OrderItem(
+                order_id=new_order.id,
+                product_id=product_id,
+                quantity_sold=quantity_sold,
+                price_at_sale=price_at_sale
+            )
+            db.session.add(new_order_item)
+
+        db.session.commit()
+
+        return jsonify({
+            "msg": "Orden creada exitosamente y está Pendiente de Aprobación.",
+            "order": new_order.serialize()
+        }), 201
+
+    except Exception as e:
+        # G. ROLLBACK: Si algo falla, deshacer todo
+        db.session.rollback()
+        print(f"Error al crear la orden: {e}")
+        return jsonify({"msg": "Error interno del servidor al procesar la orden.", "error": str(e)}), 500
+
+
+@api.route('/orders/<int:order_id>/approve', methods=['PUT'])
+def approve_order(order_id):
+    # Asumimos que solo usuarios autorizados (ej. Administradores o Vendedores) pueden hacer esto
+    # Puedes añadir @jwt_required() aquí.
+
+    # INICIO DE LA TRANSACCIÓN
+    try:
+        # 1. Cargar la Orden y sus Ítems relacionados
+        order = db.session.execute(
+            select(Order)
+            .where(Order.id == order_id)
+            .options(joinedload(Order.items).joinedload(OrderItem.product))
+        ).scalars().first()
+
+        if not order:
+            return jsonify({"msg": "Orden no encontrada."}), 404
+
+        if order.status != 'Pending':
+            return jsonify({"msg": f"La orden ya fue {order.status}."}), 400
+
+        products_to_update = {}
+
+        # 2. VALIDACIÓN DE STOCK (CRÍTICO)
+        for item in order.items:
+            product = item.product
+            quantity_sold = item.quantity_sold
+
+            # 2.1. Validación de existencia
+            if not product:
+                return jsonify({"msg": f"Producto ID {item.product_id} no existe en inventario."}), 404
+
+            # 2.2. Validación de Stock
+            if product.stock < quantity_sold:
+                # Si falla el stock para un ítem, abortamos toda la operación
+                return jsonify({
+                    "msg": f"ERROR: Stock insuficiente para aprobar la orden.",
+                    "product_name": product.product_name,
+                    "available_stock": product.stock,
+                    "required": quantity_sold
+                }), 400
+
+            # Almacenamos la referencia para la actualización
+            products_to_update[product.id] = product
+
+        # 3. ACTUALIZACIÓN DEL STOCK Y EL ESTADO
+        for item in order.items:
+            product = products_to_update[item.product_id]
+
+            # Reducir el stock
+            product.stock -= item.quantity_sold
+            db.session.add(product)
+
+        # 4. Actualizar el estado de la Orden a 'Completed'
+        order.status = 'Completed'
+        db.session.add(order)
+
+        # 5. COMMIT: Guardar la aprobación de la orden y la reducción de stock
+        db.session.commit()
+
+        return jsonify({
+            "msg": "Orden aprobada exitosamente y stock actualizado.",
+            "order": order.serialize()
+        }), 200
+
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        print(f"Error de base de datos al aprobar la orden: {e}")
+        return jsonify({"msg": "Error de base de datos al procesar la aprobación."}), 500
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error al aprobar la orden: {e}")
+        return jsonify({"msg": "Error interno del servidor."}), 500
+
+
+@api.route('/product/<int:product_id>', methods=['DELETE'])
+def delete_product(product_id):
+    try:
+        # Buscar el producto por ID
+        product = db.session.execute(
+            db.select(Product).filter_by(id=product_id)
+        ).scalars().first()
+
+        if not product:
+            return jsonify({'msg': 'Product not found'}), 404
+
+        # Eliminar el producto
+        db.session.delete(product)
+        db.session.commit()
+
+        return jsonify({"msg": "Product deleted successfully"}), 200
+
+    except Exception as e:
+        print("SERVER ERROR:", str(e))
+        db.session.rollback()
+        return jsonify({
+            "error": "Internal Server Error",
+            "msg": "Server not working"
+        }), 500
+>>>>>>> ee4e8e2d1452d7ec056cdb67f37840e1ddd1d243

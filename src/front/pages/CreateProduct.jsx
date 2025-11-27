@@ -17,7 +17,6 @@ export const CreateProduct = () => {
     const userData = store.userData
     const [activeTab, setActiveTab] = React.useState("products");  /*save the button that I press*/
     const [showModal, setShowModal] = useState(false);
-    console.log(userData)
 
     const handleShow = () => setShowModal(true);
     const handleClose = () => setShowModal(false)
@@ -142,7 +141,7 @@ export const CreateProduct = () => {
             )}
 
             {activeTab === "categories" && (
-                <CreateCategory />
+                <CreateCategory onCategoryCreated={fetchCategories} />
             )}
 
             {activeTab === "inventory" && (

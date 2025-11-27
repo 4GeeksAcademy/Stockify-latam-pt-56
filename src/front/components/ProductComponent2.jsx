@@ -5,10 +5,11 @@ import React, { useEffect, useState } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 
 const ProductsComponent = () => {
-    const { dispatch, store } = useGlobalReducer()
+    const { dispatch, store } = useGlobalReducer();
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(false);
-    const products = store.products
+    const products = store.products;
+    const [deleteLoading, setDeleteLoading] = useState(null)
     const [productData, setProductData] = useState({
         product_name: "",
         price: "",
@@ -124,10 +125,42 @@ const ProductsComponent = () => {
         } catch (error) {
             console.error('SERVER ERROR:', error);
             alert("Error del servidor. Revisa la consola.");
-        } finally {
+        }
+        finally {
             setLoading(false);
         }
-    }
+    };
+    const deleteProduct = async (productId, productName) => {
+        if (!confirm(`Estás seguro de que quieres eliminar el producto"${productName}"?`)) {
+            return;
+        }
+        try {
+            setDeleteLoading(productId);
+            const response = await fetch(
+                `${import.meta.env.VITE_BACKEND_URL}/api/product/${productId}`,
+                {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                }
+            );
+            const result = await response.json();
+            if (response.ok) {
+                alert('Producto eliminado exitosamente');
+                fetchProducts(); // Recargar la lista
+            } else {
+                alert(`Error: ${result.msg || 'No se pudo eliminar el producto'}`);
+            }
+        }
+        catch {
+            console.error('Error deleting product:', error);
+            alert('Error de conexión al servidor');
+        }
+        finally {
+            setDeleteLoading(null);
+        }
+    };
 
     useEffect(() => {
         fetchCategories()
@@ -314,6 +347,25 @@ const ProductsComponent = () => {
                                             </div>
                                             {/* Mostrar el SKU del producto */}
                                             <div className="product-sku">SKU: {product.product_SKU}</div>
+                                        </div>
+                                        <div className="product-actions mt-3 pt-3 border-top">
+                                            <button
+                                                className="btn btn-danger btn-sm"
+                                                onClick={() => deleteProduct(product.id, product.product_name)}
+                                                disabled={deleteLoading === product.id}
+                                            >
+                                                {deleteLoading === product.id ? (
+                                                    <>
+                                                        <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                                                        Eliminando...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <i className="fas fa-trash me-1"></i>
+                                                        Eliminar Producto
+                                                    </>
+                                                )}
+                                            </button>
                                         </div>
                                     </div>
                                 ))
