@@ -1,6 +1,4 @@
-"""
-This module takes care of starting the API Server, Loading the DB and Adding the endpoints
-"""
+
 from flask import Flask, request, jsonify, url_for, Blueprint
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
@@ -298,7 +296,33 @@ def create_product():
 @api.route('/products', methods=['GET'])
 def get_all_products():
     try:
-        products = db.session.execute(db.select(Product)).scalars().all()
+        # 1. Obtener los parámetros de búsqueda de la URL
+        search_name = request.args.get('name')
+        category_id = request.args.get('category_id')
+
+        # 2. Construir la consulta base (SELECT * FROM product)
+        query = db.select(Product)
+
+        # 3. Aplicar filtro de nombre si existe
+        if search_name:
+            # Usar .ilike para búsqueda parcial y no sensible a mayúsculas/minúsculas
+            # Ejemplo: WHERE product_name LIKE '%teclado%'
+            query = query.filter(
+                Product.product_name.ilike(f'%{search_name}%'))
+
+        # 4. Aplicar filtro de categoría si existe
+        if category_id:
+            try:
+                # Convertir el ID a entero para la comparación en la base de datos
+                category_id_int = int(category_id)
+                # Ejemplo: WHERE category_id = 5
+                query = query.filter(Product.category_id == category_id_int)
+            except ValueError:
+                # Ignorar si el category_id no es un número válido
+                pass
+
+        # 5. Ejecutar la consulta con todos los filtros aplicados
+        products = db.session.execute(query).scalars().all()
         serialized_products = [product.serialize() for product in products]
 
         return jsonify({
@@ -433,22 +457,6 @@ def delete_user():
         }), 500
 
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-
-
-
-
- 
-
-
-
-=======
-#     'user_id' : Int, para el frontend
-#     'username' : Str
->>>>>>> 0c00a03af411b15d5c4f591cf9a3d25af26edf9b
-=======
 @api.route('/orders', methods=['POST'])
 def create_order():
     data = request.get_json()
@@ -599,8 +607,32 @@ def approve_order(order_id):
         return jsonify({"msg": "Error interno del servidor."}), 500
 
 
-@api.route('/product/<int:product_id>', methods=['DELETE'])
-def delete_product(product_id):
+#  @api.route('/product/<int:product_id>', methods=['DELETE'])
+# def delete_product(product_id):
+#     try:
+#         # Buscar el producto por ID
+#         product = db.session.execute(
+#             db.select(Product).filter_by(id=product_id)
+#         ).scalars().first()
+
+#         if not product:
+#             return jsonify({'msg': 'Product not found'}), 404
+
+#         # Eliminar el producto
+#         db.session.delete(product)
+#         db.session.commit()
+
+#         return jsonify({"msg": "Product deleted successfully"}), 200
+
+#     except Exception as e:
+#         print("SERVER ERROR:", str(e))
+#         db.session.rollback()
+#         return jsonify({
+#             "error": "Internal Server Error",
+#             "msg": "Server not working"
+#         }), 500
+@api.route('/product/<int:product_id>/toggle-active', methods=['PATCH'])
+def toggle_product_active(product_id):
     try:
         # Buscar el producto por ID
         product = db.session.execute(
@@ -610,11 +642,16 @@ def delete_product(product_id):
         if not product:
             return jsonify({'msg': 'Product not found'}), 404
 
-        # Eliminar el producto
-        db.session.delete(product)
+        # Cambiar el estado activo
+        product.is_active = not product.is_active
         db.session.commit()
 
-        return jsonify({"msg": "Product deleted successfully"}), 200
+        action = "activado" if product.is_active else "desactivado"
+
+        return jsonify({
+            "msg": f"Product {action} successfully",
+            "product": product.serialize()
+        }), 200
 
     except Exception as e:
         print("SERVER ERROR:", str(e))
@@ -623,4 +660,83 @@ def delete_product(product_id):
             "error": "Internal Server Error",
             "msg": "Server not working"
         }), 500
->>>>>>> ee4e8e2d1452d7ec056cdb67f37840e1ddd1d243
+
+
+@api.route('/orders', methods=['GET'])
+def get_orders():
+    try:
+        # Obtener el parámetro de consulta 'status' (ej: /orders?status=Pending)
+        status_filter = request.args.get('status')
+
+        # Construir la consulta base
+        query = select(Order)
+
+        # Aplicar el filtro si se proporciona un estado
+        if status_filter:
+            query = query.filter(Order.status == status_filter)
+
+        # Opcional: Cargar los ítems y el cliente si necesitas esos datos
+        # query = query.options(joinedload(Order.items))
+
+        # Ejecutar la consulta (ordenar por fecha de creación descendente es útil)
+        orders = db.session.execute(query.order_by(
+            Order.created_at.desc())).scalars().all()
+
+        # Serializar los resultados
+        serialized_orders = [order.serialize() for order in orders]
+
+        return jsonify({
+            "msg": "Órdenes recuperadas exitosamente",
+            "orders": serialized_orders
+        }), 200
+
+    except Exception as e:
+        print(f"SERVER ERROR (get_orders): {e}")
+        return jsonify({
+            "error": "Error interno del servidor",
+            "msg": "No se pudieron obtener las órdenes"
+        }), 500
+
+
+@api.route('/product/<int:product_id>', methods=['PATCH'])
+def update_product_price(product_id):
+    try:
+        data = request.get_json()
+        new_price = data.get('price')
+
+        # Validar que el precio esté presente
+        if new_price is None:
+            return jsonify({'msg': 'Price is required'}), 400
+
+        # Validar que el precio sea un número positivo
+        try:
+            new_price = float(new_price)
+            if new_price < 0:
+                return jsonify({'msg': 'Price must be positive'}), 400
+        except ValueError:
+            return jsonify({'msg': 'Price must be a valid number'}), 400
+
+        # Buscar el producto
+        product = db.session.execute(
+            db.select(Product).filter_by(id=product_id)
+        ).scalars().first()
+
+        if not product:
+            return jsonify({'msg': 'Product not found'}), 404
+
+        # Actualizar el precio
+        product.price = new_price
+        db.session.commit()
+
+        return jsonify({
+            "msg": "Product price updated successfully",
+            "product": product.serialize()
+        }), 200
+
+    except Exception as e:
+        print("SERVER ERROR:", str(e))
+        db.session.rollback()
+        return jsonify({
+            "error": "Internal Server Error",
+            "msg": "Server not working"
+        }), 500

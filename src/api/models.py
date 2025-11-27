@@ -88,6 +88,8 @@ class Product(db.Model):
     product_SKU: Mapped[str] = mapped_column(String(120), nullable=False)
     stock: Mapped[int] = mapped_column(Integer, nullable=False)
     price: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
+    is_active: Mapped[bool] = mapped_column(
+        Boolean, default=True, nullable=False)
     # Precio con decimales exactos
     category_id: Mapped[int] = mapped_column(
         ForeignKey("category.id"), nullable=False)
@@ -103,6 +105,7 @@ class Product(db.Model):
             "product_SKU": self.product_SKU,
             "stock": self.stock,
             "price": float(self.price),
+            "is_active": self.is_active,
             # "category_id": self.category_id,
             # "category": self.category  # Descomentar cuando se tenga la tabla de categoría, por favor
             "category": self.category.serialize()

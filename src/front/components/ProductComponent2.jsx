@@ -1,28 +1,28 @@
-
 // revisar con el grupo, antonio y gustavo
 
 import React, { useEffect, useState } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer";
+import "../stylesheets/products.css";
 
 const ProductsComponent = () => {
     const { dispatch, store } = useGlobalReducer();
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(false);
     const products = store.products;
-    const [deleteLoading, setDeleteLoading] = useState(null)
+    const [toggleLoading, setToggleLoading] = useState(null);
+    const [editLoading, setEditLoading] = useState(null);
+    const [editingProduct, setEditingProduct] = useState(null);
+    const [editPrice, setEditPrice] = useState("");
     const [productData, setProductData] = useState({
         product_name: "",
         price: "",
         stock: "",
         product_SKU: "",
         category_id: "",
-        // product_image: null, // Puedes manejar la imagen por separado si es un file
-    })
-
+    });
 
     const handleInputChange = (e) => {
         const { id, value } = e.target;
-        // Mapea los IDs de los inputs a las claves del objeto productData
         const nameMap = {
             productName: "product_name",
             productPrice: "price",
@@ -32,13 +32,10 @@ const ProductsComponent = () => {
         };
 
         const fieldName = nameMap[id] || id;
-
-        // Limpieza de valores (ej: convertir a número si es necesario)
         let cleanedValue = value;
 
         if (fieldName === "price" || fieldName === "stock") {
-            // Asegurar que category_id sea un número (si es un select)
-            cleanedValue = parseFloat(value) || 0; // O usar Number(value) para stock si es un entero estricto
+            cleanedValue = parseFloat(value) || 0;
         } else if (fieldName === "category_id") {
             cleanedValue = Number(value);
         }
@@ -55,16 +52,15 @@ const ProductsComponent = () => {
             const result = await response.json();
 
             if (response.ok) {
-                dispatch({ type: 'set_products', payload: result.products })
+                dispatch({ type: 'set_products', payload: result.products });
             } else {
                 console.error('Error al cargar productos:', result.msg);
             }
         } catch (error) {
             console.error('Error del servidor al cargar productos:', error);
         }
-    }
+    };
 
-    // Cargar categorías desde la API
     const fetchCategories = async () => {
         try {
             const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/categories`);
@@ -79,19 +75,14 @@ const ProductsComponent = () => {
     };
 
     const createProduct = async () => {
-        setLoading(true); // Opcional: Para mostrar un spinner
-
+        setLoading(true);
         try {
             const url = `${import.meta.env.VITE_BACKEND_URL}/api/product`;
-
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    // Incluye headers de autenticación si son necesarios (ej: 'Authorization': `Bearer ${token}`)
                 },
-                // productData contiene las 5 claves que espera tu endpoint:
-                // product_name, price, stock, product_SKU, category_id
                 body: JSON.stringify(productData),
             });
 
@@ -99,9 +90,7 @@ const ProductsComponent = () => {
 
             if (response.ok) {
                 console.log('Product created successfully!', result.message);
-                alert("Producto creado con éxito!"); // Usar una notificación real
-
-                // Limpiar formulario y cerrar modal después de la creación exitosa
+                alert("Producto creado con éxito!");
                 setProductData({
                     product_name: "",
                     price: "",
@@ -110,61 +99,111 @@ const ProductsComponent = () => {
                     category_id: "",
                 });
 
-                // CERRAR MODAL
                 const modalElement = document.getElementById("exampleModal");
                 if (modalElement) {
                     const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
                     modal.hide();
                 }
-
+                fetchProducts();
             } else {
                 console.error('Error creating product:', result.msg);
-                alert(`Error: ${result.msg}`); // Mostrar el error del backend
+                alert(`Error: ${result.msg}`);
             }
-
         } catch (error) {
             console.error('SERVER ERROR:', error);
             alert("Error del servidor. Revisa la consola.");
-        }
-        finally {
+        } finally {
             setLoading(false);
         }
     };
-    const deleteProduct = async (productId, productName) => {
-        if (!confirm(`Estás seguro de que quieres eliminar el producto"${productName}"?`)) {
+
+    // FUNCIÓN PARA ACTIVAR/DESACTIVAR PRODUCTO
+    const toggleProductActive = async (productId, productName, currentStatus) => {
+        const action = currentStatus ? "desactivar" : "activar";
+
+        if (!confirm(`¿Estás seguro de que quieres ${action} el producto "${productName}"?`)) {
             return;
         }
+
         try {
-            setDeleteLoading(productId);
+            setToggleLoading(productId);
             const response = await fetch(
-                `${import.meta.env.VITE_BACKEND_URL}/api/product/${productId}`,
+                `${import.meta.env.VITE_BACKEND_URL}/api/product/${productId}/toggle-active`,
                 {
-                    method: 'DELETE',
+                    method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
                     }
                 }
             );
+
             const result = await response.json();
+
             if (response.ok) {
-                alert('Producto eliminado exitosamente');
-                fetchProducts(); // Recargar la lista
+                alert(`Producto ${action}do exitosamente`);
+                fetchProducts();
             } else {
-                alert(`Error: ${result.msg || 'No se pudo eliminar el producto'}`);
+                alert(`Error: ${result.msg || 'No se pudo cambiar el estado del producto'}`);
             }
-        }
-        catch {
-            console.error('Error deleting product:', error);
+        } catch (error) {
+            console.error('Error changing product status:', error);
             alert('Error de conexión al servidor');
-        }
-        finally {
-            setDeleteLoading(null);
+        } finally {
+            setToggleLoading(null);
         }
     };
 
+    // FUNCIÓN PARA ACTUALIZAR PRECIO DEL PRODUCTO
+    const updateProductPrice = async (productId, productName) => {
+        if (!editPrice || isNaN(editPrice) || parseFloat(editPrice) < 0) {
+            alert("Por favor ingresa un precio válido");
+            return;
+        }
+
+        try {
+            setEditLoading(productId);
+            const response = await fetch(
+                `${import.meta.env.VITE_BACKEND_URL}/api/product/${productId}`,
+                {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        price: parseFloat(editPrice)
+                    })
+                }
+            );
+
+            const result = await response.json();
+
+            if (response.ok) {
+                alert('Precio actualizado exitosamente');
+                fetchProducts();
+                const modal = bootstrap.Modal.getInstance(document.getElementById("editPriceModal"));
+                modal.hide();
+                setEditingProduct(null);
+                setEditPrice("");
+            } else {
+                alert(`Error: ${result.msg || 'No se pudo actualizar el precio'}`);
+            }
+        } catch (error) {
+            console.error('Error updating product price:', error);
+            alert('Error de conexión al servidor');
+        } finally {
+            setEditLoading(null);
+        }
+    };
+
+    // FUNCIÓN PARA ABRIR MODAL DE EDICIÓN
+    const openEditModal = (product) => {
+        setEditingProduct(product);
+        setEditPrice(product.price.toString());
+    };
+
     useEffect(() => {
-        fetchCategories()
-        fetchProducts()
+        fetchCategories();
+        fetchProducts();
     }, []);
 
     return (
@@ -191,7 +230,6 @@ const ProductsComponent = () => {
                 </div>
             </div>
 
-            {/* Resto del código del componente de productos... */}
             <div className="main-layout">
                 {/* Create Product Panel */}
                 <div className="panel">
@@ -294,7 +332,7 @@ const ProductsComponent = () => {
                     </div>
                 </div>
 
-                {/* Modal y lista de productos existentes... */}
+                {/* Modal para Crear Producto */}
                 <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                     <div className="modal-dialog">
                         <div className="modal-content">
@@ -315,6 +353,75 @@ const ProductsComponent = () => {
                     </div>
                 </div>
 
+                {/* Modal para Editar Precio */}
+                <div className="modal fade" id="editPriceModal" tabIndex="-1" aria-labelledby="editPriceModalLabel" aria-hidden="true">
+                    <div className="modal-dialog">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h1 className="modal-title fs-5" id="editPriceModalLabel">
+                                    Editar Precio del Producto
+                                </h1>
+                                <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div className="modal-body">
+                                {editingProduct && (
+                                    <>
+                                        <p>
+                                            Editando precio para: <strong>{editingProduct.product_name}</strong>
+                                        </p>
+                                        <div className="form-group">
+                                            <label className="form-label" htmlFor="editPrice">
+                                                Nuevo Precio ($)
+                                            </label>
+                                            <input
+                                                type="number"
+                                                step="0.01"
+                                                min="0"
+                                                className="form-control"
+                                                id="editPrice"
+                                                value={editPrice}
+                                                onChange={(e) => setEditPrice(e.target.value)}
+                                                placeholder="0.00"
+                                            />
+                                            <div className="form-text">
+                                                Ingresa el nuevo precio para este producto
+                                            </div>
+                                        </div>
+                                        <div className="mt-2">
+                                            <small className="text-muted">
+                                                Precio actual: <strong>${parseFloat(editingProduct.price).toFixed(2)}</strong>
+                                            </small>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn btn-warning"
+                                    onClick={() => updateProductPrice(editingProduct.id, editingProduct.product_name)}
+                                    disabled={editLoading === editingProduct?.id || !editPrice}
+                                >
+                                    {editLoading === editingProduct?.id ? (
+                                        <>
+                                            <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                                            Actualizando...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <i className="fas fa-save me-1"></i>
+                                            Guardar Cambios
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Products List */}
                 <div className="panel">
                     <div className="panel-header">
@@ -323,54 +430,63 @@ const ProductsComponent = () => {
                     <div className="panel-body">
                         <div className="products-grid">
                             {products.length > 0 ? (
-                                // Mapeamos sobre la lista de productos
                                 products.map((product) => (
-                                    <div className="product-card new" key={product.id}>
+                                    <div className={`product-card ${!product.is_active ? 'product-inactive' : ''}`} key={product.id}>
                                         <div className="product-header">
                                             <div>
-                                                {/* Mostrar el nombre del producto */}
-                                                <div className="product-title">{product.product_name}</div>
-
-                                                {/* Nota: Para mostrar el nombre de la categoría, 
-                                necesitarías mapear product.category_id al nombre 
-                                usando el estado 'categories' o traer la categoría serializada en el GET.
-                                Por ahora, dejaremos el ID o un placeholder. */}
-                                                <div className="product-category">Category: {product.category.category_name}</div>
+                                                <div className="product-title">
+                                                    {product.product_name}
+                                                    {!product.is_active && (
+                                                        <span className="badge bg-danger ms-2">Inactivo</span>
+                                                    )}
+                                                </div>
+                                                <div className="product-category">Categoría: {product.category?.category_name || 'Sin categoría'}</div>
                                             </div>
-                                            {/* Mostrar el precio del producto */}
                                             <div className="product-price">${parseFloat(product.price).toFixed(2)}</div>
                                         </div>
                                         <div className="product-meta">
                                             <div className={`product-stock ${product.stock > 0 ? 'stock-in' : 'stock-out'}`}>
-                                                {/* Mostrar el stock */}
-                                                <i className="fas fa-check-circle"></i> Available stock: {product.stock} units
+                                                <i className={`fas ${product.stock > 0 ? 'fa-check-circle' : 'fa-exclamation-triangle'}`}></i>
+                                                Stock: {product.stock} unidades
                                             </div>
-                                            {/* Mostrar el SKU del producto */}
                                             <div className="product-sku">SKU: {product.product_SKU}</div>
                                         </div>
                                         <div className="product-actions mt-3 pt-3 border-top">
-                                            <button
-                                                className="btn btn-danger btn-sm"
-                                                onClick={() => deleteProduct(product.id, product.product_name)}
-                                                disabled={deleteLoading === product.id}
-                                            >
-                                                {deleteLoading === product.id ? (
-                                                    <>
-                                                        <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                                                        Eliminando...
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <i className="fas fa-trash me-1"></i>
-                                                        Eliminar Producto
-                                                    </>
-                                                )}
-                                            </button>
+                                            <div className="d-flex gap-2 flex-wrap">
+                                                {/* Botón Editar Precio */}
+                                                <button
+                                                    className="btn btn-warning btn-sm"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#editPriceModal"
+                                                    onClick={() => openEditModal(product)}
+                                                >
+                                                    <i className="fas fa-edit me-1"></i>
+                                                    Editar Precio
+                                                </button>
+
+                                                {/* Botón Activar/Desactivar */}
+                                                <button
+                                                    className={`btn btn-sm ${product.is_active ? 'btn-secondary' : 'btn-success'}`}
+                                                    onClick={() => toggleProductActive(product.id, product.product_name, product.is_active)}
+                                                    disabled={toggleLoading === product.id}
+                                                >
+                                                    {toggleLoading === product.id ? (
+                                                        <>
+                                                            <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                                                            {product.is_active ? 'Desactivando...' : 'Activando...'}
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <i className={`fas ${product.is_active ? 'fa-eye-slash' : 'fa-eye'} me-1`}></i>
+                                                            {product.is_active ? 'Desactivar' : 'Activar'}
+                                                        </>
+                                                    )}
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 ))
                             ) : (
-                                // Mensaje si no hay productos
                                 <p>No hay productos registrados.</p>
                             )}
                         </div>
