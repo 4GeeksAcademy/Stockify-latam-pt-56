@@ -130,6 +130,14 @@ export default function storeReducer(store, action = {}) {
         cart: [],
       };
 
+    case "SET_CATALOG_PRODUCTS":
+      // Este caso será usado específicamente para la lista filtrada del catálogo.
+      // Simplemente sobrescribe el array 'products' con el resultado de la búsqueda.
+      return {
+        ...store,
+        products: action.payload,
+      };
+
     case "add_task":
       const { id, color } = action.payload;
 
