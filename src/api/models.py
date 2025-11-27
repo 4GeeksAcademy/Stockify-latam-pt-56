@@ -8,6 +8,7 @@ from flask import Flask, request, jsonify
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from sqlalchemy import Numeric
 from werkzeug.security import generate_password_hash, check_password_hash
+from typing import List
 # este servirá cuando se haga la relación con categoría
 from sqlalchemy.orm import relationship
 db = SQLAlchemy()
@@ -37,6 +38,7 @@ class User(db.Model):
     password_hash: Mapped[str] = mapped_column(nullable=False)
     username: Mapped[str] = mapped_column(String(120), nullable=False)
     role: Mapped[str] = mapped_column(String(50), nullable=False)
+    orders_created: Mapped[List["Order"]] = relationship(back_populates="user")
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -135,13 +137,18 @@ class Order(db.Model):
         DateTime, default=datetime.now)
 
     # Relación con OrderItem (para obtener los detalles del pedido)
-    items: Mapped[list["OrderItem"]] = relationship(
+    items: Mapped[List["OrderItem"]] = relationship(
         back_populates="order", cascade="all, delete-orphan")
+
+    created_by_user_id: Mapped[int] = mapped_column(
+        ForeignKey('user.id'), nullable=False)
+    user: Mapped["User"] = relationship(back_populates="orders_created")
 
     def serialize(self):
         return {
             "id": self.id,
             "client_name": self.client_name,
+            "created_by_user_id": self.created_by_user_id,
             "total_amount": float(self.total_amount),
             "status": self.status,
             "items": [item.serialize() for item in self.items]

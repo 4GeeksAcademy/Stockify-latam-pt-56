@@ -1,139 +1,202 @@
 import React, { useEffect, useState } from "react";
+import useGlobalReducer from '../hooks/useGlobalReducer';
+import { useDebounce } from "../hooks/useDebounce";
+
 
 export const CreateReports = () => {
+
+    const { store } = useGlobalReducer(); // Obtener el store para acceder a userData y token
+    const userData = store.userData; // { id: ..., rol: 'Administrator' | 'Seller' }
+    const token = store.token;
+
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [searchTerm, setSearchTerm] = useState('');
+    const [searchTerm, setSearchTerm] = useState('')
+    const [statusFilter, setStatusFilter] = useState('Pending')
+
+    const debouncedSearchTerm = useDebounce(searchTerm, 500)
 
     const fetchOrders = async () => {
         setLoading(true);
         setError(null);
         try {
-            // **IMPORTANTE: Debes crear este endpoint en el backend (ej. /api/orders?status=Pending)**
-            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/orders?status=Pending`);
+            // Construir la URL con filtros
+            const params = new URLSearchParams();
+            if (statusFilter) params.append('status', statusFilter);
+            if (debouncedSearchTerm) params.append('client_name', debouncedSearchTerm);
+
+            const url = `${import.meta.env.VITE_BACKEND_URL}/api/orders?${params.toString()}`;
+
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${token}` // Incluir el token JWT
+                }
+            });
 
             if (!response.ok) {
+                // Manejo específico para 401/403 si el JWT expira o no tiene permisos
+                if (response.status === 401 || response.status === 403) {
+                    throw new Error('No autorizado o sesión expirada. Por favor, inicie sesión.');
+                }
                 throw new Error('No se pudo cargar la lista de órdenes.');
             }
 
             const data = await response.json();
-            // Asumo que el backend devuelve { "orders": [...] }
-            setOrders(data.orders || data);
+            setOrders(data.orders || []);
         } catch (err) {
             console.error("Error fetching orders:", err);
-            setError("Error al cargar las órdenes pendientes.");
+            setError(err.message || "Error al cargar las órdenes.");
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchOrders();
-    }, []);
+        if (token) {
+            // 👈 4. CAMBIAR DEPENDENCIAS: Ahora solo se ejecuta cuando debouncedSearchTerm cambie
+            fetchOrders();
+        } else {
+            setError("No ha iniciado sesión.");
+            setLoading(false);
+        }
+    }, [token, statusFilter, debouncedSearchTerm])
 
     const handleApproveOrder = async (orderId) => {
+        // Validación de rol ANTES de enviar la petición
+        if (userData?.role !== 'Administrator') {
+            alert("Acceso denegado. Solo los administradores pueden aprobar órdenes.");
+            return;
+        }
+
         if (!window.confirm(`¿Está seguro de aprobar la orden #${orderId}? Esto descontará el stock.`)) {
             return;
         }
 
+        setLoading(true); // Opcional: mostrar un loading específico para la orden
         try {
-            // Usamos el endpoint PUT /orders/<int:order_id>/approve
-            const response = await fetch(`${BACKEND_URL}/api/orders/${orderId}/approve`, {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/orders/${orderId}/approve`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                    // **AQUÍ VA EL TOKEN JWT si la ruta está protegida**
+                    'Authorization': `Bearer ${token}`
                 }
             });
 
             if (response.ok) {
                 alert(`Orden #${orderId} aprobada y stock actualizado.`);
-                // 1. Recargar la lista para eliminar la orden aprobada.
-                fetchOrders();
+                fetchOrders(); // Recargar la lista
             } else {
                 const result = await response.json();
-                alert(`Error: ${result.msg || 'Stock insuficiente o error del servidor.'}`);
+                alert(`Error al aprobar orden #${orderId}: ${result.msg || 'Error del servidor.'}`);
             }
         } catch (err) {
+            console.error("Error de conexión al aprobar la orden:", err);
             alert('Error de conexión al aprobar la orden.');
+        } finally {
+            setLoading(false);
         }
     }
+
+    const filteredOrdersForSeller = userData?.role === 'Seller'
+        ? orders.filter(order => order.created_by_user_id === userData.id) // Asumiendo un campo 'created_by_user_id' en la orden
+        : orders;
 
     if (loading) return <div className="text-center py-5">Cargando órdenes...</div>;
     if (error) return <div className="text-center py-5">{error}</div>;
 
     return (
         <div className="container py-4">
-            {/* Seccion de Busqueda (Filtros de Ordenes, Clientes, Fechas) */}
-            <div className="search-section">
-                <div className="search-container">
-                    <div className="form-group search-input">
-                        <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Buscar por cliente o ID..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-                    {/* Puedes añadir un filtro por estado aquí: (Pending, Completed, etc.) */}
-                    <div className="form-group filter-select">
-                        <select className="form-control">
-                            <option value="Pending">Pendiente</option>
-                            <option value="Completed">Completada</option>
-                        </select>
-                    </div>
-                    <button className="btn btn-primary">
-                        <i className="fas fa-search"></i> Buscar
-                    </button>
+            <div className="card shadow mb-4">
+                <div className="card-header bg-warning text-dark py-3">
+                    <h2 className="h4 mb-0"><i className="fas fa-receipt me-2"></i> Órdenes Pendientes ({filteredOrdersForSeller.length})</h2>
                 </div>
-            </div>
+                <div className="card-body">
+                    {/* Sección de Búsqueda y Filtros */}
+                    <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+                        <div className="input-group flex-grow-1" style={{ maxWidth: '300px' }}>
+                            <input
+                                type="text"
+                                className="form-control"
+                                placeholder="Buscar por cliente o ID..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                            <button className="btn btn-outline-secondary" type="button">
+                                <i className="fas fa-search"></i>
+                            </button>
+                        </div>
 
-            {/* Panel de Órdenes */}
-            <div className="panel mt-4">
-                <div className="panel-header">
-                    <h2><i className="fas fa-receipt"></i> Órdenes Pendientes ({orders.length})</h2>
-                </div>
-                <div className="panel-body">
-                    <div className="orders-grid">
-                        {orders.length === 0 ? (
-                            <div className="alert alert-info text-center">No hay órdenes pendientes de aprobación.</div>
-                        ) : (
-                            orders.map((order) => (
-                                <div key={order.id} className="order-card new">
-                                    <div className="order-header d-flex justify-content-between">
-                                        <div>
-                                            {/* ID de la Orden y Cliente */}
-                                            <div className="order-title fw-bold">Orden #{order.id}</div>
-                                            <div className="order-client">Cliente: {order.client_name}</div>
+                        <div className="form-group mb-0" style={{ maxWidth: '200px' }}>
+                            <select
+                                className="form-select"
+                                value={statusFilter}
+                                onChange={(e) => setStatusFilter(e.target.value)}
+                            >
+                                <option value="Pending">Pendientes</option>
+                                <option value="Completed">Completadas</option>
+                                <option value="Cancelled">Canceladas</option>
+                                <option value="">Todas</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    {/* Lista de Órdenes */}
+                    {filteredOrdersForSeller.length === 0 ? (
+                        <div className="alert alert-info text-center mt-3">
+                            {userData?.role === 'Seller' ? 'No tienes órdenes pendientes.' : 'No hay órdenes pendientes de aprobación.'}
+                        </div>
+                    ) : (
+                        <div className="row g-4"> {/* Usa row y g-4 para espaciado entre cards */}
+                            {filteredOrdersForSeller.map((order) => (
+                                <div key={order.id} className="col-12 col-md-6 col-lg-4"> {/* Tarjetas responsivas */}
+                                    <div className="card shadow-sm h-100"> {/* h-100 para altura uniforme */}
+                                        <div className="card-body d-flex flex-column justify-content-between">
+                                            <div>
+                                                <h5 className="card-title d-flex justify-content-between align-items-center mb-3">
+                                                    <span>Orden #{order.id}</span>
+                                                    <span className="badge bg-primary fs-6">${parseFloat(order.total_amount).toFixed(2)}</span>
+                                                </h5>
+                                                <p className="card-text mb-1">
+                                                    <strong>Cliente:</strong> {order.client_name}
+                                                </p>
+                                                {/* Mostrar Fecha de Creación (si no es Invalid Date) */}
+                                                <p className="card-text mb-1">
+                                                    <strong>Fecha:</strong> {order.created_at ? new Date(order.created_at).toLocaleDateString() : 'N/A'}
+                                                </p>
+                                                {/* Mostrar Dirección (si existe) */}
+                                                <p className="card-text mb-1">
+                                                    <strong>Dirección:</strong> {order.delivery_address || 'No especificada'}
+                                                </p>
+                                                <p className="card-text mb-3">
+                                                    <strong>Estado:</strong> <span className={`badge ${order.status === 'Pending' ? 'bg-warning text-dark' : 'bg-success'}`}>{order.status}</span>
+                                                </p>
+                                            </div>
+
+                                            {/* Botón de Aprobación */}
+                                            {userData?.role === 'Administrator' && order.status === 'Pending' && (
+                                                <div className="mt-3 text-end">
+                                                    <button
+                                                        className="btn btn-success btn-sm w-100"
+                                                        onClick={() => handleApproveOrder(order.id)}
+                                                        disabled={loading}
+                                                    >
+                                                        <i className="fas fa-check me-2"></i> Aprobar y Descontar Stock
+                                                    </button>
+                                                </div>
+                                            )}
+                                            {/* Opcional: Mostrar un mensaje para Seller */}
+                                            {userData?.role === 'Seller' && order.status === 'Pending' && (
+                                                <div className="mt-3 text-muted text-center">
+                                                    Solo los administradores pueden aprobar órdenes.
+                                                </div>
+                                            )}
                                         </div>
-                                        {/* Monto Total */}
-                                        <div className="order-price fs-4 fw-bolder">${parseFloat(order.total_amount).toFixed(2)}</div>
-                                    </div>
-
-                                    <div className="order-meta mt-2">
-                                        {/* Fecha y Dirección */}
-                                        <div className="order-date">Fecha: {new Date(order.created_at).toLocaleDateString()}</div>
-                                        <div className="order-address">Dirección: {order.delivery_address}</div>
-                                        <div className="order-status text-warning">Estado: {order.status}</div>
-                                    </div>
-
-                                    {/* Botón de Aprobación */}
-                                    <div className="order-actions mt-3 text-end">
-                                        <button
-                                            className="btn btn-success btn-sm"
-                                            onClick={() => handleApproveOrder(order.id)}
-                                            disabled={loading}
-                                        >
-                                            <i className="fas fa-check"></i> Aprobar y Descontar Stock
-                                        </button>
-                                        {/* Aquí podrías añadir un botón para ver el detalle de la orden */}
                                     </div>
                                 </div>
-                            ))
-                        )}
-                    </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

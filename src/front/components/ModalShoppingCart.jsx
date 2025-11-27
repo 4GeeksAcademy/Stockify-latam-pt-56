@@ -9,6 +9,7 @@ export const ModalShoppingCart = () => {
     const { dispatch, store } = useGlobalReducer()
     const categories = store.categories || []
     const cartItems = store?.cart || [];
+    const token = store.token
     const [clientData, setClientData] = useState({
         full_name: '',
         address: '',
@@ -57,6 +58,12 @@ export const ModalShoppingCart = () => {
             return;
         }
 
+        if (!store.token) { // Verifica si el token existe antes de continuar
+            alert("No está autenticado. Por favor inicie sesión.");
+            return;
+        }
+
+
         // 4.2. Preparar los ítems de la orden para el backend
         // Solo enviamos los datos necesarios: product_id, quantity y price_at_sale (opcional pero muy recomendado)
         const order_items = cartItems.map(item => ({
@@ -83,6 +90,7 @@ export const ModalShoppingCart = () => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${store.token}`
                 },
                 body: JSON.stringify(orderData),
             });
