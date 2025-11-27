@@ -125,11 +125,12 @@ const ProductsComponent = () => {
         } catch (error) {
             console.error('SERVER ERROR:', error);
             alert("Error del servidor. Revisa la consola.");
-        } finally {
+        }
+        finally {
             setLoading(false);
         }
-    }
-    const deleteProduct = async (productId, productName){
+    };
+    const deleteProduct = async (productId, productName) => {
         if (!confirm(`Estás seguro de que quieres eliminar el producto"${productName}"?`)) {
             return;
         }
