@@ -121,9 +121,9 @@ const Home = () => {
 
                 {/* FUNCIONALIDADES FUTURAS (espacios editables) */}
                 <section className="future-section section-box">
-                    <h2 className="section-title">Funcionalidades Futuras (Backlog)</h2>
+                    <h2 className="section-title">Funcionalidades Futuras</h2>
                     <ul className="future-list">
-                        <li>__________________________________</li>
+                        <li> El administrador podrá recibir un correo cuando se cree una orden de compra </li>
                         <li>__________________________________</li>
                         <li>__________________________________</li>
                         <li>__________________________________</li>
