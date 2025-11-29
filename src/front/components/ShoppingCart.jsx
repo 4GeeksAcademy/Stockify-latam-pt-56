@@ -7,11 +7,17 @@ export const ShoppingCart = () => {
         <>
             <button
                 type="button"
-                className="btn btn-primary"
+                // Usa tu clase de estilo dorado o 'btn-warning' si no tienes una custom
+                className="btn btn-primary fw-bold"
                 data-bs-toggle="modal"
                 data-bs-target="#shoppingCartModal"
             >
-                <i className="fa-solid fa-basket-shopping"></i>
+                <div className="d-flex align-items-center gap-2">
+                    {/* Opción 2: Ícono de recibo/documento */}
+                    <i className="fa-solid fa-file-invoice"></i>
+
+                    Order
+                </div>
             </button>
             {/* Modal */}
             <ModalShoppingCart />

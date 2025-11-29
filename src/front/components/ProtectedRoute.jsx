@@ -1,3 +1,6 @@
+import { useNavigate, Navigate } from "react-router-dom"
+import useGlobalReducer from "../hooks/useGlobalReducer";
+
 const ProtectedRoute = ({ children, requiredRole = null }) => {
     const { store } = useGlobalReducer();
     const token = store.token;
@@ -27,15 +30,15 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
                 // Vendedor: dashboard para órdenes
                 hasAccess = userRole === 'Seller';
                 break;
-            case 'Dashboard':
-                // Dashboard: Vendedor Y Administrador
-                hasAccess = userRole === 'Seller' || userRole === 'Administrator';
-                break;
+            // case 'Dashboard':
+            //     // Dashboard: Vendedor Y Administrador
+            //     hasAccess = userRole === 'Seller' || userRole === 'Administrator';
+            //     break;
             default:
                 hasAccess = userRole === requiredRole;
         }
 
-        if (!hasAccess) {
+        if (hasAccess) {
             // Redirigir según el rol del usuario
             if (userRole === 'Seller' || userRole === 'Administrador') {
                 return <Navigate to="/dashboard" replace />;
@@ -49,3 +52,5 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
 
     return children;
 };
+
+export default ProtectedRoute
