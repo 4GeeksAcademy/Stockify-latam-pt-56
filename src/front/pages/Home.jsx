@@ -160,15 +160,15 @@ const Home = () => {
                     <div className="d-flex justify-content-center gap-4">
                         <div className="text-center">
                             <div className="bg-secondary mb-2 rounded" style={{ width: "150px", height: "180px" }}>Foto 1</div>
-                            <p className="text-warning">Nombre integrante 1</p>
+                            <p className="text-warning">José Miguel Nieves (VEN)</p>
                         </div>
                         <div className="text-center">
                             <div className="bg-secondary mb-2 rounded" style={{ width: "150px", height: "180px" }}>Foto 2</div>
-                            <p className="text-warning">Nombre integrante 2</p>
+                            <p className="text-warning">Antonio Villarreal (VEN)</p>
                         </div>
                         <div className="text-center">
                             <div className="bg-secondary mb-2 rounded" style={{ width: "150px", height: "180px" }}>Foto 3</div>
-                            <p className="text-warning">Nombre integrante 3</p>
+                            <p className="text-warning">Gavo Sanagustín (World citizen)</p>
                         </div>
                     </div>
                 </section>
