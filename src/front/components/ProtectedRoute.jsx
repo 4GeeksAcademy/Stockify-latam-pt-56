@@ -14,7 +14,7 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
 
     // Si se requiere un rol específico y el usuario no lo tiene
     if (requiredRole && userData?.role !== requiredRole) {
-        return <Navigate to="/createproduct" replace />;
+        return <Navigate to="/dashboard" replace />;
     }
 
     return children;

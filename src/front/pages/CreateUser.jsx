@@ -1,12 +1,10 @@
 import React, { useState } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer";
-import { useNavigate } from "react-router-dom";
 
 const ROLES = ['Administrator', 'Seller'];
 
 export const CreateUser = ({ onCreationSuccess }) => {
 
-    const navigate = useNavigate();
     const { store } = useGlobalReducer();
     const token = store.token;
 
@@ -81,7 +79,7 @@ export const CreateUser = ({ onCreationSuccess }) => {
     };
 
     return (
-        <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
+        <div className="d-flex justify-content-center align-items-center">
             <div className="card shadow-lg p-4" style={{ width: "50rem", borderRadius: "1rem" }}>
                 <div className="row">
                     <div className="col">
@@ -94,21 +92,6 @@ export const CreateUser = ({ onCreationSuccess }) => {
                         </div>
                     </div>
                 </div>
-
-               
-
-                <div className="d-flex justify-content-end mb-3">
-    <button
-        type="button"
-        className="btn btn-warning fw-semibold"
-        onClick={() => navigate("/userslist")}
-        style={{ borderRadius: "0.5rem" }}
-    >
-        <i className="fa-solid fa-trash-can"></i>
-    </button>
-</div>
-
-
 
                 <form onSubmit={handleSubmit}>
                     <div className="mb-3 text-start">
@@ -201,18 +184,8 @@ export const CreateUser = ({ onCreationSuccess }) => {
                     <button type="submit" className="btn btn-warning w-100 fw-bold mb-3">
                         Create a new user account
                     </button>
-
-                    <div className="d-flex align-items-center mb-3">
-                        <hr className="flex-grow-1" />
-                        <span className="mx-2 text-muted fw-semibold">OR</span>
-                        <hr className="flex-grow-1" />
-                    </div>
-
-                    <button type="button" className="btn btn-outline-danger w-100 fw-semibold" onClick={() => { navigate("/") }}>
-                        Logout
-                    </button>
                 </form>
             </div>
         </div>
     );
-};
+}

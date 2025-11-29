@@ -46,7 +46,7 @@ const Home = () => {
                 {/* HERO */}
                 <section className="hero">
                     <div className="hero-text">
-                        <h1 className="product-title">Stockify</h1>
+                        <h1 className="product-title-home">Stockify</h1>
                         <p className="product-slogan">
                             La solución inteligente para la gestión de inventarios, ventas y usuarios.
                         </p>
