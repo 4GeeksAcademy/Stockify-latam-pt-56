@@ -90,7 +90,7 @@ const LoginForm = () => {
                     alert(`Bienvenido ${data.user.username}!`);
 
                     if (data.user.rol == 'master') {
-                        navigate('/createuser')
+                        navigate('/masterview')
                         return
                     }
 

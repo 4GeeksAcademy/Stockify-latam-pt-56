@@ -3,7 +3,7 @@ import useGlobalReducer from "../hooks/useGlobalReducer";
 
 export const ProductInList = () => {
 
-    const { dispatch, store } = useGlobalReducer()
+    const { dispatch, store = {} } = useGlobalReducer()
     const cart = store?.cart || [];
 
     const handleQuantityChange = (productId, operation) => {
