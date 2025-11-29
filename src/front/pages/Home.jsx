@@ -4,90 +4,69 @@ import "./presentation.css";
 
 const Home = () => {
     return (
-        <>
+        <div className="bg-black text-white w-100" style={{ minHeight: "100vh" }}>
             {/* NAVBAR */}
-            {/* NAVBAR */}
-<nav
-  className="navbar navbar-expand-lg shadow-sm"
-  style={{ backgroundColor: "#000000", borderBottom: "4px solid #b8860b" }}
->
-  <div className="container-fluid">
+            <nav
+                className="navbar navbar-expand-lg shadow-sm"
+                style={{ backgroundColor: "#000000", borderBottom: "4px solid #b8860b" }}
+            >
+                <div className="container-fluid">
+                    <Link className="navbar-brand fw-bold text-white" to="/" style={{ fontSize: "1.2rem" }}>
+                        Stockify
+                    </Link>
 
-    {/* Logo / Marca */}
-    <Link className="navbar-brand fw-bold text-white" to="/" style={{ fontSize: "1.2rem" }}>
-      Stockify
-    </Link>
+                    <button
+                        className="navbar-toggler bg-light"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#navbarNav"
+                        aria-controls="navbarNav"
+                        aria-expanded="false"
+                        aria-label="Toggle navigation"
+                    >
+                        <span className="navbar-toggler-icon"></span>
+                    </button>
 
-    {/* Botón hamburguesa */}
-    <button
-      className="navbar-toggler bg-light"
-      type="button"
-      data-bs-toggle="collapse"
-      data-bs-target="#navbarNav"
-      aria-controls="navbarNav"
-      aria-expanded="false"
-      aria-label="Toggle navigation"
-    >
-      <span className="navbar-toggler-icon"></span>
-    </button>
-
-    {/* Enlaces y botones */}
-    <div className="collapse navbar-collapse" id="navbarNav">
-      <ul className="navbar-nav ms-auto align-items-center">
-
-        
-      
-
-        {/* Botón Sign Up verde */}
-        <li className="nav-item me-2">
-          <Link
-            className="btn btn-success btn-sm"
-            to="/signup"
-          >
-            Sign Up
-          </Link>
-        </li>
-
-        {/* Botón Sign In */}
-        <li className="nav-item">
-          {/* <Link className="btn btn-outline-light btn-sm" to="/loginform">
-            Sign In
-          </Link> */}
-        </li>
-      </ul>
-    </div>
-  </div>
-</nav>
-
+                    <div className="collapse navbar-collapse" id="navbarNav">
+                        <ul className="navbar-nav ms-auto align-items-center">
+                            <li className="nav-item me-2">
+                                <Link className="btn btn-success btn-sm" to="/login">
+                                    Login
+                                </Link>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
 
             {/* CONTENIDO PRINCIPAL */}
-            <div className="home-container">
+            <div className="home-container container py-5">
 
                 {/* HERO */}
-                <section className="hero">
+                <section className="hero text-center mb-5">
                     <div className="hero-text">
-                        <h1 className="product-title-home">Stockify</h1>
-                        <p className="product-slogan">
+                        <h1 className="text-warning fw-bold display-4">Stockify</h1>
+                        <p className="lead">
                             La solución inteligente para la gestión de inventarios, ventas y usuarios.
                         </p>
                     </div>
                 </section>
 
                 {/* PROBLEMA */}
-                <section className="section-box">
-                    <h2 className="section-title">¿Por qué es útil nuestro producto?</h2>
+                <section className="section-box p-4 mb-4 border border-warning rounded">
+                    <h2 className="text-warning fw-semibold">¿Por qué es útil nuestro producto?</h2>
                     <p>
                         Los negocios minoristas pierden tiempo, dinero y clientes por una mala gestión del inventario.
                     </p>
-                    <p className="highlight-text">
+                    <p className="fw-semibold">
                         Sin una herramienta adecuada, los negocios enfrentan desorganización, poca productividad y baja capacidad de crecimiento.
                     </p>
                 </section>
 
                 {/* SOLUCIÓN */}
-                <section className="section-box">
-                    <h2 className="section-title">¿Cómo lo resolvemos?</h2>
-                    <ul className="styled-list">
+                <section className="section-box p-4 mb-4 border border-warning rounded">
+                    <h2 className="text-warning fw-semibold">¿Cómo lo resolvemos?</h2>
+                    <ul>
                         <li>Organización eficiente del inventario.</li>
                         <li>Datos actualizados en tiempo real.</li>
                         <li>Gestión centralizada de productos, compras y usuarios.</li>
@@ -97,19 +76,19 @@ const Home = () => {
                 </section>
 
                 {/* FUNCIONALIDADES ACTUALES */}
-                <section className="section-box">
-                    <h2 className="section-title">Funcionalidades Actuales</h2>
-                    <div className="features-grid">
-                        <div className="feature-item">Gestión de Usuarios</div>
-                        <div className="feature-item">Gestión de Productos</div>
-                        <div className="feature-item">Carrito y Compras</div>
-                        <div className="feature-item">Dashboard Estadístico</div>
+                <section className="section-box p-4 mb-4 border border-warning rounded">
+                    <h2 className="text-warning fw-semibold">Funcionalidades Actuales</h2>
+                    <div className="d-flex flex-wrap gap-3">
+                        <div className="border border-warning p-2 rounded">Gestión de Usuarios</div>
+                        <div className="border border-warning p-2 rounded">Gestión de Productos</div>
+                        <div className="border border-warning p-2 rounded">Carrito y Compras</div>
+                        <div className="border border-warning p-2 rounded">Dashboard Estadístico</div>
                     </div>
                 </section>
 
-                {/* DETALLE DE FUNCIONES */}
-                <section className="section-box">
-                    <h2 className="section-title">Gestión de Productos</h2>
+                {/* DETALLE PRODUCTOS */}
+                <section className="section-box p-4 mb-4 border border-warning rounded">
+                    <h2 className="text-warning fw-semibold">Gestión de Productos</h2>
                     <ul>
                         <li>Crear productos con formulario limpio y validaciones</li>
                         <li>Cargar imágenes y detalles específicos</li>
@@ -118,9 +97,9 @@ const Home = () => {
                     </ul>
                 </section>
 
-                {/* CATÁLOGO Y CARRITO */}
-                <section className="section-box">
-                    <h2 className="section-title">Catálogo y Carrito de Compras</h2>
+                {/* CATÁLOGO */}
+                <section className="section-box p-4 mb-4 border border-warning rounded">
+                    <h2 className="text-warning fw-semibold">Catálogo y Carrito de Compras</h2>
                     <ul>
                         <li>Modal ShoppingCart</li>
                         <li>Cantidades, precios unitarios y total automático</li>
@@ -128,9 +107,9 @@ const Home = () => {
                     </ul>
                 </section>
 
-                {/* DASHBOARD / ESTADÍSTICAS */}
-                <section className="section-box">
-                    <h2 className="section-title">Dashboard</h2>
+                {/* DASHBOARD */}
+                <section className="section-box p-4 mb-4 border border-warning rounded">
+                    <h2 className="text-warning fw-semibold">Dashboard</h2>
                     <ul>
                         <li>Visualización general del stock</li>
                         <li>Cantidad de productos</li>
@@ -139,24 +118,23 @@ const Home = () => {
                     </ul>
                 </section>
 
-                {/* FUNCIONALIDADES FUTURAS (espacios editables) */}
-                <section className="future-section section-box">
-                    <h2 className="section-title">Funcionalidades Futuras</h2>
-                    <ul className="future-list">
+                {/* FUTURAS */}
+                <section className="section-box p-4 mb-4 border border-warning rounded">
+                    <h2 className="text-warning fw-semibold">Funcionalidades Futuras</h2>
+                    <ul>
                         <li> El administrador podrá recibir un correo cuando se cree una orden de compra </li>
-                        <li>El administrador verá los vendedores disponibles, para organizarlos mejor
-</li>
+                        <li>El administrador verá los vendedores disponibles para organizarlos mejor</li>
                         <li>El administrador podrá ver el total del inventario</li>
                         <li>El administrador verá un reporte con todos los pedidos finalizados</li>
-                        <li>El administrador cargará la existencia de los productos existentes para que los vendedores vean la disponibilidad</li>
-                        <li>El vendedor podrá registrarse en la plataforma con un email y contraseña</li>
-                        <li>Los vendedores podrán reservar productos </li>
+                        <li>El administrador cargará la existencia de productos</li>
+                        <li>El vendedor podrá registrarse en la plataforma</li>
+                        <li>Los vendedores podrán reservar productos</li>
                     </ul>
                 </section>
 
                 {/* BENEFICIOS */}
-                <section className="section-box">
-                    <h2 className="section-title">Beneficios del Producto</h2>
+                <section className="section-box p-4 mb-4 border border-warning rounded">
+                    <h2 className="text-warning fw-semibold">Beneficios del Producto</h2>
                     <ul>
                         <li>Ahorro de tiempo y control automatizado</li>
                         <li>Información centralizada y precisa</li>
@@ -165,20 +143,9 @@ const Home = () => {
                     </ul>
                 </section>
 
-                {/* TECNOLOGÍAS
-                <section className="section-box">
-                    <h2 className="section-title">Técnicas usadas</h2>
-                    <div className="tech-grid">
-                        <div className="tech-item">React.js</div>
-                        <div className="tech-item">Flask & SQLAlchemy</div>
-                        <div className="tech-item">Bootstrap / Font Awesome</div>
-                        <div className="tech-item">JWT</div>
-                    </div>
-                </section> */}
-
                 {/* PÚBLICO OBJETIVO */}
-                <section className="section-box">
-                    <h2 className="section-title">Público Objetivo</h2>
+                <section className="section-box p-4 mb-4 border border-warning rounded">
+                    <h2 className="text-warning fw-semibold">Público Objetivo</h2>
                     <ul>
                         <li>Ferreterías y tiendas minoristas</li>
                         <li>Distribuidores de materiales y PyMEs</li>
@@ -186,57 +153,47 @@ const Home = () => {
                     </ul>
                 </section>
 
-                {/* EQUIPO - PLACEHOLDERS PARA 3 FOTOS */}
-                <section className="team-section section-box">
-                    <h2 className="section-title">Creadores del Proyecto</h2>
-
-                    <p className="team-note">Sube las fotos a <code>/src/front/assets/</code> y cambia los nombres si las reemplazas.</p>
-
-                    <div className="team-grid">
-                        {/* Placeholder 1 */}
-                        <div className="team-member">
-                            <div className="team-photo">
-                                {/* Si más adelante pones una imagen real, reemplaza este div por:
-                                    <img src="/src/front/assets/integrante1.jpg" alt="Integrante 1" />
-                                */}
-                                Foto 1
-                            </div>
-                            <p className="team-name">Nombre integrante 1</p>
+                {/* EQUIPO */}
+                <section className="section-box p-4 mb-4 border border-warning rounded">
+                    <h2 className="text-warning fw-semibold">Creadores del Proyecto</h2>
+                    
+                    <div className="d-flex justify-content-center gap-4">
+                        <div className="text-center">
+                            <div className="bg-secondary mb-2 rounded" style={{ width: "150px", height: "180px" }}>Foto 1</div>
+                            <p className="text-warning">Nombre integrante 1</p>
                         </div>
-
-                        {/* Placeholder 2 */}
-                        <div className="team-member">
-                            <div className="team-photo">
-                                Foto 2
-                            </div>
-                            <p className="team-name">Nombre integrante 2</p>
+                        <div className="text-center">
+                            <div className="bg-secondary mb-2 rounded" style={{ width: "150px", height: "180px" }}>Foto 2</div>
+                            <p className="text-warning">Nombre integrante 2</p>
                         </div>
-
-                        {/* Placeholder 3 */}
-                        <div className="team-member">
-                            <div className="team-photo">
-                                Foto 3
-                            </div>
-                            <p className="team-name">Nombre integrante 3</p>
+                        <div className="text-center">
+                            <div className="bg-secondary mb-2 rounded" style={{ width: "150px", height: "180px" }}>Foto 3</div>
+                            <p className="text-warning">Nombre integrante 3</p>
                         </div>
                     </div>
                 </section>
 
-                {/* LEMA / CIERRE */}
-                <section className="closing-section section-box">
-                    <p className="closing-text">
+                
+                <section className="section-box p-4 mb-4 border border-warning rounded text-center">
+                    <p>
                         <strong>
                             Stockify es más que una aplicación de inventario, es la herramienta que estabas buscando para mejorar tus ventas,
-                            tomar decisiones inteligentes, reducir pérdidas y automatizar la operación en pequeñas y medianas empresas.
+                            tomar decisiones inteligentes, reducir pérdidas y automatizar la operación.
                         </strong>
                     </p>
-                    <p className="closing-cta">
-                        ¿Qué esperas? Llámanos para cotizaciones de tu producto — nos adaptamos a tu presupuesto.
-                    </p>
+                    <p>¿Qué esperas? Cotizamos tu solución ideal.</p>
                 </section>
+            </div>
 
-            </div> {/* cierre de home-container */}
-        </>
+            {/* FOOTER */}
+            <footer
+                className="text-center py-4 mt-5"
+                style={{ backgroundColor: "#000000", borderTop: "4px solid #b8860b" }}
+            >
+                <p className="mb-1 text-white">© 2025 Stockify. Todos los derechos reservados.</p>
+                <p className="text-warning">Impulsando negocios inteligentes</p>
+            </footer>
+        </div>
     );
 };
 
