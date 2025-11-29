@@ -457,6 +457,7 @@ def delete_user():
         }), 500
 
 
+
 @api.route('/orders', methods=['POST'])
 @jwt_required()
 def create_order():

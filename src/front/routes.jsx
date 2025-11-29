@@ -3,7 +3,9 @@ import {
   createRoutesFromElements,
   Route,
 } from "react-router-dom";
+
 import { Layout } from "./pages/Layout";
+import Home from "./pages/Home";
 import { SignUp } from "./pages/SignUp";
 import { CreateUser } from "./pages/CreateUser";
 import { DashBoard } from "./pages/DashBoard";
