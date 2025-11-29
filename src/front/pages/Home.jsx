@@ -6,39 +6,59 @@ const Home = () => {
     return (
         <>
             {/* NAVBAR */}
-            <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
-                <div className="container-fluid">
-                    <Link className="navbar-brand" to="/">
-                        Stockify
-                    </Link>
-                    <button
-                        className="navbar-toggler"
-                        type="button"
-                        data-bs-toggle="collapse"
-                        data-bs-target="#navbarNav"
-                        aria-controls="navbarNav"
-                        aria-expanded="false"
-                        aria-label="Toggle navigation"
-                    >
-                        <span className="navbar-toggler-icon"></span>
-                    </button>
+            {/* NAVBAR */}
+<nav
+  className="navbar navbar-expand-lg shadow-sm"
+  style={{ backgroundColor: "#000000", borderBottom: "4px solid #b8860b" }}
+>
+  <div className="container-fluid">
 
-                    <div className="collapse navbar-collapse" id="navbarNav">
-                        <ul className="navbar-nav ms-auto">
-                            <li className="nav-item">
-                                <Link className="nav-link" to="/">
-                                    Inicio
-                                </Link>
-                            </li>
-                            <li className="nav-item">
-                                <Link className="btn btn-warning mx-2" to="/loginform">
-                                    Login
-                                </Link>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </nav>
+    {/* Logo / Marca */}
+    <Link className="navbar-brand fw-bold text-white" to="/" style={{ fontSize: "1.2rem" }}>
+      Stockify
+    </Link>
+
+    {/* Botón hamburguesa */}
+    <button
+      className="navbar-toggler bg-light"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarNav"
+      aria-controls="navbarNav"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span className="navbar-toggler-icon"></span>
+    </button>
+
+    {/* Enlaces y botones */}
+    <div className="collapse navbar-collapse" id="navbarNav">
+      <ul className="navbar-nav ms-auto align-items-center">
+
+        
+      
+
+        {/* Botón Sign Up verde */}
+        <li className="nav-item me-2">
+          <Link
+            className="btn btn-success btn-sm"
+            to="/signup"
+          >
+            Sign Up
+          </Link>
+        </li>
+
+        {/* Botón Sign In */}
+        <li className="nav-item">
+          {/* <Link className="btn btn-outline-light btn-sm" to="/loginform">
+            Sign In
+          </Link> */}
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
 
             {/* CONTENIDO PRINCIPAL */}
             <div className="home-container">
@@ -124,12 +144,13 @@ const Home = () => {
                     <h2 className="section-title">Funcionalidades Futuras</h2>
                     <ul className="future-list">
                         <li> El administrador podrá recibir un correo cuando se cree una orden de compra </li>
-                        <li>__________________________________</li>
-                        <li>__________________________________</li>
-                        <li>__________________________________</li>
-                        <li>__________________________________</li>
-                        <li>__________________________________</li>
-                        <li>__________________________________</li>
+                        <li>El administrador verá los vendedores disponibles, para organizarlos mejor
+</li>
+                        <li>El administrador podrá ver el total del inventario</li>
+                        <li>El administrador verá un reporte con todos los pedidos finalizados</li>
+                        <li>El administrador cargará la existencia de los productos existentes para que los vendedores vean la disponibilidad</li>
+                        <li>El vendedor podrá registrarse en la plataforma con un email y contraseña</li>
+                        <li>Los vendedores podrán reservar productos </li>
                     </ul>
                 </section>
 
