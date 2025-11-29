@@ -433,8 +433,7 @@ def delete_user():
         }), 500
 
 
-<<<<<<< HEAD
-<<<<<<< HEAD
+
 
 
 
@@ -447,7 +446,7 @@ def delete_user():
 =======
 #     'user_id' : Int, para el frontend
 #     'username' : Str
->>>>>>> 0c00a03af411b15d5c4f591cf9a3d25af26edf9b
+
 =======
 @api.route('/orders', methods=['POST'])
 def create_order():
@@ -623,4 +622,4 @@ def delete_product(product_id):
             "error": "Internal Server Error",
             "msg": "Server not working"
         }), 500
->>>>>>> ee4e8e2d1452d7ec056cdb67f37840e1ddd1d243
+
