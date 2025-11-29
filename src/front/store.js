@@ -1,6 +1,6 @@
 export const initialStore = () => {
-  const token = localStorage.getItem("jwtToken");
-  const userDataString = localStorage.getItem("userData");
+  const token = sessionStorage.getItem("jwtToken");
+  const userDataString = sessionStorage.getItem("userData");
   const userData = userDataString ? JSON.parse(userDataString) : null;
 
   return {
@@ -15,13 +15,13 @@ export const initialStore = () => {
 export default function storeReducer(store, action = {}) {
   switch (action.type) {
     case "set_token":
-      localStorage.setItem("jwtToken", action.payload);
+      sessionStorage.setItem("jwtToken", action.payload);
       return {
         ...store,
         token: action.payload,
       };
     case "set_user_data":
-      localStorage.setItem("userData", JSON.stringify(action.payload));
+      sessionStorage.setItem("userData", JSON.stringify(action.payload));
       return {
         ...store,
         userData: action.payload,
@@ -136,6 +136,17 @@ export default function storeReducer(store, action = {}) {
       return {
         ...store,
         products: action.payload,
+      };
+
+    case "LOGOUT":
+      sessionStorage.removeItem("jwtToken");
+      sessionStorage.removeItem("userData");
+
+      return {
+        ...store,
+        token: null,
+        userData: null,
+        cart: [],
       };
 
     case "add_task":

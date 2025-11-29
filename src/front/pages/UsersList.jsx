@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import { useNavigate } from "react-router-dom";
+import { CreateUser } from "./CreateUser";
 
 export const UsersList = () => {
     const navigate = useNavigate();
-    const { store } = useGlobalReducer();
+    const { dispatch, store } = useGlobalReducer();
     const [users, setUsers] = useState([]);
+    const [activeTab, setActiveTab] = React.useState("userslist")
 
     // Obtener usuarios
     const fetchUsers = async () => {
@@ -49,61 +51,90 @@ export const UsersList = () => {
         }
     };
 
+    const handleLogout = () => {
+        // 1. Limpiar el estado de la aplicación (token y userData)
+        dispatch({ type: 'LOGOUT' });
+        navigate("/login");
+    }
+
     useEffect(() => {
         fetchUsers();
     }, []);
 
     return (
-        <div className="container mt-4">
+        <div className="container">
 
-            <nav className="navbar navbar-expand-lg mb-4" style={{ backgroundColor: "#FFD700" }}>
-                <div className="container-fluid justify-content-center">
-                    <span className="m-0 mt-2 fs-4 fw-bold">
-                        Users List
-
-                    </span>
+            <header className="app-header d-flex justify-content-center align-items-center py-3">
+                <div className="col-11 d-flex flex-column">
+                    <h1><i className="fas fa-store"></i> Stockify</h1>
+                    <p>Administra los usuarios de tu organizacion</p>
                 </div>
-            </nav>
+                <div className="">
+                    <button className="btn btn-danger" onClick={handleLogout}>
+                        <div className="d-flex justify-content-center align-items-center gap-2">
+                            <p className="fs-6 fw-lighter m-0 text-white">
+                                Logout
+                            </p>
+                            <i
+                                className="fa-solid fa-right-from-bracket fs-5 m-0 text-white"
+                                style={{ cursor: 'pointer' }}
+                            >
+                            </i>
+                        </div>
+                    </button>
+                </div>
+            </header>
 
-            <div className="row">
-                {users.map((user) => (
-                    <div className="col-md-4 mb-4" key={user.id}>
-                        <div className="card shadow-sm border-0 rounded-4">
-                            <div className="card-body">
-                                <h5 className="card-title fw-bold">{user.full_name}</h5>
-                                <p className="card-text mb-1"><strong>Email:</strong> {user.email}</p>
-                                <p className="card-text mb-1"><strong>Username:</strong> {user.username}</p>
-                                <span className={`badge ${user.role === 'Administrator' ? 'bg-success' : 'bg-secondary'}`}>
-                                    {user.role}
-                                </span>
-                                <hr />
+            <div className="nav-tabs">
+                <a
+                    className={`nav-tab ${activeTab === "userslist" ? "active" : ""}`}
+                    onClick={() => setActiveTab("userslist")}
+                >
+                    <i className="fas fa-cube"></i> Users
+                </a>
 
-                                {/* Botón Eliminar */}
-                                <button
-                                    className="btn btn-success btn-sm w-100"
-                                    onClick={() => deleteUser(user.id, user.username)}
-                                >
-                                    🗑 Eliminar
-                                </button>
+                <a
+                    className={`nav-tab ${activeTab === "createuser" ? "active" : ""}`}  /*active ltab son los buttons*/
+                    onClick={() => setActiveTab("createuser")}
+                >
+                    <i className="fas fa-tags"></i> Create user
+                </a>
+            </div>
 
+
+            {activeTab === "userslist" && (
+                <div className="row">
+                    {users.map((user) => (
+                        <div className="col-md-4 mb-4" key={user.id}>
+                            <div className="card shadow-sm border-0 rounded-4">
+                                <div className="card-body">
+                                    <h5 className="card-title fw-bold">{user.full_name}</h5>
+                                    <p className="card-text mb-1"><strong>Email:</strong> {user.email}</p>
+                                    <p className="card-text mb-1"><strong>Username:</strong> {user.username}</p>
+                                    <span className={`badge ${user.role === 'Administrator' ? 'bg-success' : 'bg-secondary'}`}>
+                                        {user.role}
+                                    </span>
+                                    <hr />
+
+                                    {/* Botón Eliminar */}
+                                    <button
+                                        className="btn btn-outline-danger btn-sm w-100"
+                                        onClick={() => deleteUser(user.id, user.username)}
+                                    >
+                                        Eliminar
+                                    </button>
+
+                                </div>
                             </div>
                         </div>
-                    </div>
-                ))}
-            </div>
+                    ))}
+                </div>
 
-            {/*  Botón  */}
-            <div className="d-flex justify-content-center my-4">
-                <button
-                    className="btn btn-warning fw-semibold px-4"
-                    onClick={() => navigate("/createuser")}
-                    style={{ borderRadius: "0.5rem" }}
-                >
-                    <i className="fa-solid fa-arrow-left"></i>
+            )}
 
-                    Go back to Add New Users
-                </button>
-            </div>
+            {activeTab === "createuser" && (
+                <CreateUser />
+            )}
 
         </div>
     );
