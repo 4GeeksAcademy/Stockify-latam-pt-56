@@ -94,7 +94,7 @@ const LoginForm = () => {
                         return
                     }
 
-                    navigate('/createproduct')
+                    navigate('/dashboard')
 
                 } else {
                     setErrors({ submit: data.msg || 'Credenciales no válidas o error del servidor.' });

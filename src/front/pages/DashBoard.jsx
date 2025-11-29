@@ -9,7 +9,7 @@ import { ShoppingCart } from "../components/ShoppingCart";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 
 
-export const CreateProduct = () => {
+export const DashBoard = () => {
 
     const { dispatch, store } = useGlobalReducer()
     const products = store.products

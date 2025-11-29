@@ -6,7 +6,7 @@ import {
 import { Layout } from "./pages/Layout";
 import { SignUp } from "./pages/SignUp";
 import { CreateUser } from "./pages/CreateUser";
-import { CreateProduct } from "./pages/CreateProduct";
+import { DashBoard } from "./pages/DashBoard";
 import LoginForm from "./components/LoginForm";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -25,9 +25,9 @@ export const router = createBrowserRouter(
         </ProtectedRoute>
       } />
 
-      <Route path="/createproduct" element={
+      <Route path="/dashboard" element={
         <ProtectedRoute>
-          <CreateProduct />
+          <DashBoard />
         </ProtectedRoute>
       } />
 
