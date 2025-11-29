@@ -1,6 +1,4 @@
-"""
-This module takes care of starting the API Server, Loading the DB and Adding the endpoints
-"""
+
 from flask import Flask, request, jsonify, url_for, Blueprint
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
@@ -298,7 +296,33 @@ def create_product():
 @api.route('/products', methods=['GET'])
 def get_all_products():
     try:
-        products = db.session.execute(db.select(Product)).scalars().all()
+        # 1. Obtener los parámetros de búsqueda de la URL
+        search_name = request.args.get('name')
+        category_id = request.args.get('category_id')
+
+        # 2. Construir la consulta base (SELECT * FROM product)
+        query = db.select(Product)
+
+        # 3. Aplicar filtro de nombre si existe
+        if search_name:
+            # Usar .ilike para búsqueda parcial y no sensible a mayúsculas/minúsculas
+            # Ejemplo: WHERE product_name LIKE '%teclado%'
+            query = query.filter(
+                Product.product_name.ilike(f'%{search_name}%'))
+
+        # 4. Aplicar filtro de categoría si existe
+        if category_id:
+            try:
+                # Convertir el ID a entero para la comparación en la base de datos
+                category_id_int = int(category_id)
+                # Ejemplo: WHERE category_id = 5
+                query = query.filter(Product.category_id == category_id_int)
+            except ValueError:
+                # Ignorar si el category_id no es un número válido
+                pass
+
+        # 5. Ejecutar la consulta con todos los filtros aplicados
+        products = db.session.execute(query).scalars().all()
         serialized_products = [product.serialize() for product in products]
 
         return jsonify({
@@ -434,22 +458,21 @@ def delete_user():
 
 
 
-
-
-
-
-
- 
-
-
-
-=======
-#     'user_id' : Int, para el frontend
-#     'username' : Str
-
-=======
 @api.route('/orders', methods=['POST'])
+@jwt_required()
 def create_order():
+
+    current_user_id = get_jwt_identity()
+    user = db.session.get(User, current_user_id)
+
+    if not user:
+        return jsonify({"msg": "Usuario no encontrado."}), 404
+
+    current_user_role = user.role  # Usar el rol del objeto User
+
+    if current_user_role not in ['Administrator', 'Seller']:
+        return jsonify({"msg": "Solo Administradores o Vendedores pueden crear órdenes."}), 403
+
     data = request.get_json()
 
     # 1. Validación de campos obligatorios
@@ -488,7 +511,8 @@ def create_order():
             client_name=data['client_name'],
             delivery_address=data['delivery_address'],
             total_amount=calculated_total,
-            status='Pending'  # El estado inicial es Pendiente
+            status='Pending',
+            created_by_user_id=current_user_id  # El estado inicial es Pendiente
         )
 
         db.session.add(new_order)
@@ -525,11 +549,20 @@ def create_order():
 
 
 @api.route('/orders/<int:order_id>/approve', methods=['PUT'])
+@jwt_required()
 def approve_order(order_id):
-    # Asumimos que solo usuarios autorizados (ej. Administradores o Vendedores) pueden hacer esto
-    # Puedes añadir @jwt_required() aquí.
 
-    # INICIO DE LA TRANSACCIÓN
+    current_user_id = get_jwt_identity()
+    user = db.session.get(User, current_user_id)
+
+    if not user:
+        return jsonify({"msg": "Usuario no encontrado."}), 404
+
+    current_user_role = user.role  # Usar el rol del objeto User
+
+    if current_user_role != 'Administrator':
+        return jsonify({"msg": "Acceso denegado. Solo los Administradores pueden aprobar órdenes."}), 403
+
     try:
         # 1. Cargar la Orden y sus Ítems relacionados
         order = db.session.execute(
@@ -598,8 +631,32 @@ def approve_order(order_id):
         return jsonify({"msg": "Error interno del servidor."}), 500
 
 
-@api.route('/product/<int:product_id>', methods=['DELETE'])
-def delete_product(product_id):
+#  @api.route('/product/<int:product_id>', methods=['DELETE'])
+# def delete_product(product_id):
+#     try:
+#         # Buscar el producto por ID
+#         product = db.session.execute(
+#             db.select(Product).filter_by(id=product_id)
+#         ).scalars().first()
+
+#         if not product:
+#             return jsonify({'msg': 'Product not found'}), 404
+
+#         # Eliminar el producto
+#         db.session.delete(product)
+#         db.session.commit()
+
+#         return jsonify({"msg": "Product deleted successfully"}), 200
+
+#     except Exception as e:
+#         print("SERVER ERROR:", str(e))
+#         db.session.rollback()
+#         return jsonify({
+#             "error": "Internal Server Error",
+#             "msg": "Server not working"
+#         }), 500
+@api.route('/product/<int:product_id>/toggle-active', methods=['PATCH'])
+def toggle_product_active(product_id):
     try:
         # Buscar el producto por ID
         product = db.session.execute(
@@ -609,11 +666,16 @@ def delete_product(product_id):
         if not product:
             return jsonify({'msg': 'Product not found'}), 404
 
-        # Eliminar el producto
-        db.session.delete(product)
+        # Cambiar el estado activo
+        product.is_active = not product.is_active
         db.session.commit()
 
-        return jsonify({"msg": "Product deleted successfully"}), 200
+        action = "activado" if product.is_active else "desactivado"
+
+        return jsonify({
+            "msg": f"Product {action} successfully",
+            "product": product.serialize()
+        }), 200
 
     except Exception as e:
         print("SERVER ERROR:", str(e))
@@ -623,3 +685,136 @@ def delete_product(product_id):
             "msg": "Server not working"
         }), 500
 
+
+@api.route('/orders', methods=['GET'])
+@jwt_required()
+def get_orders():
+    # 1. Obtener parámetros de la query string
+    status_filter = request.args.get('status')
+    client_name_filter = request.args.get(
+        'client_name')  # <-- Debe obtenerse aquí
+
+    # 2. Iniciar la consulta
+    query = db.select(Order)
+
+    # 3. Aplicar filtro de ESTADO (Status)
+    if status_filter:
+        query = query.where(Order.status == status_filter)
+
+    # 4. Aplicar filtro de NOMBRE DE CLIENTE (client_name)
+    if client_name_filter:
+        # ⚠️ CLAVE: Usar LIKE para buscar coincidencias parciales y Case-Insensitive (ilike)
+        # Es crucial que la columna en el modelo se llame Order.client_name
+        query = query.where(Order.client_name.ilike(f'%{client_name_filter}%'))
+
+    # 5. Ejecutar la consulta
+    orders = db.session.execute(query).scalars().all()
+
+    # 6. Serializar y devolver
+    return jsonify({"orders": [order.serialize() for order in orders]}), 200
+
+
+@api.route('/product/<int:product_id>', methods=['PATCH'])
+def update_product_price(product_id):
+    try:
+        data = request.get_json()
+        new_price = data.get('price')
+
+        # Validar que el precio esté presente
+        if new_price is None:
+            return jsonify({'msg': 'Price is required'}), 400
+
+        # Validar que el precio sea un número positivo
+        try:
+            new_price = float(new_price)
+            if new_price < 0:
+                return jsonify({'msg': 'Price must be positive'}), 400
+        except ValueError:
+            return jsonify({'msg': 'Price must be a valid number'}), 400
+
+        # Buscar el producto
+        product = db.session.execute(
+            db.select(Product).filter_by(id=product_id)
+        ).scalars().first()
+
+        if not product:
+            return jsonify({'msg': 'Product not found'}), 404
+
+        # Actualizar el precio
+        product.price = new_price
+        db.session.commit()
+
+        return jsonify({
+            "msg": "Product price updated successfully",
+            "product": product.serialize()
+        }), 200
+
+    except Exception as e:
+        print("SERVER ERROR:", str(e))
+        db.session.rollback()
+        return jsonify({
+            "error": "Internal Server Error",
+            "msg": "Server not working"
+        }), 500
+
+
+@api.route('/products/<int:product_id>/stock_adjustment', methods=['PUT'])
+@jwt_required()
+def adjust_stock(product_id):
+    # 1. Verificación de Rol (Solo el Administrador puede hacer ajustes)
+    user_id = get_jwt_identity()
+    try:
+        user_id = int(user_id)
+    except ValueError:
+        return jsonify({"msg": "Error de autenticación, ID de usuario inválido."}), 401
+
+    user = db.session.get(User, user_id)
+
+    if not user:
+        return jsonify({"msg": "Usuario no encontrado."}), 404
+
+    # Finalmente, verifica el rol. **ATENCIÓN: Usa 'role' o 'rol' según tu modelo.**
+    # Si tu modelo tiene 'role':
+    if user.role != 'Administrator':
+        return jsonify({"msg": "Acceso denegado. Solo administradores pueden ajustar stock."}), 403
+
+    # 2. Obtener datos de la petición
+    data = request.get_json()
+    try:
+        # Cantidad a sumar o restar
+        adjustment_quantity = int(data.get('quantity'))
+        adjustment_type = data.get('type')              # 'add' o 'subtract'
+    except (TypeError, ValueError):
+        return jsonify({"msg": "La cantidad debe ser un número entero."}), 400
+
+    # 3. Validación
+    if not all([adjustment_quantity, adjustment_type]) or adjustment_quantity <= 0:
+        return jsonify({"msg": "Faltan datos o la cantidad es inválida."}), 400
+
+    # 4. Buscar Producto
+    product = db.session.get(Product, product_id)
+    if not product:
+        return jsonify({"msg": "Producto no encontrado."}), 404
+
+    # 5. Realizar el Ajuste de Stock
+    if adjustment_type == 'add':
+        product.stock += adjustment_quantity
+        message = f"Se agregaron {adjustment_quantity} unidades al stock."
+
+    elif adjustment_type == 'subtract':
+        # Evitar stock negativo al descartar
+        if product.stock < adjustment_quantity:
+            return jsonify({"msg": f"No hay suficiente stock ({product.stock}) para descartar {adjustment_quantity} unidades."}), 400
+        product.stock -= adjustment_quantity
+        message = f"Se descontaron {adjustment_quantity} unidades del stock."
+
+    else:
+        return jsonify({"msg": "Tipo de ajuste inválido. Use 'add' o 'subtract'."}), 400
+
+    # 6. Guardar cambios
+    db.session.commit()
+    return jsonify({
+        "msg": message,
+        "new_stock": product.stock,
+        "product_name": product.name
+    }), 200

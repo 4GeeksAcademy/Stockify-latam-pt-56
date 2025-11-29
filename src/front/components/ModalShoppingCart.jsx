@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ProductInList } from "./ProductInList";
 import { ProductShoppingCard } from "./ProductShoppingCard";
 import useGlobalReducer from "../hooks/useGlobalReducer";
@@ -9,10 +9,15 @@ export const ModalShoppingCart = () => {
     const { dispatch, store } = useGlobalReducer()
     const categories = store.categories || []
     const cartItems = store?.cart || [];
+    const token = store.token
     const [clientData, setClientData] = useState({
         full_name: '',
         address: '',
     });
+    const [searchParams, setSearchParams] = useState({
+        name: '',
+        categoryId: '',
+    })
     const [loading, setLoading] = useState(false);
 
     const calculateTotalAmount = () => {
@@ -23,6 +28,14 @@ export const ModalShoppingCart = () => {
     };
 
     const totalAmount = calculateTotalAmount()
+
+    const handleSearchChange = (e) => {
+        const { id, value } = e.target;
+        setSearchParams(prevParams => ({
+            ...prevParams,
+            [id]: value,
+        }));
+    };
 
     const handleInputChange = (e) => {
         const { id, value } = e.target;
@@ -44,6 +57,12 @@ export const ModalShoppingCart = () => {
             alert("El carrito está vacío. Agregue productos para crear una orden.");
             return;
         }
+
+        if (!store.token) { // Verifica si el token existe antes de continuar
+            alert("No está autenticado. Por favor inicie sesión.");
+            return;
+        }
+
 
         // 4.2. Preparar los ítems de la orden para el backend
         // Solo enviamos los datos necesarios: product_id, quantity y price_at_sale (opcional pero muy recomendado)
@@ -71,6 +90,7 @@ export const ModalShoppingCart = () => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${store.token}`
                 },
                 body: JSON.stringify(orderData),
             });
@@ -93,6 +113,45 @@ export const ModalShoppingCart = () => {
             setLoading(false);
         }
     };
+
+    const fetchProducts = async () => {
+
+        // 1. Construir la URL con Query Params
+        const params = new URLSearchParams();
+
+        if (searchParams.name) {
+            // Añade el nombre de búsqueda si no está vacío
+            params.append('name', searchParams.name);
+        }
+
+        if (searchParams.categoryId) {
+            // Añade el ID de categoría si está seleccionado
+            params.append('category_id', searchParams.categoryId);
+        }
+
+        const queryString = params.toString();
+
+        const url = `${import.meta.env.VITE_BACKEND_URL}/api/products?${queryString}`;
+        console.log("Fetching URL:", url); // Verifica la URL en la consola
+
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error("Error al cargar productos");
+            }
+            const data = await response.json();
+
+            // 2. DISPATCH para actualizar la lista de productos del catálogo en el store
+            // **ASUMIMOS QUE TIENES UNA ACCIÓN 'SET_CATALOG_PRODUCTS' EN TU REDUCER**
+            dispatch({ type: 'SET_CATALOG_PRODUCTS', payload: data.products });
+
+        } catch (error) {
+            console.error("Fallo al obtener productos:", error);
+            // Manejar el error de carga si es necesario
+        }
+    }
+
+    useEffect(() => { fetchProducts(); }, [searchParams.name, searchParams.categoryId])
 
     return (
         <div
@@ -200,10 +259,10 @@ export const ModalShoppingCart = () => {
                                             <div className="pt-4">
                                                 <div className="d-flex justify-content-start align-items-center gap-2">
                                                     <div className="form-group w-50 m-0">
-                                                        <input type="text" className="form-control" placeholder="Buscar productos..." />
+                                                        <input type="text" className="form-control" placeholder="Buscar productos..." id="name" value={searchParams.name} onChange={handleSearchChange} />
                                                     </div>
                                                     <div className="m-0">
-                                                        <select className="form-control">
+                                                        <select className="form-control" id="categoryId" value={searchParams.categoryId} onChange={handleSearchChange}>
                                                             <option value="">Category</option>
                                                             {categories.map((cat) => (
                                                                 <option key={cat.id} value={cat.id}>
@@ -212,7 +271,7 @@ export const ModalShoppingCart = () => {
                                                             ))}
                                                         </select>
                                                     </div>
-                                                    <button className="btn m-0">
+                                                    <button className="btn m-0" onClick={fetchProducts}>
                                                         <i className="fs-6 fas fa-search p-0"></i>
                                                     </button>
                                                 </div>
