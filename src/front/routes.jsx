@@ -21,6 +21,20 @@ export const router = createBrowserRouter(
       <Route path="/signup" element={<SignUp />} />    {/* /signup → Registro */}
 
       {/* --- RUTAS PROTEGIDAS --- */}
+      <Route path="/masterview" element={
+        <ProtectedRoute requiredRole="master">
+          <UserList />  {/* Nueva vista para gestión de usuarios */}
+        </ProtectedRoute>
+      } />
+
+      {/* DASHBOARD: Para Vendedor Y Administrador */}
+      <Route path="/dashboard" element={
+        <ProtectedRoute requiredRole="Dashboard">
+          <DashBoard />
+        </ProtectedRoute>
+      } />
+
+
       <Route path="/createuser" element={
         <ProtectedRoute requiredRole="Administrator">
           <CreateUser />
