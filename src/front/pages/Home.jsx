@@ -53,8 +53,8 @@ const Home = () => {
                 </section>
 
                 {/* UTILIDAD DE STOCKIFY */}
-                <section className="section-box p-4 mb-4 border border-warning rounded">
-                    <h2 className="text-warning fw-semibold">¿Por qué es útil nuestro producto?</h2>
+                <section className="section-box p-4 mb-4 border border-warning rounded ">
+                    <h2 className="text-warning fw-semibold text-center">¿Por qué es útil nuestro producto?</h2>
                     <p>
                         Los negocios minoristas pierden tiempo, dinero y clientes por una mala gestión del inventario.
                     </p>
@@ -65,7 +65,7 @@ const Home = () => {
 
                 {/*NUESTRA SOLUCIÓN */}
                 <section className="section-box p-4 mb-4 border border-warning rounded">
-                    <h2 className="text-warning fw-semibold">¿Cómo lo resolvemos?</h2>
+                    <h2 className="text-warning fw-semibold text-center">¿Cómo lo resolvemos?</h2>
                     <ul>
                         <li>Con una organización eficiente del inventario.</li>
                         <li>Con una app que proporcione datos actualizados y en tiempo real.</li>
@@ -77,39 +77,46 @@ const Home = () => {
 
                 {/* FUNCIONALIDADES ACTUALES */}
                 <section className="section-box p-4 mb-4 border border-warning rounded">
-                    <h2 className="text-warning fw-semibold">Funcionalidades Actuales</h2>
+                    <h2 className="text-warning fw-semibold text-center">Funcionalidades Actuales</h2>
                     <div className="d-flex flex-wrap gap-3">
                         <div className="border border-warning p-2 rounded">Gestión de Usuarios</div>
                         <div className="border border-warning p-2 rounded">Gestión de Productos</div>
-                        <div className="border border-warning p-2 rounded">Stockify te provee un carrito de (y) compras</div>
+                        <div className="border border-warning p-2 rounded">Stockify te provee un carrito de compras</div>
                         <div className="border border-warning p-2 rounded">Dashboard con estadístiscas siempre disponibles</div>
+                        <div className="border border-warning p-2 rounded">Cantidades, precios unitarios y total automático</div>
+                        <div className="border border-warning p-2 rounded">El administrador verá los vendedores disponibles para organizarlos mejor</div>
+                        <div className="border border-warning p-2 rounded">El administrador cargará productos</div>
+                        <div className="border border-warning p-2 rounded">El vendedor podrá registrarse en la plataforma</div>
+ 
+                        
+                        
                     </div>
                 </section>
 
                 {/* DETALLE DE LA GESTIÓN DE PRODUCTOS (Aquí tengo duda en cuanto a lo técnico, todo el bloque) */}
                 <section className="section-box p-4 mb-4 border border-warning rounded">
-                    <h2 className="text-warning fw-semibold">Gestión de Productos</h2>
+                    <h2 className="text-warning fw-semibold text-center">Gestión de Productos</h2>
                     <ul>
-                        <li>Crear productos con formulario limpio y validaciones</li>
+                        <li>Crear productos con formulario</li>
                         <li>Cargar imágenes y detalles específicos</li>
                         <li>Clasificar por categorías (materiales, químicos, etc.)</li>
-                        <li>Botón de carrito e integración de modal especializado</li>
+                        <li>Botón de carrito e integración de ventana</li>
                     </ul>
                 </section>
 
-                {/* CATÁLOGO (duda)*/}
+                {/* CATÁLOGO (duda)
                 <section className="section-box p-4 mb-4 border border-warning rounded">
-                    <h2 className="text-warning fw-semibold">Catálogo y Carrito de Compras</h2>
+                    <h2 className="text-warning fw-semibold text-center">Catálogode Productos</h2>
                     <ul>
-                        <li>Modal ShoppingCart</li>
+                        <li>Ventana de compras***</li> 
                         <li>Cantidades, precios unitarios y total automático</li>
-                        <li>Botón checkout</li>
+                        <li>Botón checkout***</li>
                     </ul>
-                </section>
+                </section> */}
 
                 {/* DASHBOARD */}
                 <section className="section-box p-4 mb-4 border border-warning rounded">
-                    <h2 className="text-warning fw-semibold">Dashboard</h2>
+                    <h2 className="text-warning fw-semibold text-center">Dashboard</h2>
                     <ul>
                         <li>Tendrás la visualización general del stock</li>
                         <li>Cantidad de productos</li>
@@ -118,23 +125,23 @@ const Home = () => {
                     </ul>
                 </section>
 
-                {/* FUNCIONES FUTURAS (checar) */}
+                {/* FUNCIONES FUTURAS */}
                 <section className="section-box p-4 mb-4 border border-warning rounded">
-                    <h2 className="text-warning fw-semibold">Funcionalidades Futuras</h2>
+                    <h2 className="text-warning fw-semibold text-center">Funcionalidades Futuras</h2>
                     <ul>
                         <li> El administrador podrá recibir un correo cuando se cree una orden de compra </li>
-                        <li>El administrador verá los vendedores disponibles para organizarlos mejor***</li>
-                        <li>El administrador podrá ver el total del inventario***</li>
-                        <li>El administrador verá un reporte con todos los pedidos finalizados***</li>
-                        <li>El administrador cargará la existencia de productos***</li>
-                        <li>El vendedor podrá registrarse en la plataforma</li>
+                        
+                        <li>El administrador podrá ver el total del inventario </li> 
+                        <li>El administrador verá un reporte con todos los pedidos finalizados</li>
+                        
+                        
                         <li>Los vendedores podrán reservar productos</li>
                     </ul>
                 </section>
 
                 {/* BENEFICIOS */}
                 <section className="section-box p-4 mb-4 border border-warning rounded">
-                    <h2 className="text-warning fw-semibold">Beneficios del Producto</h2>
+                    <h2 className="text-warning fw-semibold text-center">Beneficios del Producto</h2>
                     <ul>
                         <li>Ahorro de tiempo y control automatizado</li>
                         <li>Información centralizada y precisa</li>
@@ -145,29 +152,29 @@ const Home = () => {
 
                 {/* PÚBLICO OBJETIVO */}
                 <section className="section-box p-4 mb-4 border border-warning rounded">
-                    <h2 className="text-warning fw-semibold">Público Objetivo</h2>
+                    <h2 className="text-warning fw-semibold text-center">Público Objetivo</h2>
                     <ul>
                         <li>Ferreterías y tiendas minoristas</li>
                         <li>Distribuidores de materiales y PyMEs</li>
-                        <li>Y en general, cualquier Negocio interesado en el control eficiente del inventario</li>
+                        <li>Y en general, cualquier negocio interesado en el control eficiente del inventario</li>
                     </ul>
                 </section>
 
                 {/* EQUIPO */}
                 <section className="section-box p-4 mb-4 border border-warning rounded">
-                    <h2 className="text-warning fw-semibold">Creadores del Proyecto</h2>
+                    <h2 className="text-warning fw-semibold text-center">Creadores del Proyecto</h2>
                     
                     <div className="d-flex justify-content-center gap-4">
                         <div className="text-center">
-                            <div className="bg-secondary mb-2 rounded" style={{ width: "150px", height: "180px" }}>Foto 1</div>
+                            <img src="./../public/screenshotjose1.png" alt="Foto 1" className="rounded mb-2" style={{ width: "150px", height: "180px", objectFit: "cover" }} />
                             <p className="text-warning">José Miguel Nieves (VEN)</p>
                         </div>
                         <div className="text-center">
-                            <div className="bg-secondary mb-2 rounded" style={{ width: "150px", height: "180px" }}>Foto 2</div>
+                            <img src="./../public/screenshotantonio1.png" alt="Foto 1" className="rounded mb-2" style={{ width: "150px", height: "180px", objectFit: "cover" }} />
                             <p className="text-warning">Antonio Villarreal (VEN)</p>
                         </div>
                         <div className="text-center">
-                            <div className="bg-secondary mb-2 rounded" style={{ width: "150px", height: "180px" }}>Foto 3</div>
+                            <img src="./../public/screenshootgavo1.png" alt="Foto 1" className="rounded mb-2" style={{ width: "150px", height: "180px", objectFit: "cover" }} />
                             <p className="text-warning">Gavo Sanagustín (World citizen)</p>
                         </div>
                     </div>
@@ -175,6 +182,7 @@ const Home = () => {
 
                 
                 <section className="section-box p-4 mb-4 border border-warning rounded text-center">
+                    <h2 className="text-warning fw-semibold text-center">Así que ya lo sabes...</h2>
                     <p>
                         <strong>
                             Stockify es más que una aplicación de inventario, es la herramienta que estabas buscando para mejorar tus ventas,
