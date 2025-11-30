@@ -806,29 +806,40 @@ def adjust_stock(product_id):
         return jsonify({"msg": "Faltan datos o la cantidad es inválida."}), 400
 
     # 4. Buscar Producto
-    product = db.session.get(Product, product_id)
-    if not product:
-        return jsonify({"msg": "Producto no encontrado."}), 404
+    try:
+        
+        product = db.session.get(Product, product_id)
+        if not product:
+            return jsonify({"msg": "Producto no encontrado."}), 404
 
-    # 5. Realizar el Ajuste de Stock
-    if adjustment_type == 'add':
-        product.stock += adjustment_quantity
-        message = f"Se agregaron {adjustment_quantity} unidades al stock."
+        # 5. Realizar el Ajuste de Stock
+        if adjustment_type == 'add':
+            product.stock += adjustment_quantity
+            message = f"Se agregaron {adjustment_quantity} unidades al stock."
 
-    elif adjustment_type == 'subtract':
-        # Evitar stock negativo al descartar
-        if product.stock < adjustment_quantity:
-            return jsonify({"msg": f"No hay suficiente stock ({product.stock}) para descartar {adjustment_quantity} unidades."}), 400
-        product.stock -= adjustment_quantity
-        message = f"Se descontaron {adjustment_quantity} unidades del stock."
+        elif adjustment_type == 'subtract':
+            # Evitar stock negativo al descartar
+            if product.stock < adjustment_quantity:
+                return jsonify({"msg": f"No hay suficiente stock ({product.stock}) para descartar {adjustment_quantity} unidades."}), 400
+            product.stock -= adjustment_quantity
+            message = f"Se descontaron {adjustment_quantity} unidades del stock."
 
-    else:
-        return jsonify({"msg": "Tipo de ajuste inválido. Use 'add' o 'subtract'."}), 400
+        else:
+            return jsonify({"msg": "Tipo de ajuste inválido. Use 'add' o 'subtract'."}), 400
 
-    # 6. Guardar cambios
-    db.session.commit()
-    return jsonify({
-        "msg": message,
-        "new_stock": product.stock,
-        "product_name": product.name
-    }), 200
+        # 6. Guardar cambios
+        db.session.commit()
+        return jsonify({
+            "msg": message,
+            "new_stock": product.stock,
+            "product_name": product.name
+        }), 200
+    
+    except Exception as e:
+        print("SERVER ERROR:", str(e))
+        db.session.rollback()
+        return jsonify({
+            "error": "Internal Server Error",
+            "msg": "Server not working",
+            "details": str(e)
+        }), 500
