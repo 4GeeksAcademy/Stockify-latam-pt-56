@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CreateCategory } from "../components/CreateCategory";
-import ProductsComponent from "../components/ProductsComponent";
 import ProductComponent2 from "../components/ProductComponent2";
 import { CreateInventory } from "../components/CreateInventory";
 import { CreateReports } from "../components/CreateReports";
@@ -14,14 +13,14 @@ export const DashBoard = () => {
     const { dispatch, store } = useGlobalReducer()
     const products = store.products
     const categories = store.categories
-    const userData = store.userData
-    const [activeTab, setActiveTab] = React.useState("products");  /*save the button that I press*/
-    const [showModal, setShowModal] = useState(false);
+    const [activeTab, setActiveTab] = React.useState("products")
 
-    const handleShow = () => setShowModal(true);
-    const handleClose = () => setShowModal(false)
+    const navigate = useNavigate();
 
-    const navigate = useNavigate(); //para que pueda regresar a la página anterior
+    const handleLogout = () => {
+        dispatch({ type: 'LOGOUT' });
+        navigate("/login");
+    }
 
     const fetchCategories = async () => {
         try {
@@ -40,11 +39,6 @@ export const DashBoard = () => {
         fetchCategories();
     }, []);
 
-
-    const goBack = () => {
-        navigate("/");
-    }
-
     return (
         <div className="container">
 
@@ -58,8 +52,17 @@ export const DashBoard = () => {
                             <p>Administra productos y categorías de tu inventario</p>
                         </div>
                         <div className="col-1 d-flex align-items-end flex-column gap-3">
-                            <button className="btn btn-primary" onClick={goBack}>
-                                <i className="fa-sharp fa-solid fa-arrow-left"></i> Regresar
+                            <button className="btn btn-outline-danger" onClick={handleLogout}>
+                                <div className="d-flex justify-content-center align-items-center gap-2">
+                                    <p className="fs-6 text-white m-0">
+                                        Logout
+                                    </p>
+                                    <i
+                                        className="fa-solid fa-right-from-bracket fs-5 m-0"
+                                        style={{ cursor: 'pointer' }}
+                                    >
+                                    </i>
+                                </div>
                             </button>
                             {/* Boton Modal */}
                             <ShoppingCart />
