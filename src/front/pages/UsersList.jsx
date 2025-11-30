@@ -231,13 +231,13 @@ export const UsersList = () => {
                     <p>Administra los usuarios de tu organización</p>
                 </div>
                 <div className="">
-                    <button className="btn btn-danger" onClick={handleLogout}>
+                    <button className="btn btn-outline-danger" onClick={handleLogout}>
                         <div className="d-flex justify-content-center align-items-center gap-2">
-                            <p className="fs-6 fw-lighter m-0 text-white">
+                            <p className="fs-6 text-white m-0">
                                 Logout
                             </p>
                             <i
-                                className="fa-solid fa-right-from-bracket fs-5 m-0 text-white"
+                                className="fa-solid fa-right-from-bracket fs-5 m-0"
                                 style={{ cursor: 'pointer' }}
                             >
                             </i>

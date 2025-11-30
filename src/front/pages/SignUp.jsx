@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import Swal from 'sweetalert2';
 
 export const SignUp = () => {
@@ -120,102 +121,142 @@ export const SignUp = () => {
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
-      <div className="card shadow-lg p-4" style={{ width: "380px", borderRadius: "1rem" }}>
-        <h3 className="text-center fw-bold mb-4">Sign up for Stockify</h3>
-
-        <form onSubmit={handleSubmit}>
-          {/* Email */}
-          <div className="mb-3 text-start">
-            <label htmlFor="email" className="form-label fw-semibold">
-              Master email address
-            </label>
-            <input
-              type="email"
-              className="form-control"
-              id="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              disabled={loading}
-            />
-            <small className="form-text text-muted">
-              Used for account creation
-            </small>
-          </div>
-
-          {/* Password */}
-          <div className="mb-3 text-start">
-            <label htmlFor="password" className="form-label fw-semibold">
-              Master password
-            </label>
-            <input
-              type="password"
-              className="form-control"
-              id="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              disabled={loading}
-            />
-            <small className="form-text text-muted">
-              Used for account creation
-            </small>
-          </div>
-
-          {/* Username */}
-          <div className="mb-3 text-start">
-            <label htmlFor="username" className="form-label fw-semibold">
-              Master username
-            </label>
-            <input
-              type="text"
-              className="form-control"
-              id="username"
-              placeholder="Enter your username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-              disabled={loading}
-            />
-            <small className="form-text text-muted">
-              Used for account creation
-            </small>
-          </div>
+    <div>
+      <nav
+        className="navbar navbar-expand-lg shadow-md"
+        style={{ backgroundColor: "white", borderBottom: "4px solid #b8860b" }}
+      >
+        <div className="container-fluid">
+          <Link className="navbar-brand fw-bold" to="/" style={{ fontSize: "1.2rem" }}>
+            Stockify
+          </Link>
 
           <button
-            type="submit"
-            className="btn btn-warning w-100 fw-bold mb-3"
-            disabled={loading}
-          >
-            {loading ? (
-              <>
-                <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                Creando Cuenta...
-              </>
-            ) : (
-              'Create a new account'
-            )}
-          </button>
-
-          <div className="d-flex align-items-center mb-3">
-            <hr className="flex-grow-1" />
-            <span className="mx-2 text-muted fw-semibold">OR</span>
-            <hr className="flex-grow-1" />
-          </div>
-
-          <button
+            className="navbar-toggler bg-light"
             type="button"
-            className="btn btn-outline-secondary w-100 fw-semibold"
-            onClick={() => { navigate("/") }}
-            disabled={loading}
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNav"
+            aria-controls="navbarNav"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
           >
-            Sign in to an existing Stockify account
+            <span className="navbar-toggler-icon"></span>
           </button>
-        </form>
+
+          <div className="collapse navbar-collapse" id="navbarNav">
+            <ul className="navbar-nav ms-auto align-items-center">
+              <li className="nav-item me-2">
+                <Link className="btn btn-outline-success btn-sm" to="/login">
+                  Login
+                </Link>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+      <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
+        <div className="card shadow-lg p-4" style={{ width: "380px", borderRadius: "1rem" }}>
+          <div>
+            <div className="d-flex justify-content-start align-items-center gap-2 pb-1">
+              <i className="fs-4 fa-solid fa-hands-holding-child m-0"></i>
+              <h3 className="fw-bold m-0">Master create</h3>
+            </div>
+            <p className="fw-lighter m-0 pb-3" style={{ fontSize: "0.8rem" }}>Create credentials for your master account</p>
+          </div>
+
+          <form onSubmit={handleSubmit}>
+            {/* Email */}
+            <div className="mb-3 text-start">
+              <label htmlFor="email" className="form-label fw-semibold">
+                Master email address
+              </label>
+              <input
+                type="email"
+                className="form-control"
+                id="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={loading}
+              />
+              <p className="fw-lighter pt-2" style={{ fontSize: "0.8rem" }}>
+                Used for account creation
+              </p>
+            </div>
+
+            {/* Password */}
+            <div className="mb-3 text-start">
+              <label htmlFor="password" className="form-label fw-semibold">
+                Master password
+              </label>
+              <input
+                type="password"
+                className="form-control"
+                id="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                disabled={loading}
+              />
+              <p className="fw-lighter pt-2" style={{ fontSize: "0.8rem" }}>
+                Used for account creation
+              </p>
+            </div>
+
+            {/* Username */}
+            <div className="mb-3 text-start">
+              <label htmlFor="username" className="form-label fw-semibold">
+                Master username
+              </label>
+              <input
+                type="text"
+                className="form-control"
+                id="username"
+                placeholder="Enter your username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+                disabled={loading}
+              />
+              <p className="fw-lighter pt-2" style={{ fontSize: "0.8rem" }}>
+                Used for account creation
+              </p>
+            </div>
+
+            <button
+              type="submit"
+              className="btn btn-warning w-100 fw-bold mb-3"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                  Creating Account...
+                </>
+              ) : (
+                'Create a new account'
+              )}
+            </button>
+
+            <div className="d-flex align-items-center mb-3">
+              <hr className="flex-grow-1" />
+              <span className="mx-2 text-muted fw-semibold">OR</span>
+              <hr className="flex-grow-1" />
+            </div>
+
+            <button
+              type="button"
+              className="btn btn-outline-secondary w-100 fw-semibold"
+              onClick={() => { navigate("/") }}
+              disabled={loading}
+            >
+              Login to an existing Stockify account
+            </button>
+          </form>
+        </div>
       </div>
     </div>
-  );
+  )
 };
