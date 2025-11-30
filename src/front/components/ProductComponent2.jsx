@@ -7,6 +7,10 @@ import Swal from 'sweetalert2';
 
 const ProductsComponent = () => {
     const { dispatch, store } = useGlobalReducer();
+    const userRole = store.userData?.role
+    const isAdmin = userRole === 'Administrator'
+    const [searchName, setSearchName] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState('');
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(false);
     const products = store.products;
@@ -21,6 +25,46 @@ const ProductsComponent = () => {
         product_SKU: "",
         category_id: "",
     });
+
+    const handleSearch = async () => {
+        setLoading(true);
+        let url = `${import.meta.env.VITE_BACKEND_URL}api/products`;
+        const params = [];
+
+        // 1. Agregar el nombre de búsqueda
+        if (searchName.trim()) {
+            params.push(`name=${encodeURIComponent(searchName.trim())}`);
+        }
+
+        // 2. Agregar la categoría (solo si se seleccionó algo)
+        if (selectedCategory) {
+            params.push(`category_id=${selectedCategory}`);
+        }
+
+        // 3. Construir la URL final con query parameters
+        if (params.length > 0) {
+            url += `?${params.join('&')}`;
+        }
+
+        console.log("Fetching URL:", url); // Para debug
+
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (response.ok) {
+                setProducts(data.products); // Actualiza la lista de productos
+            } else {
+                console.error("Error al buscar productos:", data.msg);
+                alert(`Error: ${data.msg}`);
+            }
+        } catch (error) {
+            console.error("Error de conexión:", error);
+            alert("Error de conexión con el servidor.");
+        } finally {
+            setLoading(false);
+        }
+    }
 
     const handleInputChange = (e) => {
         const { id, value } = e.target;
@@ -499,11 +543,11 @@ const ProductsComponent = () => {
         <div id="products-tab" className="tab-content active">
             {/* Search and Filters*/}
             <div className="search-section">
-                <div className="search-container">
-                    <div className="form-group search-input">
-                        <input type="text" className="form-control" placeholder="Buscar productos..." />
-                    </div>
-                    <div className="form-group filter-select">
+                <div className="d-flex align-items-center justify-content-center gap-2">
+
+                    <input type="text" className="form-control m-0" placeholder="Buscar productos..." value={searchName} onChange={(e) => setSearchName(e.target.value)} />
+
+                    <div className="form-group filter-select m-0">
                         <select className="form-control">
                             <option value="">Seleccionar categoría</option>
                             {categories.map((cat) => (
@@ -519,107 +563,94 @@ const ProductsComponent = () => {
                 </div>
             </div>
 
-            <div className="main-layout">
+            <div className="col d-flex gap-2">
                 {/* Create Product Panel */}
-                <div className="panel">
-                    <div className="panel-header">
-                        <h2><i className="fas fa-plus-circle"></i> Crear Nuevo Producto</h2>
+                {isAdmin && (
+                    <div className="panel col-6 h-50">
+                        <div className="panel-header">
+                            <h2><i className="fas fa-plus-circle"></i> Crear Nuevo Producto</h2>
+                        </div>
+                        <div className="panel-body">
+                            <form id="productForm">
+                                <div className="form-group">
+                                    <label className="form-label" htmlFor="productName">Nombre del Producto</label>
+                                    <input type="text" className="form-control" id="productName" placeholder="Ej: iPhone 14 Pro" value={productData.product_name} onChange={handleInputChange} />
+                                    <div className="form-text">Nombre descriptivo del producto.</div>
+                                </div>
+
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label className="form-label" htmlFor="productPrice">Precio ($)</label>
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            id="productPrice"
+                                            placeholder="0.00"
+                                            onInput={(e) => {
+                                                let value = e.target.value;
+                                                value = value.replace(/[^0-9.]/g, "");
+                                                value = value.replace(/(\..*)\./g, "$1");
+                                                if (value.includes(".")) {
+                                                    const parts = value.split(".");
+                                                    parts[1] = parts[1].slice(0, 2);
+                                                    value = parts.join(".");
+                                                }
+                                                e.target.value = value;
+                                            }}
+                                            value={productData.price}
+                                            onChange={handleInputChange}
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label className="form-label" htmlFor="productStock">Stock</label>
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            id="productStock"
+                                            placeholder="0"
+                                            onInput={(e) => {
+                                                let value = e.target.value;
+                                                value = value.replace(/[^0-9.]/g, "");
+                                                value = value.replace(/(\..*)\./g, "$1");
+                                                if (value.includes(".")) {
+                                                    const parts = value.split(".");
+                                                    parts[1] = parts[1].slice(0, 2);
+                                                    value = parts.join(".");
+                                                }
+                                                e.target.value = value;
+                                            }}
+                                            value={productData.stock}
+                                            onChange={handleInputChange}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label className="form-label" htmlFor="productSKU">SKU</label>
+                                        <input type="text" className="form-control" id="productSKU" placeholder="PROD-001" value={productData.product_SKU} onChange={handleInputChange} />
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label" htmlFor="productCategory">Categoría</label>
+                                        <select className="form-control" id="productCategory" value={productData.category_id} onChange={handleInputChange}>
+                                            <option value="">Seleccionar categoría</option>
+                                            {categories.map((cat) => (
+                                                <option key={cat.id} value={cat.id}>
+                                                    {cat.category_name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+                                <button type="button" className="btn btn-primary btn-block" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                                    <i className="fas fa-save"></i> Crear Producto
+                                </button>
+                            </form>
+                        </div>
                     </div>
-                    <div className="panel-body">
-                        <form id="productForm">
-                            <div className="form-group">
-                                <label className="form-label" htmlFor="productName">Nombre del Producto</label>
-                                <input type="text" className="form-control" id="productName" placeholder="Ej: iPhone 14 Pro" value={productData.product_name} onChange={handleInputChange} />
-                                <div className="form-text">Nombre descriptivo del producto.</div>
-                            </div>
 
-                            <div className="form-row">
-                                <div className="form-group">
-                                    <label className="form-label" htmlFor="productPrice">Precio ($)</label>
-                                    <input
-                                        type="text"
-                                        className="form-control"
-                                        id="productPrice"
-                                        placeholder="0.00"
-                                        onInput={(e) => {
-                                            let value = e.target.value;
-                                            value = value.replace(/[^0-9.]/g, "");
-                                            value = value.replace(/(\..*)\./g, "$1");
-                                            if (value.includes(".")) {
-                                                const parts = value.split(".");
-                                                parts[1] = parts[1].slice(0, 2);
-                                                value = parts.join(".");
-                                            }
-                                            e.target.value = value;
-                                        }}
-                                        value={productData.price}
-                                        onChange={handleInputChange}
-                                    />
-                                </div>
-
-                                <div className="form-group">
-                                    <label className="form-label" htmlFor="productStock">Stock</label>
-                                    <input
-                                        type="text"
-                                        className="form-control"
-                                        id="productStock"
-                                        placeholder="0"
-                                        onInput={(e) => {
-                                            let value = e.target.value;
-                                            value = value.replace(/[^0-9.]/g, "");
-                                            value = value.replace(/(\..*)\./g, "$1");
-                                            if (value.includes(".")) {
-                                                const parts = value.split(".");
-                                                parts[1] = parts[1].slice(0, 2);
-                                                value = parts.join(".");
-                                            }
-                                            e.target.value = value;
-                                        }}
-                                        value={productData.stock}
-                                        onChange={handleInputChange}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="form-row">
-                                <div className="form-group">
-                                    <label className="form-label" htmlFor="productSKU">SKU</label>
-                                    <input type="text" className="form-control" id="productSKU" placeholder="PROD-001" value={productData.product_SKU} onChange={handleInputChange} />
-                                </div>
-                                <div className="form-group">
-                                    <label className="form-label" htmlFor="productCategory">Categoría</label>
-                                    <select className="form-control" id="productCategory" value={productData.category_id} onChange={handleInputChange}>
-                                        <option value="">Seleccionar categoría</option>
-                                        {categories.map((cat) => (
-                                            <option key={cat.id} value={cat.id}>
-                                                {cat.category_name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div className="form-group">
-                                <label className="form-label" htmlFor="productImage">Imagen del Producto</label>
-                                <input type="file" className="form-control" id="productImage" accept="image/*" />
-                                <div className="form-text">Formatos: JPG, PNG, GIF. Máx 5MB</div>
-                                <div className="image-preview">
-                                    <i className="fas fa-image" style={{ color: "var(--gray)" }}></i>
-                                </div>
-                                <div className="form-check form-switch">
-                                    <input className="form-check-input" type="checkbox" value="" id="checkNativeSwitch" switch="true" />
-                                    <label className="form-check-label" htmlFor="checkNativeSwitch">
-                                        Artículo no disponible/disponible
-                                    </label>
-                                </div>
-                            </div>
-
-                            <button type="button" className="btn btn-primary btn-block" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                                <i className="fas fa-save"></i> Crear Producto
-                            </button>
-                        </form>
-                    </div>
-                </div>
+                )}
 
                 {/* Modal para Crear Producto */}
                 <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -712,11 +743,11 @@ const ProductsComponent = () => {
                 </div>
 
                 {/* Products List */}
-                <div className="panel">
+                <div className="col panel">
                     <div className="panel-header">
                         <h2><i className="fas fa-list"></i> Lista de productos</h2>
                     </div>
-                    <div className="panel-body">
+                    <div className="panel-body scrollable-products" style={{ overflowY: "auto", maxHeight: "45rem" }}>
                         <div className="products-grid">
                             {products.length > 0 ? (
                                 products.map((product) => (
@@ -741,37 +772,41 @@ const ProductsComponent = () => {
                                             <div className="product-sku">SKU: {product.product_SKU}</div>
                                         </div>
                                         <div className="product-actions mt-3 pt-3 border-top">
-                                            <div className="d-flex gap-2 flex-wrap">
-                                                {/* Botón Editar Precio */}
-                                                <button
-                                                    className="btn btn-warning btn-sm"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#editPriceModal"
-                                                    onClick={() => openEditModal(product)}
-                                                >
-                                                    <i className="fas fa-edit me-1"></i>
-                                                    Editar Precio
-                                                </button>
 
-                                                {/* Botón Activar/Desactivar */}
-                                                <button
-                                                    className={`btn btn-sm ${product.is_active ? 'btn-secondary' : 'btn-success'}`}
-                                                    onClick={() => toggleProductActive(product.id, product.product_name, product.is_active)}
-                                                    disabled={toggleLoading === product.id}
-                                                >
-                                                    {toggleLoading === product.id ? (
-                                                        <>
-                                                            <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                                                            {product.is_active ? 'Desactivando...' : 'Activando...'}
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <i className={`fas ${product.is_active ? 'fa-eye-slash' : 'fa-eye'} me-1`}></i>
-                                                            {product.is_active ? 'Desactivar' : 'Activar'}
-                                                        </>
-                                                    )}
-                                                </button>
-                                            </div>
+
+                                            {isAdmin && (
+                                                <div className="product-actions d-flex gap-2 mt-2">
+                                                    {/* Botón para editar precio */}
+                                                    <button
+                                                        className="btn btn-warning btn-sm"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#editPriceModal"
+                                                        onClick={() => openEditModal(product)}
+                                                    >
+                                                        <i className="fas fa-edit me-1"></i>
+                                                        Editar Precio
+                                                    </button>
+
+                                                    {/* Botón Activar/Desactivar */}
+                                                    <button
+                                                        className={`btn btn-sm ${product.is_active ? 'btn-secondary' : 'btn-success'}`}
+                                                        onClick={() => toggleProductActive(product.id, product.product_name, product.is_active)}
+                                                        disabled={toggleLoading === product.id}
+                                                    >
+                                                        {toggleLoading === product.id ? (
+                                                            <>
+                                                                <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                                                                {product.is_active ? 'Desactivando...' : 'Activando...'}
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <i className={`fas ${product.is_active ? 'fa-eye-slash' : 'fa-eye'} me-1`}></i>
+                                                                {product.is_active ? 'Desactivar' : 'Activar'}
+                                                            </>
+                                                        )}
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 ))

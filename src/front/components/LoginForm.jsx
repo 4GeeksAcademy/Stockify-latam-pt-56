@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import useGlobalReducer from '../hooks/useGlobalReducer';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
 const LoginForm = () => {
@@ -164,118 +164,153 @@ const LoginForm = () => {
     };
 
     return (
-        <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
-            <div className="card shadow-lg p-4" style={{ width: "380px", borderRadius: "1rem" }}>
-                <div className='login-container'>
-                    <div className='login-form-wrapper'>
-                        <p className="text-start fs-2 fw-bold mb-4">Stockify user sign in</p>
-                        <form className='login-form' onSubmit={handleSubmit}>
-                            <div className=''>
-                                <label htmlFor="email" className="form-label fw-semibold">Email address</label>
-                                <input
-                                    type="email"
-                                    id='email'
-                                    name='email'
-                                    value={formData.email}
-                                    onChange={handleChange}
-                                    placeholder='Ingrese tu correo electrónico'
-                                    className={errors.email ? 'form-control is-invalid' : 'form-control'}
-                                    required
-                                    disabled={loading}
-                                />
-                                {errors.email && <div className="invalid-feedback">{errors.email}</div>}
-                            </div>
+        <div>
+            <nav
+                className="navbar navbar-expand-lg shadow-md"
+                style={{ backgroundColor: "white", borderBottom: "4px solid #b8860b" }}
+            >
+                <div className="container-fluid">
+                    <Link className="navbar-brand fw-bold" to="/" style={{ fontSize: "1.2rem" }}>
+                        Stockify
+                    </Link>
 
-                            <div className='d-flex gap-2 justify-content-start align-items-center py-2'>
-                                <input
-                                    type='checkbox'
-                                    id='remember'
-                                    disabled={loading}
-                                />
-                                <label htmlFor="remember" className="form-label fw-lighter m-0">Remember this account</label>
-                            </div>
+                    <button
+                        className="navbar-toggler bg-light"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#navbarNav"
+                        aria-controls="navbarNav"
+                        aria-expanded="false"
+                        aria-label="Toggle navigation"
+                    >
+                        <span className="navbar-toggler-icon"></span>
+                    </button>
 
-                            <div className='mb-3 text-start pt-2'>
-                                <label htmlFor='username' className="form-label fw-semibold">Account username</label>
-                                <input
-                                    type="text"
-                                    id='username'
-                                    name='username'
-                                    value={formData.username}
-                                    onChange={handleChange}
-                                    placeholder='Ingrese tu nombre de usuario'
-                                    className={errors.username ? 'form-control is-invalid' : 'form-control'}
-                                    required
-                                    disabled={loading}
-                                />
-                                {errors.username && <div className="invalid-feedback">{errors.username}</div>}
-                            </div>
+                    <div className="collapse navbar-collapse" id="navbarNav">
+                        <ul className="navbar-nav ms-auto align-items-center">
+                            <li className="nav-item me-2">
+                                <Link className="btn btn-outline-success btn-sm" to="/signup">
+                                    Singup
+                                </Link>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
 
-                            <div className='mb-3 text-start'>
-                                <label htmlFor='password' className="form-label fw-semibold">Password</label>
-                                <input
-                                    type={showPassword ? 'text' : 'password'}
-                                    id='password'
-                                    name='password'
-                                    value={formData.password}
-                                    onChange={handleChange}
-                                    placeholder='Ingrese tu contraseña'
-                                    className={errors.password ? 'form-control is-invalid' : 'form-control'}
-                                    required
-                                    disabled={loading}
-                                />
-                                {errors.password && <div className="invalid-feedback">{errors.password}</div>}
-                                <div className='d-flex gap-4 justify-content-start align-items-center pt-2 flex-column'>
+            <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
+                <div className="card shadow-lg p-4" style={{ width: "380px", borderRadius: "1rem" }}>
+                    <div className='login-container'>
+                        <div className='login-form-wrapper'>
+                            <p className="text-start fs-2 fw-bold mb-4">Stockify user sign in</p>
+                            <form className='login-form' onSubmit={handleSubmit}>
+                                <div className=''>
+                                    <label htmlFor="email" className="form-label fw-semibold">Email address</label>
+                                    <input
+                                        type="email"
+                                        id='email'
+                                        name='email'
+                                        value={formData.email}
+                                        onChange={handleChange}
+                                        placeholder='Ingrese tu correo electrónico'
+                                        className={errors.email ? 'form-control is-invalid' : 'form-control'}
+                                        required
+                                        disabled={loading}
+                                    />
+                                    {errors.email && <div className="invalid-feedback">{errors.email}</div>}
+                                </div>
 
-                                    <div className='d-flex gap-2 justify-content-start align-items-center pt-2'>
-                                        <input
-                                            type='checkbox'
-                                            id='showPassword'
-                                            checked={showPassword}
-                                            onChange={() => setShowPassword(!showPassword)}
-                                            disabled={loading}
-                                        />
-                                        <label htmlFor='showPassword' className="form-label fw-lighter m-0">Show Password</label>
-                                    </div>
-                                    <div className='d-flex gap-2 justify-content-start align-items-center pt-2'>
-                                        <input
-                                            type='checkbox'
-                                            id='showMaster'
-                                            checked={formData.isMaster}
-                                            onChange={() => setFormData({ ...formData, isMaster: !formData.isMaster })}
-                                            disabled={loading}
-                                        />
-                                        <label htmlFor='showMaster' className="form-label fw-lighter m-0">Is master</label>
+                                <div className='d-flex gap-2 justify-content-start align-items-center py-2'>
+                                    <input
+                                        type='checkbox'
+                                        id='remember'
+                                        disabled={loading}
+                                    />
+                                    <label htmlFor="remember" className="form-label fw-lighter m-0">Remember this account</label>
+                                </div>
+
+                                <div className='mb-3 text-start pt-2'>
+                                    <label htmlFor='username' className="form-label fw-semibold">Account username</label>
+                                    <input
+                                        type="text"
+                                        id='username'
+                                        name='username'
+                                        value={formData.username}
+                                        onChange={handleChange}
+                                        placeholder='Ingrese tu nombre de usuario'
+                                        className={errors.username ? 'form-control is-invalid' : 'form-control'}
+                                        required
+                                        disabled={loading}
+                                    />
+                                    {errors.username && <div className="invalid-feedback">{errors.username}</div>}
+                                </div>
+
+                                <div className='mb-3 text-start'>
+                                    <label htmlFor='password' className="form-label fw-semibold">Password</label>
+                                    <input
+                                        type={showPassword ? 'text' : 'password'}
+                                        id='password'
+                                        name='password'
+                                        value={formData.password}
+                                        onChange={handleChange}
+                                        placeholder='Ingrese tu contraseña'
+                                        className={errors.password ? 'form-control is-invalid' : 'form-control'}
+                                        required
+                                        disabled={loading}
+                                    />
+                                    {errors.password && <div className="invalid-feedback">{errors.password}</div>}
+                                    <div className='d-flex gap-4 justify-content-start align-items-center pt-2 flex-column'>
+
+                                        <div className='d-flex gap-2 justify-content-start align-items-center pt-2'>
+                                            <input
+                                                type='checkbox'
+                                                id='showPassword'
+                                                checked={showPassword}
+                                                onChange={() => setShowPassword(!showPassword)}
+                                                disabled={loading}
+                                            />
+                                            <label htmlFor='showPassword' className="form-label fw-lighter m-0">Show Password</label>
+                                        </div>
+                                        <div className='d-flex gap-2 justify-content-start align-items-center pt-2'>
+                                            <input
+                                                type='checkbox'
+                                                id='showMaster'
+                                                checked={formData.isMaster}
+                                                onChange={() => setFormData({ ...formData, isMaster: !formData.isMaster })}
+                                                disabled={loading}
+                                            />
+                                            <label htmlFor='showMaster' className="form-label fw-lighter m-0">Is master</label>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <button
-                                type='submit'
-                                className="btn btn-warning w-100 fw-bold mb-3"
-                                disabled={loading}
-                            >
-                                {loading ? (
-                                    <>
-                                        <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                                        Iniciando Sesión...
-                                    </>
-                                ) : (
-                                    'Sign in'
-                                )}
-                            </button>
-
-                            <div className='col'>
                                 <button
-                                    className="btn btn-outline-secondary w-100 fw-lighter fs-6"
-                                    onClick={() => { navigate("/signup") }}
+                                    type='submit'
+                                    className="btn btn-warning w-100 fw-bold mb-3"
                                     disabled={loading}
-                                    type="button"
                                 >
-                                    Create credentials for Master
+                                    {loading ? (
+                                        <>
+                                            <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                                            Iniciando Sesión...
+                                        </>
+                                    ) : (
+                                        'Sign in'
+                                    )}
                                 </button>
-                            </div>
-                        </form>
+
+                                <div className='col'>
+                                    <button
+                                        className="btn btn-outline-secondary w-100 fw-lighter fs-6"
+                                        onClick={() => { navigate("/signup") }}
+                                        disabled={loading}
+                                        type="button"
+                                    >
+                                        Create credentials for Master
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>

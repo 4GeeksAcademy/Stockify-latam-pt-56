@@ -249,7 +249,7 @@ export const SignUp = () => {
             <button
               type="button"
               className="btn btn-outline-secondary w-100 fw-semibold"
-              onClick={() => { navigate("/") }}
+              onClick={() => { navigate("/login") }}
               disabled={loading}
             >
               Login to an existing Stockify account
