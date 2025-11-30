@@ -492,10 +492,15 @@ def delete_user():
 
 
 @api.route('/orders', methods=['POST'])
+@jwt_required()
 def create_order():
     data = request.get_json()
+    user_identity_str = get_jwt_identity()
+    user_identity = json.loads(user_identity_str.replace("'", "\""))
+    created_by_user_id = user_identity.get('id')
 
-    # ... (Validaciones de campos obligatorios)
+    if not created_by_user_id:
+        return jsonify({"msg": "Error de autenticación: ID de usuario no encontrado en el token."}), 401
 
     # INICIO DE LA TRANSACCIÓN
     try:
@@ -527,7 +532,9 @@ def create_order():
             client_name=data['client_name'],
             delivery_address=data['delivery_address'],
             total_amount=calculated_total,
-            status='Pending'  # El estado inicial es Pendiente
+            status='Pending',
+            # 3. ASIGNAR EL ID DEL USUARIO CREADOR
+            created_by_user_id=created_by_user_id
         )
         db.session.add(new_order)
         db.session.flush()
@@ -566,18 +573,10 @@ def create_order():
 @api.route('/orders/<int:order_id>/approve', methods=['PUT'])
 @jwt_required()
 def approve_order(order_id):
+    # Asumimos que solo usuarios autorizados (ej. Administradores o Vendedores) pueden hacer esto
+    # Puedes añadir @jwt_required() aquí.
 
-    current_user_id = get_jwt_identity()
-    user = db.session.get(User, current_user_id)
-
-    if not user:
-        return jsonify({"msg": "Usuario no encontrado."}), 404
-
-    current_user_role = user.role  # Usar el rol del objeto User
-
-    if current_user_role != 'Administrator':
-        return jsonify({"msg": "Acceso denegado. Solo los Administradores pueden aprobar órdenes."}), 403
-
+    # INICIO DE LA TRANSACCIÓN
     try:
         # 1. Cargar la Orden y sus Ítems relacionados
         order = db.session.execute(
