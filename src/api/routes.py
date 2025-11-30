@@ -492,32 +492,13 @@ def delete_user():
 
 
 @api.route('/orders', methods=['POST'])
-@jwt_required()
 def create_order():
-
-    current_user_id = get_jwt_identity()
-    user = db.session.get(User, current_user_id)
-
-    if not user:
-        return jsonify({"msg": "Usuario no encontrado."}), 404
-
-    current_user_role = user.role  # Usar el rol del objeto User
-
-    if current_user_role not in ['Administrator', 'Seller']:
-        return jsonify({"msg": "Solo Administradores o Vendedores pueden crear órdenes."}), 403
-
     data = request.get_json()
 
-    # 1. Validación de campos obligatorios
-    if not data or not all(k in data for k in ['client_name', 'delivery_address', 'order_items']):
-        return jsonify({"msg": "Faltan datos obligatorios del pedido."}), 400
+    # ... (Validaciones de campos obligatorios)
 
-    if not isinstance(data.get('order_items'), list) or not data['order_items']:
-        return jsonify({"msg": "La lista de productos (order_items) es inválida o está vacía."}), 400
-
-    # 2. INICIO DE LA TRANSACCIÓN
+    # INICIO DE LA TRANSACCIÓN
     try:
-        # A. Recalcular el total y verificar el stock
         calculated_total = 0
 
         # B. Consultar los productos para VALIDAR PRECIOS y EXISTENCIA (No Stock)
@@ -533,25 +514,25 @@ def create_order():
 
             product = products_map.get(product_id)
 
-            # C. Validación y Cálculo
+            # C. Validación: Asegurar que el producto existe
             if not product:
                 return jsonify({"msg": f"Producto con ID {product_id} no encontrado."}), 404
 
+            # Recalcular el precio
             price = float(product.price)
             calculated_total += quantity_sold * price
 
+        # D. Crear la Cabecera de la Orden
         new_order = Order(
             client_name=data['client_name'],
             delivery_address=data['delivery_address'],
             total_amount=calculated_total,
-            status='Pending',
-            created_by_user_id=current_user_id  # El estado inicial es Pendiente
+            status='Pending'  # El estado inicial es Pendiente
         )
-
         db.session.add(new_order)
         db.session.flush()
 
-        # E. Crear los Detalles de la Orden y Actualizar el Stock
+        # E. Crear solo los Detalles de la Orden (SIN TOCAR EL STOCK)
         for item in data['order_items']:
             product_id = item['product_id']
             quantity_sold = item['quantity_sold']
@@ -567,6 +548,7 @@ def create_order():
             )
             db.session.add(new_order_item)
 
+        # F. COMMIT: Guardar solo la Orden y sus Ítems.
         db.session.commit()
 
         return jsonify({

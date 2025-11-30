@@ -2,10 +2,9 @@ import React, { useEffect, useState } from "react";
 import { ProductInList } from "./ProductInList";
 import { ProductShoppingCard } from "./ProductShoppingCard";
 import useGlobalReducer from "../hooks/useGlobalReducer";
-
+import Swal from 'sweetalert2';
 
 export const ModalShoppingCart = () => {
-
     const { dispatch, store } = useGlobalReducer()
     const categories = store.categories || []
     const cartItems = store?.cart || [];
@@ -46,47 +45,60 @@ export const ModalShoppingCart = () => {
     };
 
     const handleOrderSubmit = async () => {
-
-        // 4.1. Validaciones mínimas
+        // Validaciones con SweetAlert
         if (!clientData.full_name || !clientData.address) {
-            alert("Por favor, complete el nombre y la dirección del cliente.");
+            await Swal.fire({
+                title: 'Campos Incompletos',
+                text: 'Por favor, complete el nombre y la dirección del cliente.',
+                icon: 'warning',
+                confirmButtonText: 'Entendido',
+                confirmButtonColor: '#f59e0b'
+            });
             return;
         }
 
         if (cartItems.length === 0) {
-            alert("El carrito está vacío. Agregue productos para crear una orden.");
+            await Swal.fire({
+                title: 'Carrito Vacío',
+                text: 'El carrito está vacío. Agregue productos para crear una orden.',
+                icon: 'warning',
+                confirmButtonText: 'Entendido',
+                confirmButtonColor: '#f59e0b'
+            });
             return;
         }
 
-        if (!store.token) { // Verifica si el token existe antes de continuar
-            alert("No está autenticado. Por favor inicie sesión.");
+        if (!store.token) {
+            await Swal.fire({
+                title: 'No Autenticado',
+                text: 'No está autenticado. Por favor inicie sesión.',
+                icon: 'error',
+                confirmButtonText: 'Entendido',
+                confirmButtonColor: '#ef4444'
+            });
             return;
         }
 
-
-        // 4.2. Preparar los ítems de la orden para el backend
-        // Solo enviamos los datos necesarios: product_id, quantity y price_at_sale (opcional pero muy recomendado)
+        // Preparar los ítems de la orden
         const order_items = cartItems.map(item => ({
             product_id: item.product.id,
             quantity_sold: item.quantity,
-            // Guardar el precio de venta en el momento de la orden (importante para contabilidad)
             price_at_sale: parseFloat(item.product.price)
         }));
 
-        // 4.3. Construir el cuerpo de la solicitud POST
         const orderData = {
             client_name: clientData.full_name,
             delivery_address: clientData.address,
             total_amount: totalAmount.toFixed(2),
             order_items: order_items,
-            // Puedes añadir más campos como user_id, status, etc.
         };
 
         setLoading(true);
-        console.log("Datos a enviar:", orderData); // Puedes revisar esto en la consola
 
         try {
-            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/orders`, { // Asumo un endpoint /api/orders
+            console.log("Enviando orden...", orderData);
+
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/orders`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -95,44 +107,105 @@ export const ModalShoppingCart = () => {
                 body: JSON.stringify(orderData),
             });
 
+            console.log("Respuesta del servidor:", response);
+
             if (response.ok) {
-                // 4.4. Éxito: Limpiar el formulario y el carrito
-                alert("Orden creada exitosamente. El stock ha sido actualizado.");
+                // ✅ ÉXITO - ORDEN CREADA
+                await Swal.fire({
+                    title: '¡Orden Creada Exitosamente!',
+                    html: `
+                        <div style="text-align: center;">
+                            <div style="font-size: 3rem; color: #10b981; margin: 10px 0;">
+                                ✅
+                            </div>
+                            <p>La orden ha sido creada y el stock actualizado</p>
+                            <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; margin: 10px 0;">
+                                <strong>Cliente: ${clientData.full_name}</strong><br/>
+                                <small style="color: #6b7280;">Total: $${totalAmount.toFixed(2)}</small>
+                            </div>
+                        </div>
+                    `,
+                    icon: 'success',
+                    confirmButtonText: 'Continuar',
+                    confirmButtonColor: '#10b981'
+                });
+
+                // Limpiar formulario y carrito
                 setClientData({ full_name: '', address: '' });
-                dispatch({ type: 'CLEAR_CART' }); // Necesitas implementar esta acción en tu reducer
-                // Cierra el modal (si usas Bootstrap, puede ser necesario usar JS o data-bs-dismiss en el botón)
+                dispatch({ type: 'CLEAR_CART' });
+
+                // Cerrar el modal
+                const modal = document.getElementById('shoppingCartModal');
+                if (modal) {
+                    const bootstrapModal = bootstrap.Modal.getInstance(modal);
+                    bootstrapModal.hide();
+                }
+
             } else {
                 const result = await response.json();
-                alert(`Error al crear la orden: ${result.msg || 'Error del servidor.'}`);
+                console.error("Error del servidor:", result);
+
+                // ✅ ERROR ESPECÍFICO DEL SERVIDOR
+                await Swal.fire({
+                    title: 'Error al Crear Orden',
+                    html: `
+                        <div style="text-align: center;">
+                            <div style="font-size: 3rem; margin: 10px 0;">😕</div>
+                            <p>${result.msg || 'Error del servidor al procesar la orden'}</p>
+                            <small style="color: #6b7280;">
+                                ${result.msg && result.msg.includes('stock') ? 'Verifica el stock disponible' : ''}
+                                ${result.msg && result.msg.includes('token') ? 'Token inválido o expirado' : ''}
+                            </small>
+                        </div>
+                    `,
+                    icon: 'error',
+                    confirmButtonText: 'Entendido',
+                    confirmButtonColor: '#ef4444'
+                });
             }
 
         } catch (error) {
-            console.error("Error al enviar la orden:", error);
-            alert("Error de conexión con el servidor.");
+            console.error("Error completo al enviar la orden:", error);
+
+            // ✅ ERROR DE CONEXIÓN DETALLADO
+            await Swal.fire({
+                title: 'Error de Conexión',
+                html: `
+                    <div style="text-align: center;">
+                        <div style="font-size: 3rem; margin: 10px 0;">📡</div>
+                        <p>No se pudo conectar con el servidor</p>
+                        <div style="background: #fef2f2; padding: 10px; border-radius: 6px; margin: 10px 0;">
+                            <small style="color: #dc2626;">
+                                Detalles: ${error.message}
+                            </small>
+                        </div>
+                        <small style="color: #6b7280;">
+                            Verifica tu conexión a internet y vuelve a intentar
+                        </small>
+                    </div>
+                `,
+                icon: 'error',
+                confirmButtonText: 'Reintentar',
+                confirmButtonColor: '#ef4444'
+            });
         } finally {
             setLoading(false);
         }
     };
 
     const fetchProducts = async () => {
-
-        // 1. Construir la URL con Query Params
         const params = new URLSearchParams();
 
         if (searchParams.name) {
-            // Añade el nombre de búsqueda si no está vacío
             params.append('name', searchParams.name);
         }
 
         if (searchParams.categoryId) {
-            // Añade el ID de categoría si está seleccionado
             params.append('category_id', searchParams.categoryId);
         }
 
         const queryString = params.toString();
-
         const url = `${import.meta.env.VITE_BACKEND_URL}/api/products?${queryString}`;
-        console.log("Fetching URL:", url); // Verifica la URL en la consola
 
         try {
             const response = await fetch(url);
@@ -140,18 +213,15 @@ export const ModalShoppingCart = () => {
                 throw new Error("Error al cargar productos");
             }
             const data = await response.json();
-
-            // 2. DISPATCH para actualizar la lista de productos del catálogo en el store
-            // **ASUMIMOS QUE TIENES UNA ACCIÓN 'SET_CATALOG_PRODUCTS' EN TU REDUCER**
             dispatch({ type: 'SET_CATALOG_PRODUCTS', payload: data.products });
-
         } catch (error) {
             console.error("Fallo al obtener productos:", error);
-            // Manejar el error de carga si es necesario
         }
     }
 
-    useEffect(() => { fetchProducts(); }, [searchParams.name, searchParams.categoryId])
+    useEffect(() => {
+        fetchProducts();
+    }, [searchParams.name, searchParams.categoryId])
 
     return (
         <div
@@ -179,7 +249,6 @@ export const ModalShoppingCart = () => {
                     </div>
                     {/* Body del Modal */}
                     <div className="modal-body">
-                        {/* Parte izquierda del modal */}
                         <div className="row">
                             <div className="col">
                                 <div className="row">
@@ -201,6 +270,7 @@ export const ModalShoppingCart = () => {
                                                 value={clientData.full_name}
                                                 onChange={handleInputChange}
                                                 required
+                                                disabled={loading}
                                             />
                                         </div>
                                         {/* input address */}
@@ -216,6 +286,7 @@ export const ModalShoppingCart = () => {
                                                 value={clientData.address}
                                                 onChange={handleInputChange}
                                                 required
+                                                disabled={loading}
                                             />
                                         </div>
                                         {/* Titulo del shopping cart*/}
@@ -234,9 +305,7 @@ export const ModalShoppingCart = () => {
                                                 boxShadow: 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.2)',
                                             }}
                                         >
-                                            {/* Productos en la orden de compra */}
                                             <ProductInList />
-
                                         </div>
                                         {/* Total de la compra */}
                                         <div className="d-flex justify-content-between align-items-center gap-3 px-3 pt-5">
@@ -246,7 +315,6 @@ export const ModalShoppingCart = () => {
                                             </div>
                                             <p className="fs-3 fw-bold">${totalAmount.toFixed(2)}</p>
                                         </div>
-
                                     </div>
                                     {/* Parte derecha del modal */}
                                     <div className="col-6">
@@ -259,10 +327,24 @@ export const ModalShoppingCart = () => {
                                             <div className="pt-4">
                                                 <div className="d-flex justify-content-start align-items-center gap-2">
                                                     <div className="form-group w-50 m-0">
-                                                        <input type="text" className="form-control" placeholder="Buscar productos..." id="name" value={searchParams.name} onChange={handleSearchChange} />
+                                                        <input
+                                                            type="text"
+                                                            className="form-control"
+                                                            placeholder="Buscar productos..."
+                                                            id="name"
+                                                            value={searchParams.name}
+                                                            onChange={handleSearchChange}
+                                                            disabled={loading}
+                                                        />
                                                     </div>
                                                     <div className="m-0">
-                                                        <select className="form-control" id="categoryId" value={searchParams.categoryId} onChange={handleSearchChange}>
+                                                        <select
+                                                            className="form-control"
+                                                            id="categoryId"
+                                                            value={searchParams.categoryId}
+                                                            onChange={handleSearchChange}
+                                                            disabled={loading}
+                                                        >
                                                             <option value="">Category</option>
                                                             {categories.map((cat) => (
                                                                 <option key={cat.id} value={cat.id}>
@@ -271,7 +353,11 @@ export const ModalShoppingCart = () => {
                                                             ))}
                                                         </select>
                                                     </div>
-                                                    <button className="btn m-0" onClick={fetchProducts}>
+                                                    <button
+                                                        className="btn m-0"
+                                                        onClick={fetchProducts}
+                                                        disabled={loading}
+                                                    >
                                                         <i className="fs-6 fas fa-search p-0"></i>
                                                     </button>
                                                 </div>
@@ -281,7 +367,6 @@ export const ModalShoppingCart = () => {
                                                 <ProductShoppingCard />
                                             </div>
                                         </div>
-
                                     </div>
                                 </div>
                             </div>
@@ -292,6 +377,7 @@ export const ModalShoppingCart = () => {
                             type="button"
                             className="btn btn-outline-dark"
                             data-bs-dismiss="modal"
+                            disabled={loading}
                         >
                             Close
                         </button>
@@ -299,9 +385,16 @@ export const ModalShoppingCart = () => {
                             type="button"
                             className="btn btn-outline-warning"
                             onClick={handleOrderSubmit}
-                            disabled={loading || cartItems.length === 0} // Deshabilitar si está cargando o el carrito está vacío
+                            disabled={loading || cartItems.length === 0}
                         >
-                            {loading ? 'Enviando...' : 'Send order'}
+                            {loading ? (
+                                <>
+                                    <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                                    Enviando...
+                                </>
+                            ) : (
+                                'Send order'
+                            )}
                         </button>
                     </div>
                 </div>

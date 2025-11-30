@@ -83,6 +83,7 @@ const ProductsComponent = () => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${store.token}`
                 },
                 body: JSON.stringify(productData),
             });
@@ -91,8 +92,6 @@ const ProductsComponent = () => {
 
             if (response.ok) {
                 console.log('Product created successfully!', result.message);
-
-                // alert("Producto creado con éxito!");
                 Swal.fire({
                     title: '¡Éxito!',
                     text: 'Producto creado con éxito!',
@@ -118,18 +117,31 @@ const ProductsComponent = () => {
                 fetchProducts();
             } else {
                 console.error('Error creating product:', result.msg);
-                alert(`Error: ${result.msg}`);
+                Swal.fire({
+                    title: 'Error!',
+                    text: `Error: ${result.msg}`,
+                    icon: 'error',
+                    confirmButtonText: 'Cool'
+                })
+
+                // alert(`Error: ${result.msg}`);
             }
         } catch (error) {
             console.error('SERVER ERROR:', error);
-            alert("Error del servidor. Revisa la consola.");
+            Swal.fire({
+                title: 'Error!',
+                text: 'Error del servidor. Revisa la consola.',
+                icon: 'error',
+                confirmButtonText: 'Cool'
+            })
+            // alert("Error del servidor. Revisa la consola.");
         } finally {
             setLoading(false);
         }
     };
 
     // FUNCIÓN PARA ACTIVAR/DESACTIVAR PRODUCTO
-    const toggleProductActive = async (productId, productName, currentStatus) => {
+    /*const toggleProductActive = async (productId, productName, currentStatus) => {
         const action = currentStatus ? "desactivar" : "activar";
 
         if (!confirm(`¿Estás seguro de que quieres ${action} el producto "${productName}"?`)) {
@@ -162,12 +174,229 @@ const ProductsComponent = () => {
         } finally {
             setToggleLoading(null);
         }
+    };*/
+    const toggleProductActive = async (productId, productName, currentStatus) => {
+        const action = currentStatus ? "desactivar" : "activar";
+        const actionText = currentStatus ? "desactivado" : "activado";
+        const iconColor = currentStatus ? '#f59e0b' : '#10b981';
+        const iconType = currentStatus ? 'warning' : 'success';
+
+        const confirmResult = await Swal.fire({
+            title: `${currentStatus ? '🔴 Desactivar' : '🟢 Activar'} Producto`,
+            html: `
+            <div style="text-align: center;">
+                <p>¿Estás seguro de que quieres <strong>${action}</strong> el producto?</p>
+                <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin: 10px 0;">
+                    <strong>"${productName}"</strong>
+                </div>
+                <small style="color: #6b7280;">
+                    ${currentStatus
+                    ? 'El producto ya no estará disponible para ventas'
+                    : 'El producto estará disponible para ventas'
+                }
+                </small>
+            </div>
+        `,
+            icon: iconType,
+            showCancelButton: true,
+            confirmButtonColor: iconColor,
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: `Sí, ${action}`,
+            cancelButtonText: 'Cancelar',
+            reverseButtons: true,
+            focusConfirm: false,
+            focusCancel: true
+        });
+
+        if (!confirmResult.isConfirmed) {
+            await Swal.fire({
+                title: 'Acción Cancelada',
+                text: `El producto "${productName}" mantiene su estado actual`,
+                icon: 'info',
+                timer: 2000,
+                showConfirmButton: false
+            });
+            return;
+        }
+
+        try {
+            setToggleLoading(productId);
+            const response = await fetch(
+                `${import.meta.env.VITE_BACKEND_URL}/api/product/${productId}/toggle-active`,
+                {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${store.token}`
+                    }
+                }
+            );
+
+            const result = await response.json();
+
+            if (response.ok) {
+                await Swal.fire({
+                    title: `¡${currentStatus ? '🔴 Desactivado' : '🟢 Activado'}!`,
+                    html: `
+                    <div style="text-align: center;">
+                        <div style="font-size: 3rem; margin: 10px 0;">
+                            ${currentStatus ? '❌' : '✅'}
+                        </div>
+                        <p>El producto <strong>"${productName}"</strong> ha sido</p>
+                        <h4 style="color: ${iconColor}; margin: 10px 0;">
+                            ${actionText.toUpperCase()}
+                        </h4>
+                    </div>
+                `,
+                    icon: 'success',
+                    confirmButtonText: 'Continuar',
+                    confirmButtonColor: iconColor,
+                    timer: 4000,
+                    timerProgressBar: true,
+                    willClose: () => {
+                        fetchProducts(); // Recargar después de cerrar
+                    }
+                });
+            } else {
+                await Swal.fire({
+                    title: 'Error',
+                    html: `
+                    <div style="text-align: center;">
+                        <div style="font-size: 3rem; margin: 10px 0;">😕</div>
+                        <p>${result.msg || `No se pudo ${action} el producto`}</p>
+                    </div>
+                `,
+                    icon: 'error',
+                    confirmButtonText: 'Entendido',
+                    confirmButtonColor: '#ef4444'
+                });
+            }
+        } catch (error) {
+            console.error('Error changing product status:', error);
+            await Swal.fire({
+                title: 'Error de Conexión',
+                html: `
+                <div style="text-align: center;">
+                    <div style="font-size: 3rem; margin: 10px 0;">📡</div>
+                    <p>No se pudo conectar con el servidor</p>
+                    <small style="color: #6b7280;">Verifica tu conexión a internet</small>
+                </div>
+            `,
+                icon: 'error',
+                confirmButtonText: 'Reintentar',
+                confirmButtonColor: '#ef4444'
+            });
+        } finally {
+            setToggleLoading(null);
+        }
     };
 
     // FUNCIÓN PARA ACTUALIZAR PRECIO DEL PRODUCTO
+    /* const updateProductPrice = async (productId, productName) => {
+         if (!editPrice || isNaN(editPrice) || parseFloat(editPrice) < 0) {
+             alert("Por favor ingresa un precio válido");
+             return;
+         }
+ 
+         try {
+             setEditLoading(productId);
+             const response = await fetch(
+                 `${import.meta.env.VITE_BACKEND_URL}/api/product/${productId}`,
+                 {
+                     method: 'PATCH',
+                     headers: {
+                         'Content-Type': 'application/json',
+                         'Authorization': `Bearer ${store.token}`
+                     },
+                     body: JSON.stringify({
+                         price: parseFloat(editPrice)
+                     })
+                 }
+             );
+ 
+             const result = await response.json();
+ 
+             if (response.ok) {
+                 alert('Precio actualizado exitosamente');
+                 fetchProducts();
+                 const modal = bootstrap.Modal.getInstance(document.getElementById("editPriceModal"));
+                 modal.hide();
+                 setEditingProduct(null);
+                 setEditPrice("");
+             } else {
+                 alert(`Error: ${result.msg || 'No se pudo actualizar el precio'}`);
+             }
+         } catch (error) {
+             console.error('Error updating product price:', error);
+             alert('Error de conexión al servidor');
+         } finally {
+             setEditLoading(null);
+         }
+     };*/
     const updateProductPrice = async (productId, productName) => {
         if (!editPrice || isNaN(editPrice) || parseFloat(editPrice) < 0) {
-            alert("Por favor ingresa un precio válido");
+            await Swal.fire({
+                title: 'Precio Inválido',
+                text: 'Por favor ingresa un precio válido (mayor o igual a 0)',
+                icon: 'warning',
+                confirmButtonText: 'Entendido',
+                confirmButtonColor: '#f59e0b'
+            });
+            return;
+        }
+
+        const newPrice = parseFloat(editPrice);
+        const oldPrice = editingProduct ? parseFloat(editingProduct.price) : 0;
+
+        const confirmResult = await Swal.fire({
+            title: '🔄 Actualizar Precio',
+            html: `
+            <div style="text-align: center;">
+                <p>¿Estás seguro de que quieres actualizar el precio de?</p>
+                <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin: 10px 0;">
+                    <strong>"${productName}"</strong>
+                </div>
+                <div style="display: flex; justify-content: center; gap: 20px; margin: 15px 0;">
+                    <div style="text-align: center;">
+                        <small style="color: #6b7280;">Precio Actual</small>
+                        <div style="color: #ef4444; font-weight: bold; font-size: 1.2rem;">
+                            $${oldPrice.toFixed(2)}
+                        </div>
+                    </div>
+                    <div style="align-self: center;">
+                        <i class="fas fa-arrow-right" style="color: #6b7280;"></i>
+                    </div>
+                    <div style="text-align: center;">
+                        <small style="color: #6b7280;">Nuevo Precio</small>
+                        <div style="color: #10b981; font-weight: bold; font-size: 1.2rem;">
+                            $${newPrice.toFixed(2)}
+                        </div>
+                    </div>
+                </div>
+                <small style="color: #6b7280;">
+                    ${newPrice > oldPrice ? '📈 Aumento de precio' : newPrice < oldPrice ? '📉 Disminución de precio' : '🟰 Mismo precio'}
+                </small>
+            </div>
+        `,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#10b981',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Sí, actualizar',
+            cancelButtonText: 'Cancelar',
+            reverseButtons: true,
+            focusConfirm: false,
+            focusCancel: true
+        });
+
+        if (!confirmResult.isConfirmed) {
+            await Swal.fire({
+                title: 'Actualización Cancelada',
+                text: `El precio de "${productName}" se mantiene en $${oldPrice.toFixed(2)}`,
+                icon: 'info',
+                timer: 2000,
+                showConfirmButton: false
+            });
             return;
         }
 
@@ -179,9 +408,10 @@ const ProductsComponent = () => {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${store.token}`
                     },
                     body: JSON.stringify({
-                        price: parseFloat(editPrice)
+                        price: newPrice
                     })
                 }
             );
@@ -189,18 +419,66 @@ const ProductsComponent = () => {
             const result = await response.json();
 
             if (response.ok) {
-                alert('Precio actualizado exitosamente');
-                fetchProducts();
-                const modal = bootstrap.Modal.getInstance(document.getElementById("editPriceModal"));
-                modal.hide();
-                setEditingProduct(null);
-                setEditPrice("");
+                await Swal.fire({
+                    title: '¡Precio Actualizado!',
+                    html: `
+                    <div style="text-align: center;">
+                        <div style="font-size: 3rem; color: #10b981; margin: 10px 0;">
+                            ✅
+                        </div>
+                        <p>El precio de <strong>"${productName}"</strong> ha sido actualizado</p>
+                        <div style="display: flex; justify-content: center; gap: 20px; margin: 15px 0;">
+                            <div style="text-decoration: line-through; color: #ef4444;">
+                                $${oldPrice.toFixed(2)}
+                            </div>
+                            <div style="font-weight: bold; color: #10b981; font-size: 1.3rem;">
+                                $${newPrice.toFixed(2)}
+                            </div>  
+                        </div>
+                    </div>
+                `,
+                    icon: 'success',
+                    confirmButtonText: 'Continuar',
+                    confirmButtonColor: '#10b981',
+                    timer: 4000,
+                    timerProgressBar: true,
+                    willClose: () => {
+                        fetchProducts();
+                        const modal = bootstrap.Modal.getInstance(document.getElementById("editPriceModal"));
+                        modal.hide();
+                        setEditingProduct(null);
+                        setEditPrice("");
+                    }
+                });
             } else {
-                alert(`Error: ${result.msg || 'No se pudo actualizar el precio'}`);
+                await Swal.fire({
+                    title: 'Error al Actualizar',
+                    html: `
+                    <div style="text-align: center;">
+                        <div style="font-size: 3rem; margin: 10px 0;">😕</div>
+                        <p>${result.msg || 'No se pudo actualizar el precio del producto'}</p>
+                    </div>
+                `,
+                    icon: 'error',
+                    confirmButtonText: 'Entendido',
+                    confirmButtonColor: '#ef4444'
+                });
             }
         } catch (error) {
             console.error('Error updating product price:', error);
-            alert('Error de conexión al servidor');
+            await Swal.fire({
+                title: 'Error de Conexión',
+                html: `
+                <div style="text-align: center;">
+                    <div style="font-size: 3rem; margin: 10px 0;">📡</div>
+                    <p>No se pudo conectar con el servidor</p>
+                    <small style="color: #6b7280;">Verifica tu conexión a internet</small>
+                </div>
+            `,
+                icon: 'error',
+                confirmButtonText: 'Reintentar',
+                confirmButtonColor: '#ef4444'
+            });
         } finally {
             setEditLoading(null);
         }

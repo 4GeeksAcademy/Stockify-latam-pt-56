@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useGlobalReducer from '../hooks/useGlobalReducer';
+import Swal from 'sweetalert2';
 
 export const CreateCategory = ({ onCategoryCreated }) => {
     const { dispatch, store } = useGlobalReducer()
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState({ type: '', text: '' });
     const categories = store.categories || []
 
     const [formData, setFormData] = useState({
         category_code: '',
         category_name: '',
         category_state: true,
-        creation_date: Math.floor(Date.now() / 1000) // Timestamp actual
+        creation_date: Math.floor(Date.now() / 1000)
     });
 
     const handleChange = (e) => {
@@ -27,17 +27,28 @@ export const CreateCategory = ({ onCategoryCreated }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        setMessage({ type: '', text: '' });
 
         // Validaciones
         if (!formData.category_code || !formData.category_name) {
-            setMessage({ type: 'error', text: 'Código y nombre de categoría son obligatorios' });
+            await Swal.fire({
+                title: 'Campos Obligatorios',
+                text: 'Código y nombre de categoría son obligatorios',
+                icon: 'warning',
+                confirmButtonText: 'Entendido',
+                confirmButtonColor: '#f59e0b'
+            });
             setLoading(false);
             return;
         }
 
         if (isNaN(formData.category_code)) {
-            setMessage({ type: 'error', text: 'El código de categoría debe ser un número' });
+            await Swal.fire({
+                title: 'Código Inválido',
+                text: 'El código de categoría debe ser un número',
+                icon: 'warning',
+                confirmButtonText: 'Entendido',
+                confirmButtonColor: '#f59e0b'
+            });
             setLoading(false);
             return;
         }
@@ -47,6 +58,7 @@ export const CreateCategory = ({ onCategoryCreated }) => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${store.token}` // ← Añadir token si es necesario
                 },
                 body: JSON.stringify({
                     ...formData,
@@ -58,21 +70,80 @@ export const CreateCategory = ({ onCategoryCreated }) => {
             const result = await response.json();
 
             if (response.status === 201) {
-                setMessage({ type: 'success', text: 'Categoría creada exitosamente' });
+                await Swal.fire({
+                    title: '¡Categoría Creada!',
+                    html: `
+                        <div style="text-align: center;">
+                            <div style="font-size: 3rem; color: #10b981; margin: 10px 0;">
+                                ✅
+                            </div>
+                            <p>La categoría ha sido creada exitosamente</p>
+                            <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; margin: 10px 0;">
+                                <strong>${formData.category_name}</strong><br/>
+                                <small style="color: #6b7280;">
+                                    Código: ${formData.category_code}
+                                </small>
+                            </div>
+                            <small style="color: #6b7280;">
+                                Estado: ${formData.category_state ? '🟢 Activa' : '🔴 Inactiva'}
+                            </small>
+                        </div>
+                    `,
+                    icon: 'success',
+                    confirmButtonText: 'Continuar',
+                    confirmButtonColor: '#10b981',
+                    timer: 4000,
+                    timerProgressBar: true
+                });
+
                 if (onCategoryCreated) {
                     onCategoryCreated();
                 }
+
+                // Limpiar formulario
                 setFormData({
                     category_code: '',
                     category_name: '',
                     category_state: true,
                     creation_date: Math.floor(Date.now() / 1000)
-                })
+                });
+
             } else {
-                setMessage({ type: 'error', text: result.msg || 'Error al crear categoría' });
+                await Swal.fire({
+                    title: 'Error al Crear Categoría',
+                    html: `
+                        <div style="text-align: center;">
+                            <div style="font-size: 3rem; margin: 10px 0;">😕</div>
+                            <p>${result.msg || 'No se pudo crear la categoría'}</p>
+                            <small style="color: #6b7280;">
+                                ${result.msg && result.msg.includes('código') ? 'El código de categoría ya existe' : ''}
+                                ${result.msg && result.msg.includes('nombre') ? 'El nombre de categoría ya existe' : ''}
+                            </small>
+                        </div>
+                    `,
+                    icon: 'error',
+                    confirmButtonText: 'Intentar Nuevamente',
+                    confirmButtonColor: '#ef4444'
+                });
             }
         } catch (error) {
-            setMessage({ type: 'error', text: 'Error de conexión con el servidor' });
+            console.error("Error connection:", error);
+
+            await Swal.fire({
+                title: 'Error de Conexión',
+                html: `
+                    <div style="text-align: center;">
+                        <div style="font-size: 3rem; margin: 10px 0;">📡</div>
+                        <p>No se pudo conectar con el servidor</p>
+                        <small style="color: #6b7280;">
+                            Verifica tu conexión a internet e intenta nuevamente
+                        </small>
+                    </div>
+                `,
+                icon: 'error',
+                confirmButtonText: 'Reintentar',
+                confirmButtonColor: '#ef4444'
+            });
         } finally {
             setLoading(false);
         }
@@ -103,12 +174,6 @@ export const CreateCategory = ({ onCategoryCreated }) => {
                             <h2><i className="fas fa-plus-circle"></i> Crear Nueva Categoría</h2>
                         </div>
                         <div className="panel-body">
-                            {message.text && (
-                                <div className={`alert ${message.type === 'success' ? 'alert-success' : 'alert-danger'}`}>
-                                    {message.text}
-                                </div>
-                            )}
-
                             <form id="categoryForm" onSubmit={handleSubmit}>
                                 <div className="form-group">
                                     <label className="form-label" htmlFor="category_code">
@@ -123,6 +188,7 @@ export const CreateCategory = ({ onCategoryCreated }) => {
                                         onChange={handleChange}
                                         placeholder="Ej: 1001"
                                         required
+                                        disabled={loading}
                                     />
                                     <div className="form-text">Código único numérico para la categoría</div>
                                 </div>
@@ -140,6 +206,7 @@ export const CreateCategory = ({ onCategoryCreated }) => {
                                         onChange={handleChange}
                                         placeholder="Ej: Electrónicos, Ropa, Hogar..."
                                         required
+                                        disabled={loading}
                                     />
                                     <div className="form-text">Nombre descriptivo de la categoría</div>
                                 </div>
@@ -153,6 +220,7 @@ export const CreateCategory = ({ onCategoryCreated }) => {
                                             name="category_state"
                                             checked={formData.category_state}
                                             onChange={handleChange}
+                                            disabled={loading}
                                         />
                                         <label className="form-check-label" htmlFor="category_state">
                                             Categoría activa
@@ -184,6 +252,7 @@ export const CreateCategory = ({ onCategoryCreated }) => {
                                         type="button"
                                         className="btn btn-outline-secondary btn-block"
                                         onClick={goBack}
+                                        disabled={loading}
                                     >
                                         <i className="fas fa-arrow-left me-2"></i>
                                         Volver
@@ -239,4 +308,3 @@ export const CreateCategory = ({ onCategoryCreated }) => {
         </div>
     );
 };
-

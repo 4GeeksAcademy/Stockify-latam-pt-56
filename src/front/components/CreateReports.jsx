@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
 import useGlobalReducer from '../hooks/useGlobalReducer';
 import { useDebounce } from "../hooks/useDebounce";
-
+import Swal from 'sweetalert2';
 
 export const CreateReports = () => {
-
-    const { store } = useGlobalReducer(); // Obtener el store para acceder a userData y token
-    const userData = store.userData; // { id: ..., rol: 'Administrator' | 'Seller' }
+    const { store } = useGlobalReducer();
+    const userData = store.userData;
     const token = store.token;
 
     const [orders, setOrders] = useState([]);
@@ -14,6 +13,7 @@ export const CreateReports = () => {
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('')
     const [statusFilter, setStatusFilter] = useState('Pending')
+    const [approveLoading, setApproveLoading] = useState(null);
 
     const debouncedSearchTerm = useDebounce(searchTerm, 500)
 
@@ -21,7 +21,6 @@ export const CreateReports = () => {
         setLoading(true);
         setError(null);
         try {
-            // Construir la URL con filtros
             const params = new URLSearchParams();
             if (statusFilter) params.append('status', statusFilter);
             if (debouncedSearchTerm) params.append('client_name', debouncedSearchTerm);
@@ -30,12 +29,11 @@ export const CreateReports = () => {
 
             const response = await fetch(url, {
                 headers: {
-                    'Authorization': `Bearer ${token}` // Incluir el token JWT
+                    'Authorization': `Bearer ${token}`
                 }
             });
 
             if (!response.ok) {
-                // Manejo específico para 401/403 si el JWT expira o no tiene permisos
                 if (response.status === 401 || response.status === 403) {
                     throw new Error('No autorizado o sesión expirada. Por favor, inicie sesión.');
                 }
@@ -54,7 +52,6 @@ export const CreateReports = () => {
 
     useEffect(() => {
         if (token) {
-            // 👈 4. CAMBIAR DEPENDENCIAS: Ahora solo se ejecuta cuando debouncedSearchTerm cambie
             fetchOrders();
         } else {
             setError("No ha iniciado sesión.");
@@ -62,18 +59,63 @@ export const CreateReports = () => {
         }
     }, [token, statusFilter, debouncedSearchTerm])
 
-    const handleApproveOrder = async (orderId) => {
-        // Validación de rol ANTES de enviar la petición
+    const handleApproveOrder = async (orderId, clientName, totalAmount) => {
+        // Validación de rol
         if (userData?.role !== 'Administrator') {
-            alert("Acceso denegado. Solo los administradores pueden aprobar órdenes.");
+            await Swal.fire({
+                title: 'Acceso Denegado',
+                html: `
+                    <div style="text-align: center;">
+                        <div style="font-size: 3rem; margin: 10px 0;">🚫</div>
+                        <p>Solo los administradores pueden aprobar órdenes</p>
+                    </div>
+                `,
+                icon: 'warning',
+                confirmButtonText: 'Entendido',
+                confirmButtonColor: '#f59e0b'
+            });
             return;
         }
 
-        if (!window.confirm(`¿Está seguro de aprobar la orden #${orderId}? Esto descontará el stock.`)) {
+        // ✅ CONFIRMACIÓN ELEGANTE PARA APROBAR ORDEN
+        const confirmResult = await Swal.fire({
+            title: '✅ Aprobar Orden',
+            html: `
+                <div style="text-align: center;">
+                    <p>¿Estás seguro de aprobar esta orden?</p>
+                    <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin: 10px 0;">
+                        <strong>Orden #${orderId}</strong><br/>
+                        <small style="color: #6b7280;">Cliente: ${clientName}</small><br/>
+                        <small style="color: #6b7280;">Total: $${parseFloat(totalAmount).toFixed(2)}</small>
+                    </div>
+                    <small style="color: #6b7280;">
+                        ⚠️ Esta acción descontará el stock de los productos
+                    </small>
+                </div>
+            `,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#10b981',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Sí, aprobar orden',
+            cancelButtonText: 'Cancelar',
+            reverseButtons: true,
+            focusConfirm: false
+        });
+
+        if (!confirmResult.isConfirmed) {
+            // ✅ Feedback cuando el usuario cancela
+            await Swal.fire({
+                title: 'Aprobación Cancelada',
+                text: `La orden #${orderId} permanece pendiente`,
+                icon: 'info',
+                timer: 2000,
+                showConfirmButton: false
+            });
             return;
         }
 
-        setLoading(true); // Opcional: mostrar un loading específico para la orden
+        setApproveLoading(orderId);
         try {
             const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/orders/${orderId}/approve`, {
                 method: 'PUT',
@@ -84,26 +126,96 @@ export const CreateReports = () => {
             });
 
             if (response.ok) {
-                alert(`Orden #${orderId} aprobada y stock actualizado.`);
-                fetchOrders(); // Recargar la lista
+                // ✅ ÉXITO - ORDEN APROBADA
+                await Swal.fire({
+                    title: '¡Orden Aprobada!',
+                    html: `
+                        <div style="text-align: center;">
+                            <div style="font-size: 3rem; color: #10b981; margin: 10px 0;">
+                                ✅
+                            </div>
+                            <p>La orden ha sido aprobada exitosamente</p>
+                            <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; margin: 10px 0;">
+                                <strong>Orden #${orderId}</strong><br/>
+                                <small style="color: #6b7280;">Stock descontado correctamente</small>
+                            </div>
+                        </div>
+                    `,
+                    icon: 'success',
+                    confirmButtonText: 'Continuar',
+                    confirmButtonColor: '#10b981',
+                    timer: 4000,
+                    timerProgressBar: true,
+                    willClose: () => {
+                        fetchOrders(); // Recargar la lista después de cerrar
+                    }
+                });
             } else {
                 const result = await response.json();
-                alert(`Error al aprobar orden #${orderId}: ${result.msg || 'Error del servidor.'}`);
+                // ✅ ERROR DEL SERVIDOR
+                await Swal.fire({
+                    title: 'Error al Aprobar',
+                    html: `
+                        <div style="text-align: center;">
+                            <div style="font-size: 3rem; margin: 10px 0;">😕</div>
+                            <p>${result.msg || 'No se pudo aprobar la orden'}</p>
+                            <small style="color: #6b7280;">
+                                ${result.msg && result.msg.includes('stock') ? 'Verifica el stock disponible' : ''}
+                                ${result.msg && result.msg.includes('orden') ? 'La orden no existe o ya fue procesada' : ''}
+                            </small>
+                        </div>
+                    `,
+                    icon: 'error',
+                    confirmButtonText: 'Entendido',
+                    confirmButtonColor: '#ef4444'
+                });
             }
         } catch (err) {
             console.error("Error de conexión al aprobar la orden:", err);
-            alert('Error de conexión al aprobar la orden.');
+            // ✅ ERROR DE CONEXIÓN
+            await Swal.fire({
+                title: 'Error de Conexión',
+                html: `
+                    <div style="text-align: center;">
+                        <div style="font-size: 3rem; margin: 10px 0;">📡</div>
+                        <p>No se pudo conectar con el servidor</p>
+                        <small style="color: #6b7280;">
+                            Verifica tu conexión a internet e intenta nuevamente
+                        </small>
+                    </div>
+                `,
+                icon: 'error',
+                confirmButtonText: 'Reintentar',
+                confirmButtonColor: '#ef4444'
+            });
         } finally {
-            setLoading(false);
+            setApproveLoading(null);
         }
     }
 
     const filteredOrdersForSeller = userData?.role === 'Seller'
-        ? orders.filter(order => order.created_by_user_id === userData.id) // Asumiendo un campo 'created_by_user_id' en la orden
+        ? orders.filter(order => order.created_by_user_id === userData.id)
         : orders;
 
-    if (loading) return <div className="text-center py-5">Cargando órdenes...</div>;
-    if (error) return <div className="text-center py-5">{error}</div>;
+    if (loading) return (
+        <div className="container py-4">
+            <div className="text-center py-5">
+                <div className="spinner-border text-warning" role="status" style={{ width: '3rem', height: '3rem' }}>
+                    <span className="visually-hidden">Cargando órdenes...</span>
+                </div>
+                <p className="mt-3 text-muted">Cargando órdenes...</p>
+            </div>
+        </div>
+    );
+
+    if (error) return (
+        <div className="container py-4">
+            <div className="alert alert-danger text-center mt-3">
+                <i className="fas fa-exclamation-triangle me-2"></i>
+                {error}
+            </div>
+        </div>
+    );
 
     return (
         <div className="container py-4">
@@ -144,13 +256,14 @@ export const CreateReports = () => {
                     {/* Lista de Órdenes */}
                     {filteredOrdersForSeller.length === 0 ? (
                         <div className="alert alert-info text-center mt-3">
+                            <i className="fas fa-info-circle me-2"></i>
                             {userData?.role === 'Seller' ? 'No tienes órdenes pendientes.' : 'No hay órdenes pendientes de aprobación.'}
                         </div>
                     ) : (
-                        <div className="row g-4"> {/* Usa row y g-4 para espaciado entre cards */}
+                        <div className="row g-4">
                             {filteredOrdersForSeller.map((order) => (
-                                <div key={order.id} className="col-12 col-md-6 col-lg-4"> {/* Tarjetas responsivas */}
-                                    <div className="card shadow-sm h-100"> {/* h-100 para altura uniforme */}
+                                <div key={order.id} className="col-12 col-md-6 col-lg-4">
+                                    <div className="card shadow-sm h-100">
                                         <div className="card-body d-flex flex-column justify-content-between">
                                             <div>
                                                 <h5 className="card-title d-flex justify-content-between align-items-center mb-3">
@@ -160,11 +273,9 @@ export const CreateReports = () => {
                                                 <p className="card-text mb-1">
                                                     <strong>Cliente:</strong> {order.client_name}
                                                 </p>
-                                                {/* Mostrar Fecha de Creación (si no es Invalid Date) */}
                                                 <p className="card-text mb-1">
                                                     <strong>Fecha:</strong> {order.created_at ? new Date(order.created_at).toLocaleDateString() : 'N/A'}
                                                 </p>
-                                                {/* Mostrar Dirección (si existe) */}
                                                 <p className="card-text mb-1">
                                                     <strong>Dirección:</strong> {order.delivery_address || 'No especificada'}
                                                 </p>
@@ -178,17 +289,28 @@ export const CreateReports = () => {
                                                 <div className="mt-3 text-end">
                                                     <button
                                                         className="btn btn-success btn-sm w-100"
-                                                        onClick={() => handleApproveOrder(order.id)}
-                                                        disabled={loading}
+                                                        onClick={() => handleApproveOrder(order.id, order.client_name, order.total_amount)}
+                                                        disabled={approveLoading === order.id}
                                                     >
-                                                        <i className="fas fa-check me-2"></i> Aprobar y Descontar Stock
+                                                        {approveLoading === order.id ? (
+                                                            <>
+                                                                <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                                                                Procesando...
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <i className="fas fa-check me-2"></i> Aprobar y Descontar Stock
+                                                            </>
+                                                        )}
                                                     </button>
                                                 </div>
                                             )}
-                                            {/* Opcional: Mostrar un mensaje para Seller */}
                                             {userData?.role === 'Seller' && order.status === 'Pending' && (
                                                 <div className="mt-3 text-muted text-center">
-                                                    Solo los administradores pueden aprobar órdenes.
+                                                    <small>
+                                                        <i className="fas fa-clock me-1"></i>
+                                                        Esperando aprobación del administrador
+                                                    </small>
                                                 </div>
                                             )}
                                         </div>
