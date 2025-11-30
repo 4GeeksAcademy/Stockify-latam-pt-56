@@ -5,14 +5,47 @@ from sqlalchemy.orm import joinedload
 from api.models import db, User, Master, Category, Product, Order, OrderItem
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, verify_jwt_in_request
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.exc import SQLAlchemyError
+from functools import wraps
+import json
+
 
 api = Blueprint('api', __name__)
 
 
 CORS(api)
+
+
+# Decorador para proteger endpoints
+def jwt_required_with_roles(allowed_roles=None):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            try:
+                verify_jwt_in_request()
+                current_user = get_jwt_identity()
+
+                # Si el identity es string, convertirlo a dict
+                if isinstance(current_user, str):
+                    try:
+                        current_user = json.loads(
+                            current_user.replace("'", "\""))
+                    except:
+                        current_user = {"id": current_user, "rol": "user"}
+
+                # Verificar roles si se especifican
+                if allowed_roles:
+                    user_role = current_user.get('rol')
+                    if user_role not in allowed_roles:
+                        return jsonify({"msg": "Acceso denegado: permisos insuficientes"}), 403
+
+                return f(*args, **kwargs)
+            except Exception as e:
+                return jsonify({"msg": "Token inválido o expirado"}), 401
+        return decorated_function
+    return decorator
 
 
 @api.route('/hello', methods=['POST', 'GET'])
@@ -251,6 +284,7 @@ def create_user():
 
 
 @api.route('/product', methods=['POST'])
+@jwt_required_with_roles(['Administrator', 'Seller'])
 def create_product():
     try:
         data = request.get_json()
@@ -455,7 +489,6 @@ def delete_user():
         return jsonify({
             "msg": "Server not working"
         }), 500
-
 
 
 @api.route('/orders', methods=['POST'])
