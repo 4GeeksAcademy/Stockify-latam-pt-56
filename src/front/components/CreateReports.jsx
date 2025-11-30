@@ -50,6 +50,25 @@ export const CreateReports = () => {
         }
     };
 
+    const formatDate = (dateString) => {
+        if (!dateString) return 'N/A';
+
+        // Convertir el string ISO (del backend) a un objeto Date
+        const date = new Date(dateString);
+
+        // Opciones de formato
+        const options = {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        };
+
+        // Devolver la fecha formateada
+        return date.toLocaleDateString('es-VE', options);
+    }
+
     useEffect(() => {
         if (token) {
             fetchOrders();
@@ -274,10 +293,10 @@ export const CreateReports = () => {
                                                     <strong>Cliente:</strong> {order.client_name}
                                                 </p>
                                                 <p className="card-text mb-1">
-                                                    <strong>Fecha:</strong> {order.created_at ? new Date(order.created_at).toLocaleDateString() : 'N/A'}
+                                                    <strong>Fecha:</strong> {formatDate(order.created_at)}
                                                 </p>
                                                 <p className="card-text mb-1">
-                                                    <strong>Dirección:</strong> {order.delivery_address || 'No especificada'}
+                                                    <strong>Dirección:</strong> {order.delivery_address || 'Dirección no disponible'}
                                                 </p>
                                                 <p className="card-text mb-3">
                                                     <strong>Estado:</strong> <span className={`badge ${order.status === 'Pending' ? 'bg-warning text-dark' : 'bg-success'}`}>{order.status}</span>
