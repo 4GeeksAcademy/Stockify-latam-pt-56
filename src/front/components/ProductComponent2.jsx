@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import "../stylesheets/products.css";
+import Swal from 'sweetalert2';
 
 const ProductsComponent = () => {
     const { dispatch, store } = useGlobalReducer();
@@ -90,7 +91,17 @@ const ProductsComponent = () => {
 
             if (response.ok) {
                 console.log('Product created successfully!', result.message);
-                alert("Producto creado con éxito!");
+
+                // alert("Producto creado con éxito!");
+                Swal.fire({
+                    title: '¡Éxito!',
+                    text: 'Producto creado con éxito!',
+                    icon: 'success',
+                    confirmButtonText: 'Aceptar',
+                    confirmButtonColor: '#667eea'
+                });
+
+
                 setProductData({
                     product_name: "",
                     price: "",

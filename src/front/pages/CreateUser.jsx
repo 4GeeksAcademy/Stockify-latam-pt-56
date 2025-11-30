@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer";
-
+import Swal from 'sweetalert2';
 const ROLES = ['Administrator', 'Seller'];
 
 export const CreateUser = ({ onCreationSuccess }) => {
@@ -61,18 +61,38 @@ export const CreateUser = ({ onCreationSuccess }) => {
             const result = await response.json();
 
             if (response.ok) {
-                alert(`✅ Usuario ${result.user.username} creado exitosamente con rol ${result.user.role}.`);
+                // alert(`✅ Usuario ${result.user.username} creado exitosamente con rol ${result.user.role}.`);
+                Swal.fire({
+                    title: '¡Éxito!',
+                    text: `Usuario ${result.user.username} creado exitosamente con rol ${result.user.role}.`,
+                    icon: 'success',
+                    confirmButtonText: 'Aceptar',
+                    confirmButtonColor: '#667eea'
+                });
+
                 setFormData({ full_name: '', username: '', password: '', role: ROLES[1] });
                 if (onCreationSuccess) onCreationSuccess(result.user);
             } else {
                 setError(`Error ${response.status}: ${result.msg || 'Error desconocido del servidor.'}`);
-                alert(`Error al crear usuario: ${result.msg || 'Verifica la consola para más detalles.'}`);
+                Swal.fire({
+                    title: 'Error!',
+                    text: `Error al crear usuario: ${result.msg} ||Verifica la consola para más detalles.`,
+                    icon: 'error',
+                    confirmButtonText: 'Cool'
+                })
+                //alert(`Error al crear usuario: ${result.msg || 'Verifica la consola para más detalles.'}`);
             }
 
         } catch (err) {
             console.error("Error de red o servidor:", err);
             setError("Error de conexión al servidor. Intente de nuevo.");
-            alert("Error de conexión al servidor.");
+            Swal.fire({
+                title: 'Error!',
+                text: 'Error de Conexión al servidor',
+                icon: 'error',
+                confirmButtonText: 'Cool'
+            })
+
         } finally {
             setLoading(false);
         }
