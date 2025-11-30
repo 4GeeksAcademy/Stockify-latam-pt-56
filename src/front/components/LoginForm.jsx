@@ -104,7 +104,7 @@ const LoginForm = () => {
                     icon: 'success',
                     confirmButtonText: 'Continuar',
                     confirmButtonColor: '#10b981',
-                    timer: 6000,
+                    timer: 3000,
                     timerProgressBar: true,
                     showConfirmButton: false,
                     allowOutsideClick: false

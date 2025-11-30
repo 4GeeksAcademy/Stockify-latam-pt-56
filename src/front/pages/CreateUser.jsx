@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import Swal from 'sweetalert2';
+
 const ROLES = ['Administrator', 'Seller'];
 
 export const CreateUser = ({ onCreationSuccess }) => {
 
-    const { store } = useGlobalReducer();
+    const { dispatch, store } = useGlobalReducer();
     const token = store.token;
 
     const [formData, setFormData] = useState({
@@ -61,38 +62,74 @@ export const CreateUser = ({ onCreationSuccess }) => {
             const result = await response.json();
 
             if (response.ok) {
-                // alert(`✅ Usuario ${result.user.username} creado exitosamente con rol ${result.user.role}.`);
-                Swal.fire({
-                    title: '¡Éxito!',
-                    text: `Usuario ${result.user.username} creado exitosamente con rol ${result.user.role}.`,
+                await Swal.fire({
+                    title: '¡Usuario Creado!',
+                    html: `
+                        <div style="text-align: center;">
+                            <div style="font-size: 3rem; color: #10b981; margin: 10px 0;">
+                                ✅
+                            </div>
+                            <p>Usuario creado exitosamente</p>
+                            <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; margin: 10px 0;">
+                                <strong>${result.user.username}</strong><br/>
+                                <small style="color: #6b7280;">Rol: ${result.user.role}</small>
+                            </div>
+                        </div>
+                    `,
                     icon: 'success',
-                    confirmButtonText: 'Aceptar',
-                    confirmButtonColor: '#667eea'
+                    confirmButtonText: 'Continuar',
+                    confirmButtonColor: '#10b981'
                 });
 
-                setFormData({ full_name: '', username: '', password: '', role: ROLES[1] });
-                if (onCreationSuccess) onCreationSuccess(result.user);
+                // Limpiar formulario
+                setFormData({
+                    full_name: '',
+                    email: '',
+                    username: '',
+                    password: '',
+                    role: ROLES[1]
+                });
+
+                if (onCreationSuccess) {
+                    onCreationSuccess(result.user);
+                }
+
             } else {
-                setError(`Error ${response.status}: ${result.msg || 'Error desconocido del servidor.'}`);
-                Swal.fire({
-                    title: 'Error!',
-                    text: `Error al crear usuario: ${result.msg} ||Verifica la consola para más detalles.`,
+                await Swal.fire({
+                    title: 'Error al Crear Usuario',
+                    html: `
+                        <div style="text-align: center;">
+                            <div style="font-size: 3rem; margin: 10px 0;">😕</div>
+                            <p>${result.msg || 'Error del servidor'}</p>
+                            <small style="color: #6b7280;">
+                                ${result.msg && result.msg.includes('email') ? 'El email ya está en uso' : ''}
+                                ${result.msg && result.msg.includes('username') ? 'El nombre de usuario ya existe' : ''}
+                            </small>
+                        </div>
+                    `,
                     icon: 'error',
-                    confirmButtonText: 'Cool'
-                })
-                //alert(`Error al crear usuario: ${result.msg || 'Verifica la consola para más detalles.'}`);
+                    confirmButtonText: 'Intentar Nuevamente',
+                    confirmButtonColor: '#ef4444'
+                });
             }
 
         } catch (err) {
             console.error("Error de red o servidor:", err);
-            setError("Error de conexión al servidor. Intente de nuevo.");
-            Swal.fire({
-                title: 'Error!',
-                text: 'Error de Conexión al servidor',
+            await Swal.fire({
+                title: 'Error de Conexión',
+                html: `
+                    <div style="text-align: center;">
+                        <div style="font-size: 3rem; margin: 10px 0;">📡</div>
+                        <p>No se pudo conectar con el servidor</p>
+                        <small style="color: #6b7280;">
+                            Verifica tu conexión a internet e intenta nuevamente
+                        </small>
+                    </div>
+                `,
                 icon: 'error',
-                confirmButtonText: 'Cool'
-            })
-
+                confirmButtonText: 'Reintentar',
+                confirmButtonColor: '#ef4444'
+            });
         } finally {
             setLoading(false);
         }
@@ -126,6 +163,7 @@ export const CreateUser = ({ onCreationSuccess }) => {
                             value={formData.email}
                             onChange={handleInputChange}
                             required
+                            disabled={loading}
                         />
                     </div>
 
@@ -141,6 +179,7 @@ export const CreateUser = ({ onCreationSuccess }) => {
                             value={formData.full_name}
                             onChange={handleInputChange}
                             required
+                            disabled={loading}
                         />
                     </div>
 
@@ -156,6 +195,7 @@ export const CreateUser = ({ onCreationSuccess }) => {
                             value={formData.username}
                             onChange={handleInputChange}
                             required
+                            disabled={loading}
                         />
                         <small className="form-text text-muted">
                             Used for log in your account
@@ -174,6 +214,7 @@ export const CreateUser = ({ onCreationSuccess }) => {
                             value={formData.password}
                             onChange={handleInputChange}
                             required
+                            disabled={loading}
                         />
                         <small className="form-text text-muted">
                             Used for account creation
@@ -190,6 +231,7 @@ export const CreateUser = ({ onCreationSuccess }) => {
                             value={formData.role}
                             onChange={handleInputChange}
                             required
+                            disabled={loading}
                         >
                             <option value="" disabled>Seleccione un rol</option>
                             {ROLES.map(role => (
@@ -201,8 +243,19 @@ export const CreateUser = ({ onCreationSuccess }) => {
                         </small>
                     </div>
 
-                    <button type="submit" className="btn btn-warning w-100 fw-bold mb-3">
-                        Create a new user account
+                    <button
+                        type="submit"
+                        className="btn btn-warning w-100 fw-bold mb-3"
+                        disabled={loading}
+                    >
+                        {loading ? (
+                            <>
+                                <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                                Creando Usuario...
+                            </>
+                        ) : (
+                            'Create a new user account'
+                        )}
                     </button>
                 </form>
             </div>
