@@ -42,7 +42,7 @@ const Home = () => {
             {/* CONTENIDO PRINCIPAL */}
             <div className="home-container container py-5">
 
-                {/* HERO */}
+                {/* TÍTULO Y SLOGAN */}
                 <section className="hero text-center mb-5">
                     <div className="hero-text">
                         <h1 className="text-warning fw-bold display-4">Stockify</h1>
@@ -52,26 +52,26 @@ const Home = () => {
                     </div>
                 </section>
 
-                {/* PROBLEMA */}
+                {/* UTILIDAD DE STOCKIFY */}
                 <section className="section-box p-4 mb-4 border border-warning rounded">
                     <h2 className="text-warning fw-semibold">¿Por qué es útil nuestro producto?</h2>
                     <p>
                         Los negocios minoristas pierden tiempo, dinero y clientes por una mala gestión del inventario.
                     </p>
                     <p className="fw-semibold">
-                        Sin una herramienta adecuada, los negocios enfrentan desorganización, poca productividad y baja capacidad de crecimiento.
+                        Además, sin una herramienta adecuada, los negocios enfrentan desorganización, poca productividad y baja capacidad de crecimiento.
                     </p>
                 </section>
 
-                {/* SOLUCIÓN */}
+                {/*NUESTRA SOLUCIÓN */}
                 <section className="section-box p-4 mb-4 border border-warning rounded">
                     <h2 className="text-warning fw-semibold">¿Cómo lo resolvemos?</h2>
                     <ul>
-                        <li>Organización eficiente del inventario.</li>
-                        <li>Datos actualizados en tiempo real.</li>
-                        <li>Gestión centralizada de productos, compras y usuarios.</li>
-                        <li>Automatización de tareas repetitivas.</li>
-                        <li>Soporte para decisiones inteligentes.</li>
+                        <li>Con una organización eficiente del inventario.</li>
+                        <li>Con una app que proporcione datos actualizados y en tiempo real.</li>
+                        <li>No olvidemos la importancia de una gestión centralizada de productos, compras y usuarios.</li>
+                        <li>Stockify cuenta también con automatización de tareas repetitivas.</li>
+                        <li> Y como bonus, un soporte para decisiones inteligentes.</li>
                     </ul>
                 </section>
 
@@ -81,12 +81,12 @@ const Home = () => {
                     <div className="d-flex flex-wrap gap-3">
                         <div className="border border-warning p-2 rounded">Gestión de Usuarios</div>
                         <div className="border border-warning p-2 rounded">Gestión de Productos</div>
-                        <div className="border border-warning p-2 rounded">Carrito y Compras</div>
-                        <div className="border border-warning p-2 rounded">Dashboard Estadístico</div>
+                        <div className="border border-warning p-2 rounded">Stockify te provee un carrito de (y) compras</div>
+                        <div className="border border-warning p-2 rounded">Dashboard con estadístiscas siempre disponibles</div>
                     </div>
                 </section>
 
-                {/* DETALLE PRODUCTOS */}
+                {/* DETALLE DE LA GESTIÓN DE PRODUCTOS (Aquí tengo duda en cuanto a lo técnico, todo el bloque) */}
                 <section className="section-box p-4 mb-4 border border-warning rounded">
                     <h2 className="text-warning fw-semibold">Gestión de Productos</h2>
                     <ul>
@@ -97,7 +97,7 @@ const Home = () => {
                     </ul>
                 </section>
 
-                {/* CATÁLOGO */}
+                {/* CATÁLOGO (duda)*/}
                 <section className="section-box p-4 mb-4 border border-warning rounded">
                     <h2 className="text-warning fw-semibold">Catálogo y Carrito de Compras</h2>
                     <ul>
@@ -111,22 +111,22 @@ const Home = () => {
                 <section className="section-box p-4 mb-4 border border-warning rounded">
                     <h2 className="text-warning fw-semibold">Dashboard</h2>
                     <ul>
-                        <li>Visualización general del stock</li>
+                        <li>Tendrás la visualización general del stock</li>
                         <li>Cantidad de productos</li>
-                        <li>Alertas de bajo inventario</li>
-                        <li>Estadísticas básicas</li>
+                        <li>Stockify te avisará por medio de alertas cuando el inventario sea bajo</li>
+                        <li>No olvides, las estadísticas básicas que son parte integral para tu negocio</li>
                     </ul>
                 </section>
 
-                {/* FUTURAS */}
+                {/* FUNCIONES FUTURAS (checar) */}
                 <section className="section-box p-4 mb-4 border border-warning rounded">
                     <h2 className="text-warning fw-semibold">Funcionalidades Futuras</h2>
                     <ul>
                         <li> El administrador podrá recibir un correo cuando se cree una orden de compra </li>
-                        <li>El administrador verá los vendedores disponibles para organizarlos mejor</li>
-                        <li>El administrador podrá ver el total del inventario</li>
-                        <li>El administrador verá un reporte con todos los pedidos finalizados</li>
-                        <li>El administrador cargará la existencia de productos</li>
+                        <li>El administrador verá los vendedores disponibles para organizarlos mejor***</li>
+                        <li>El administrador podrá ver el total del inventario***</li>
+                        <li>El administrador verá un reporte con todos los pedidos finalizados***</li>
+                        <li>El administrador cargará la existencia de productos***</li>
                         <li>El vendedor podrá registrarse en la plataforma</li>
                         <li>Los vendedores podrán reservar productos</li>
                     </ul>
@@ -149,7 +149,7 @@ const Home = () => {
                     <ul>
                         <li>Ferreterías y tiendas minoristas</li>
                         <li>Distribuidores de materiales y PyMEs</li>
-                        <li>Negocios interesados en control eficiente de inventario</li>
+                        <li>Y en general, cualquier Negocio interesado en el control eficiente del inventario</li>
                     </ul>
                 </section>
 
@@ -178,7 +178,7 @@ const Home = () => {
                     <p>
                         <strong>
                             Stockify es más que una aplicación de inventario, es la herramienta que estabas buscando para mejorar tus ventas,
-                            tomar decisiones inteligentes, reducir pérdidas y automatizar la operación.
+                            tomar decisiones inteligentes, reducir pérdidas y automatizar la operación, ¿Lo ves? ¡SOMOS TU MEJOR OPCIÓN!
                         </strong>
                     </p>
                     <p>¿Qué esperas? Cotizamos tu solución ideal.</p>
