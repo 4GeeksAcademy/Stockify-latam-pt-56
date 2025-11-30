@@ -157,16 +157,16 @@ export const CreateCategory = ({ onCategoryCreated }) => {
         <div className="container-fluid">
             {/* Search Section */}
             <div className="search-section">
-                <div className="search-container">
-                    <div className="form-group search-input">
+                <div className="d-flex align-items-center justify-content-center">
+                    <div className="form-group search-input m-0">
                         <input type="text" className="form-control" placeholder="Buscar categorías..." />
                     </div>
-                    <button className="btn btn-primary">
+                    <button className="btn btn-primary m-0">
                         <i className="fas fa-search"></i> Buscar
                     </button>
                 </div>
             </div>
-            <div className="d-flex main-layout">
+            <div className="col d-flex gap-2">
                 {store.userData.role == "Administrator" &&
 
                     <div className="col-6 panel">
@@ -270,7 +270,7 @@ export const CreateCategory = ({ onCategoryCreated }) => {
                     <div className="panel-header">
                         <h2><i className="fas fa-list"></i> Lista de Categorías</h2>
                     </div>
-                    <div className="panel-body">
+                    <div className="panel-body" style={{ overflowY: "auto", maxHeight: "45rem" }}>
                         {categories.length === 0 ? (
                             <div className="empty-state">
                                 <div className="empty-state-icon">
