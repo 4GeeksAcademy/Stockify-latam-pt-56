@@ -843,3 +843,53 @@ def adjust_stock(product_id):
             "msg": "Server not working",
             "details": str(e)
         }), 500
+
+@api.route('/product/<int:product_id>', methods=['PUT'])
+def update_product_price(product_id):
+    try:    
+        data = request.get_json()
+        new_price = data.get('price')
+        new_stock = data.get('stock')
+        new_sku = data.get('sku')
+        new_name = data.get('name')
+
+        # Validar que el precio esté presente
+        if new_price is None or new_stock is None or new_sku is None or new_name is None:
+            return jsonify({'msg': 'Remember to fill out all of the fields'}), 400
+
+            # Validar que el precio sea un número positivo
+        try:
+            new_price = float(new_price)
+            if new_price < 0:
+                return jsonify({'msg': 'Price must be positive'}), 400
+        except ValueError:
+            return jsonify({'msg': 'Price must be a valid number'}), 400
+
+            # Buscar el producto
+        product = db.session.execute(
+            db.select(Product).filter_by(id=product_id)
+        ).scalars().first()
+
+        if not product:
+            return jsonify({'msg': 'Product not found'}), 404
+
+            # Actualizar el precio
+        product.price = new_price
+        product.stock = new_stock
+        product.product_SKU = new_sku
+        product.product_name = new_name
+        db.session.commit()
+
+
+
+        return jsonify({
+            "msg": "Product price updated successfully",
+            "product": product.serialize()
+        }), 200
+    except Exception as e:
+        print("SERVER ERROR:", str(e))
+        db.session.rollback()
+        return jsonify({
+            "error": "Internal Server Error",
+            "msg": "Server not working"
+        }), 500

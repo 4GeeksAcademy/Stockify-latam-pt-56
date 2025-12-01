@@ -377,7 +377,7 @@ const ProductsComponent = () => {
              setEditLoading(null);
          }
      };*/
-    const updateProductPrice = async (productId, productName) => {
+    const updateProduct = async (productId, productName) => {
         if (!editPrice || isNaN(editPrice) || parseFloat(editPrice) < 0) {
             await Swal.fire({
                 title: 'Precio Inválido',
@@ -722,7 +722,7 @@ const ProductsComponent = () => {
                                 <button
                                     type="button"
                                     className="btn btn-warning"
-                                    onClick={() => updateProductPrice(editingProduct.id, editingProduct.product_name)}
+                                    onClick={() => updateProduct(editingProduct.id, editingProduct.product_name)}
                                     disabled={editLoading === editingProduct?.id || !editPrice}
                                 >
                                     {editLoading === editingProduct?.id ? (
@@ -732,7 +732,7 @@ const ProductsComponent = () => {
                                         </>
                                     ) : (
                                         <>
-                                            <i className="fas fa-save me-1"></i>
+                                            <i className="fas fa-save me-1 onClick="></i>
                                             Guardar Cambios
                                         </>
                                     )}
