@@ -8,9 +8,12 @@ export const UsersList = () => {
     const navigate = useNavigate();
     const { dispatch, store } = useGlobalReducer();
     const userData = store.userData;
-    const [users, setUsers] = useState([]);
+    const users = store.users
+    // const [users, setUsers] = useState([]);
     const [activeTab, setActiveTab] = React.useState("userslist");
     const [deleteLoading, setDeleteLoading] = useState(null);
+
+    console.log(users)
 
     // Obtener usuarios
     const fetchUsers = async () => {
@@ -26,7 +29,8 @@ export const UsersList = () => {
             if (!response.ok) throw new Error(`Error en la solicitud: ${response.statusText}`);
 
             const data = await response.json();
-            setUsers(data.user);
+            dispatch({ type: 'SET_USERS', payload: data.user })
+            // setUsers(data.user);
         } catch (error) {
             console.error("Error al obtener los usuarios:", error);
             await Swal.fire({
@@ -263,7 +267,7 @@ export const UsersList = () => {
             </div>
 
             {activeTab === "userslist" && (
-                <div className="row">
+                <div className="row" style={{ minHeight: "60vh" }}>
                     {users.length === 0 ? (
                         <div className="col-12 text-center py-5">
                             <div className="empty-state">

@@ -63,6 +63,16 @@ def handle_hello():
 
 @api.route('/master', methods=['POST'])
 def create_master():
+
+    existing_master = db.session.execute(
+        db.select(Master)
+    ).scalars().first()
+
+    if existing_master:
+        return jsonify({
+            "msg": "El usuario Master ya ha sido creado. No se permite crear más usuarios Master."
+        }), 403
+
     data = request.get_json()
     email = data.get('email')
     username = data.get('username')
@@ -189,15 +199,15 @@ def login_master():
     }), 201
 
 
-@api.route('/user/<int:current_user_id>', methods=['GET'])
-@jwt_required()
-def protected():
-    current_user_id = get_jwt_identity()
-    user = User.query.get(current_user_id)
-    return jsonify({
-        'message': f'Acceso concedido para {user.username}',
-        'user': user.serialize()
-    })
+# # @api.route('/user/<int:current_user_id>', methods=['GET'])
+# # @jwt_required()
+# # def protected():
+#     current_user_id = get_jwt_identity()
+#     user = User.query.get(current_user_id)
+#     return jsonify({
+#         'message': f'Acceso concedido para {user.username}',
+#         'user': user.serialize()
+#     })
 
 # Get master
 
@@ -222,7 +232,7 @@ def private():
 
 
 @api.route('/users', methods=['GET'])
-# @jwt_required()
+@jwt_required_with_roles(['master'])
 def get_all_users():
 
     users = db.session.execute(db.select(User)).scalars().all()
@@ -235,7 +245,7 @@ def get_all_users():
 
 
 @api.route('/user', methods=['POST'])
-@jwt_required()
+@jwt_required_with_roles(['master'])
 def create_user():
 
     # 1. OBTENER EL ID DEL MASTER LOGEADO
@@ -284,7 +294,7 @@ def create_user():
 
 
 @api.route('/product', methods=['POST'])
-@jwt_required_with_roles(['Administrator', 'Seller'])
+@jwt_required_with_roles(['Administrator'])
 def create_product():
     try:
         data = request.get_json()
@@ -330,32 +340,23 @@ def create_product():
 @api.route('/products', methods=['GET'])
 def get_all_products():
     try:
-        # 1. Obtener los parámetros de búsqueda de la URL
         search_name = request.args.get('name')
         category_id = request.args.get('category_id')
 
-        # 2. Construir la consulta base (SELECT * FROM product)
         query = db.select(Product)
 
-        # 3. Aplicar filtro de nombre si existe
         if search_name:
-            # Usar .ilike para búsqueda parcial y no sensible a mayúsculas/minúsculas
-            # Ejemplo: WHERE product_name LIKE '%teclado%'
             query = query.filter(
                 Product.product_name.ilike(f'%{search_name}%'))
 
-        # 4. Aplicar filtro de categoría si existe
         if category_id:
             try:
-                # Convertir el ID a entero para la comparación en la base de datos
+
                 category_id_int = int(category_id)
-                # Ejemplo: WHERE category_id = 5
                 query = query.filter(Product.category_id == category_id_int)
             except ValueError:
-                # Ignorar si el category_id no es un número válido
                 pass
 
-        # 5. Ejecutar la consulta con todos los filtros aplicados
         products = db.session.execute(query).scalars().all()
         serialized_products = [product.serialize() for product in products]
 
@@ -373,6 +374,7 @@ def get_all_products():
 
 
 @api.route('/category', methods=['POST'])
+@jwt_required_with_roles(['Administrator'])
 def create_category():
     try:
         data = request.get_json()
@@ -440,7 +442,7 @@ def get_all_categories():
 
 
 @api.route('/user', methods=['GET'])
-@jwt_required()
+@jwt_required_with_roles(['master'])
 def get_users():
     try:
         users = db.session.execute(db.select(User)).scalars().all()
@@ -492,7 +494,7 @@ def delete_user():
 
 
 @api.route('/orders', methods=['POST'])
-@jwt_required()
+@jwt_required_with_roles(['Administrator', 'Seller'])
 def create_order():
     data = request.get_json()
     user_identity_str = get_jwt_identity()
@@ -571,7 +573,7 @@ def create_order():
 
 
 @api.route('/orders/<int:order_id>/approve', methods=['PUT'])
-@jwt_required()
+@jwt_required_with_roles(['Administrator'])
 def approve_order(order_id):
     # Asumimos que solo usuarios autorizados (ej. Administradores o Vendedores) pueden hacer esto
     # Puedes añadir @jwt_required() aquí.
@@ -645,31 +647,8 @@ def approve_order(order_id):
         return jsonify({"msg": "Error interno del servidor."}), 500
 
 
-#  @api.route('/product/<int:product_id>', methods=['DELETE'])
-# def delete_product(product_id):
-#     try:
-#         # Buscar el producto por ID
-#         product = db.session.execute(
-#             db.select(Product).filter_by(id=product_id)
-#         ).scalars().first()
-
-#         if not product:
-#             return jsonify({'msg': 'Product not found'}), 404
-
-#         # Eliminar el producto
-#         db.session.delete(product)
-#         db.session.commit()
-
-#         return jsonify({"msg": "Product deleted successfully"}), 200
-
-#     except Exception as e:
-#         print("SERVER ERROR:", str(e))
-#         db.session.rollback()
-#         return jsonify({
-#             "error": "Internal Server Error",
-#             "msg": "Server not working"
-#         }), 500
 @api.route('/product/<int:product_id>/toggle-active', methods=['PATCH'])
+@jwt_required_with_roles(['Administrator'])
 def toggle_product_active(product_id):
     try:
         # Buscar el producto por ID
@@ -701,7 +680,7 @@ def toggle_product_active(product_id):
 
 
 @api.route('/orders', methods=['GET'])
-@jwt_required()
+@jwt_required_with_roles(['Administrator', 'Seller'])
 def get_orders():
     # 1. Obtener parámetros de la query string
     status_filter = request.args.get('status')
@@ -729,6 +708,7 @@ def get_orders():
 
 
 @api.route('/product/<int:product_id>', methods=['PATCH'])
+@jwt_required_with_roles(['Administrator'])
 def update_product_price(product_id):
     try:
         data = request.get_json()
@@ -773,7 +753,7 @@ def update_product_price(product_id):
 
 
 @api.route('/products/<int:product_id>/stock_adjustment', methods=['PUT'])
-@jwt_required()
+@jwt_required_with_roles(['Administrator'])
 def adjust_stock(product_id):
     # 1. Verificación de Rol (Solo el Administrador puede hacer ajustes)
     user_id = get_jwt_identity()
@@ -807,7 +787,7 @@ def adjust_stock(product_id):
 
     # 4. Buscar Producto
     try:
-        
+
         product = db.session.get(Product, product_id)
         if not product:
             return jsonify({"msg": "Producto no encontrado."}), 404
@@ -834,7 +814,7 @@ def adjust_stock(product_id):
             "new_stock": product.stock,
             "product_name": product.name
         }), 200
-    
+
     except Exception as e:
         print("SERVER ERROR:", str(e))
         db.session.rollback()
@@ -844,9 +824,11 @@ def adjust_stock(product_id):
             "details": str(e)
         }), 500
 
+
 @api.route('/product/<int:product_id>', methods=['PUT'])
+@jwt_required_with_roles(['Administrator'])
 def update_product(product_id):
-    try:    
+    try:
         data = request.get_json()
         new_price = data.get('price')
         new_stock = data.get('stock')
@@ -880,8 +862,6 @@ def update_product(product_id):
         product.product_name = new_name
         db.session.commit()
 
-
-
         return jsonify({
             "msg": "Product price updated successfully",
             "product": product.serialize()
@@ -892,4 +872,39 @@ def update_product(product_id):
         return jsonify({
             "error": "Internal Server Error",
             "msg": "Server not working"
+        }), 500
+
+
+@api.route('/inventory/total-value', methods=['GET'])
+# Solo roles de gestión pueden ver el valor total
+@jwt_required_with_roles(['Administrator'])
+def get_inventory_total_value():
+    try:
+        # 1. Obtener todos los productos (solo necesitamos precio y stock)
+        # Usamos select(Product) para obtener todos los productos
+        products = db.session.execute(select(Product)).scalars().all()
+
+        inventory_total_value = 0.0
+
+        # 2. Iterar y calcular
+        for product in products:
+            # Asegúrate de que los campos sean float/int para la multiplicación
+            price = float(product.price)
+            stock = int(product.stock)
+
+            # Acumular la multiplicación (Precio * Stock)
+            inventory_total_value += (price * stock)
+
+        # 3. Devolver el resultado
+        return jsonify({
+            "msg": "Valor total del inventario calculado exitosamente",
+            # Redondear a dos decimales
+            "total_value": round(inventory_total_value, 2)
+        }), 200
+
+    except Exception as e:
+        print("SERVER ERROR (get_inventory_total_value):", str(e))
+        return jsonify({
+            "error": "Internal Server Error",
+            "msg": "Error al calcular el valor total del inventario"
         }), 500
