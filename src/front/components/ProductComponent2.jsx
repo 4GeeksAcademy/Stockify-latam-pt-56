@@ -83,7 +83,9 @@ const ProductsComponent = () => {
         let cleanedValue = value;
 
         if (fieldName === "price" || fieldName === "stock") {
-            cleanedValue = parseFloat(value) || 0;
+    cleanedValue = value; // Ya viene limpio del input, no lo fuerces a número todavía
+
+
         } else if (fieldName === "category_id") {
             cleanedValue = Number(value);
         }
@@ -124,6 +126,8 @@ const ProductsComponent = () => {
 
     const createProduct = async () => {
         setLoading(true);
+            let priceFloat = parseFloat(productData.price);
+            let stockFloat = parseFloat(productData.stock);
         try {
             const url = `${import.meta.env.VITE_BACKEND_URL}/api/product`;
             const response = await fetch(url, {
@@ -132,7 +136,15 @@ const ProductsComponent = () => {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${store.token}`
                 },
-                body: JSON.stringify(productData),
+                body: JSON.stringify({
+                    product_name : productData.product_name,
+                    category_id : productData.category_id,
+                    price : priceFloat,
+                    product_SKU : productData.product_SKU,
+                    stock : stockFloat
+
+                })
+            
             });
 
             const result = await response.json();
@@ -664,29 +676,32 @@ const ProductsComponent = () => {
                                         />
                                     </div>
 
-                                    <div className="form-group">
-                                        <label className="form-label" htmlFor="productStock">Stock</label>
-                                        <input
-                                            type="text"
-                                            className="form-control"
-                                            id="productStock"
-                                            placeholder="0"
-                                            onInput={(e) => {
-                                                let value = e.target.value;
-                                                value = value.replace(/[^0-9.]/g, "");
-                                                value = value.replace(/(\..*)\./g, "$1");
-                                                if (value.includes(".")) {
-                                                    const parts = value.split(".");
-                                                    parts[1] = parts[1].slice(0, 2);
-                                                    value = parts.join(".");
-                                                }
-                                                e.target.value = value;
-                                            }}
-                                            value={productData.stock}
-                                            onChange={handleInputChange}
-                                        />
+
+
+
+                                        <div className="form-group">
+                                            <label className="form-label" htmlFor="productStock">Stock</label>
+                                            <input
+                                                type="text"
+                                                className="form-control"
+                                                id="productStock"
+                                                placeholder="0"
+                                                onInput={(e) => {
+                                                    let value = e.target.value;
+                                                    value = value.replace(/[^0-9.]/g, "");
+                                                    value = value.replace(/(\..*)\./g, "$1");
+                                                    if (value.includes(".")) {
+                                                        const parts = value.split(".");
+                                                        parts[1] = parts[1].slice(0, 2);
+                                                        value = parts.join(".");
+                                                    }
+                                                    e.target.value = value;
+                                                }}
+                                                value={productData.stock}
+                                                onChange={handleInputChange}
+                                            />
+                                        </div>
                                     </div>
-                                </div>
 
                                 <div className="form-row">
                                     <div className="form-group">
@@ -756,9 +771,27 @@ const ProductsComponent = () => {
                                                 Nuevo Precio ($)
                                             </label>
                                             <input
-                                                type="number"
-                                                step="0.01"
-                                                min="0"
+                                            onInput={(e) =>  {
+                                                let value = e.target.value;
+
+                                                // Solo números y un punto
+                                                value = value.replace(/[^0-9.]/g, "");
+
+                                                // Evitar dos puntos decimales
+                                                value = value.replace(/(\..*)\./g, "$1");
+
+                                                // Limitar a 2 decimales
+                                                if (value.includes(".")) {
+                                                    const parts = value.split(".");
+                                                    parts[1] = parts[1].slice(0, 2); // máximo 2 decimales
+                                                    value = parts.join(".");
+                                                }
+
+                                                e.target.value = value;
+                                            }}
+                                                type="text"
+                                                
+                                                
                                                 className="form-control"
                                                 id="editPrice"
                                                 value={editPrice}
@@ -776,9 +809,26 @@ const ProductsComponent = () => {
                                                 Nuevo Stock 
                                             </label>
                                             <input
-                                                type="number"
-                                                step="0.01"
-                                                min="0"
+                                            onInput={(e) =>  {
+                                                let value = e.target.value;
+
+                                                // Solo números y un punto
+                                                value = value.replace(/[^0-9.]/g, "");
+
+                                                // Evitar dos puntos decimales
+                                                value = value.replace(/(\..*)\./g, "$1");
+
+                                                // Limitar a 2 decimales
+                                                if (value.includes(".")) {
+                                                    const parts = value.split(".");
+                                                    parts[1] = parts[1].slice(0, 2); // máximo 2 decimales
+                                                    value = parts.join(".");
+                                                }
+
+                                                e.target.value = value;
+                                            }}
+                                                type="text"
+                                                
                                                 className="form-control"
                                                 id="editStock"
                                                 value={editStock}
@@ -797,14 +847,12 @@ const ProductsComponent = () => {
                                                 Nuevo Sku
                                             </label>
                                             <input
-                                                type="number"
-                                                step="0.01"
-                                                min="0"
+                                                type="text"
                                                 className="form-control"
                                                 id="editSku"
                                                 value={editSku}
                                                 onChange={(e) => setEditSku(e.target.value)}
-                                                placeholder="0.00"
+                                                placeholder="PROD-001"
                                             />
                                             <div className="form-text">
                                                 Ingresa el nuevo Sku para este producto

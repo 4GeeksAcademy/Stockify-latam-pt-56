@@ -10,7 +10,7 @@ export const CreateCategory = ({ onCategoryCreated }) => {
     const categories = store.categories || []
 
     const [formData, setFormData] = useState({
-        category_code: '',
+        category_code: 0,
         category_name: '',
         category_state: true,
         creation_date: Math.floor(Date.now() / 1000)
@@ -18,10 +18,22 @@ export const CreateCategory = ({ onCategoryCreated }) => {
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
+        if (name === "category_code") {
+            // Permitir vacío (para que pueda borrar correctamente)
+            if (value === "" || /^[0-9]+$/.test(value)) {
+                setFormData(prev => ({
+                    ...prev,
+                    [name]: value
+                }));
+            }
+            return; // Salimos para que NO ejecute el resto
+        } else {
+            // Para otros campos
+         
         setFormData(prev => ({
             ...prev,
             [name]: type === 'checkbox' ? checked : value
-        }));
+        }));}
     };
 
     const handleSubmit = async (e) => {
