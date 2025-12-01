@@ -845,7 +845,7 @@ def adjust_stock(product_id):
         }), 500
 
 @api.route('/product/<int:product_id>', methods=['PUT'])
-def update_product_price(product_id):
+def update_product(product_id):
     try:    
         data = request.get_json()
         new_price = data.get('price')

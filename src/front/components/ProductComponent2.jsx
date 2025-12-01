@@ -17,7 +17,10 @@ const ProductsComponent = () => {
     const [toggleLoading, setToggleLoading] = useState(null);
     const [editLoading, setEditLoading] = useState(null);
     const [editingProduct, setEditingProduct] = useState(null);
-    const [editPrice, setEditPrice] = useState("");
+    const [editPrice, setEditPrice] = useState(0);
+    const [editStock, setEditStock] = useState(0);
+    const [editName, setEditName] = useState("");
+    const [editSku, setEditSku] = useState("");
     const [productData, setProductData] = useState({
         product_name: "",
         price: "",
@@ -389,11 +392,58 @@ const ProductsComponent = () => {
             return;
         }
 
+        if (!editStock || isNaN(editStock)  || editStock < 0) {
+            await Swal.fire({
+                title: 'Stock Inválido',
+                text: 'Por favor ingresa un stock válido (mayor o igual a 0)',
+                icon: 'warning',
+                confirmButtonText: 'Entendido',
+                confirmButtonColor: '#f59e0b'
+            });
+            return;
+        }
+
+        if (!editSku) {
+            await Swal.fire({
+                title: 'Sku Inválido',
+                text: 'Por favor ingresa un Sku válido',
+                icon: 'warning',
+                confirmButtonText: 'Entendido',
+                confirmButtonColor: '#f59e0b'
+            });
+            return;
+        }
+        if (!editName || editName.trim() === "") {
+    await Swal.fire({
+        title: 'Nombre Inválido',
+        text: 'Por favor ingresa un nombre válido',
+        icon: 'warning',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#f59e0b'
+    });
+    return;
+}
+
+        
+
+        
+
         const newPrice = parseFloat(editPrice);
         const oldPrice = editingProduct ? parseFloat(editingProduct.price) : 0;
 
+         const newStock = parseFloat(editStock);
+        const oldStock = editingProduct ? parseFloat(editingProduct.stock) : 0;
+
+         const newName = editName.trim();
+
+        const oldName = editingProduct ? (editingProduct.product_name) :"";
+        
+
+         const newSku = parseFloat(editSku);
+        const oldSku = editingProduct ? parseFloat(editingProduct.product_SKU) : 0;
+
         const confirmResult = await Swal.fire({
-            title: '🔄 Actualizar Precio',
+            title: '🔄 Actualizar Producto',
             html: `
             <div style="text-align: center;">
                 <p>¿Estás seguro de que quieres actualizar el precio de?</p>
@@ -420,6 +470,7 @@ const ProductsComponent = () => {
                 <small style="color: #6b7280;">
                     ${newPrice > oldPrice ? '📈 Aumento de precio' : newPrice < oldPrice ? '📉 Disminución de precio' : '🟰 Mismo precio'}
                 </small>
+
             </div>
         `,
             icon: 'question',
@@ -449,16 +500,22 @@ const ProductsComponent = () => {
             const response = await fetch(
                 `${import.meta.env.VITE_BACKEND_URL}/api/product/${productId}`,
                 {
-                    method: 'PATCH',
+                    method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${store.token}`
                     },
                     body: JSON.stringify({
+                        stock: newStock,
+                        sku: newSku,
+                        name: newName,
                         price: newPrice
                     })
                 }
             );
+
+                       
+
 
             const result = await response.json();
 
@@ -532,6 +589,10 @@ const ProductsComponent = () => {
     const openEditModal = (product) => {
         setEditingProduct(product);
         setEditPrice(product.price.toString());
+        setEditStock(product.stock.toString());
+        setEditSku(product.product_SKU.toString());
+        setEditName(product.product_name.toString());
+        console.log("Editing Product:", product);
     };
 
     useEffect(() => {
@@ -539,6 +600,7 @@ const ProductsComponent = () => {
         fetchProducts();
     }, []);
 
+   
     return (
         <div id="products-tab" className="tab-content active">
             {/* Search and Filters*/}
@@ -679,7 +741,7 @@ const ProductsComponent = () => {
                         <div className="modal-content">
                             <div className="modal-header">
                                 <h1 className="modal-title fs-5" id="editPriceModalLabel">
-                                    Editar Precio del Producto
+                                    Editar
                                 </h1>
                                 <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
@@ -687,7 +749,7 @@ const ProductsComponent = () => {
                                 {editingProduct && (
                                     <>
                                         <p>
-                                            Editando precio para: <strong>{editingProduct.product_name}</strong>
+                                            Editando: <strong>{editingProduct.product_name}</strong>
                                         </p>
                                         <div className="form-group">
                                             <label className="form-label" htmlFor="editPrice">
@@ -706,12 +768,73 @@ const ProductsComponent = () => {
                                             <div className="form-text">
                                                 Ingresa el nuevo precio para este producto
                                             </div>
+
+
+                                            {/* stock */}
+
+                                            <label className="form-label" htmlFor="editStock">
+                                                Nuevo Stock 
+                                            </label>
+                                            <input
+                                                type="number"
+                                                step="0.01"
+                                                min="0"
+                                                className="form-control"
+                                                id="editStock"
+                                                value={editStock}
+                                                onChange={(e) => setEditStock(e.target.value)}
+                                                placeholder="0.00"
+                                            />
+                                            
+                                            <div className="form-text">
+                                                Ingresa el nuevo stock para este producto
+                                            </div>
+
+                                        {/* Sku */}
+
+
+                                            <label className="form-label" htmlFor="editSku">
+                                                Nuevo Sku
+                                            </label>
+                                            <input
+                                                type="number"
+                                                step="0.01"
+                                                min="0"
+                                                className="form-control"
+                                                id="editSku"
+                                                value={editSku}
+                                                onChange={(e) => setEditSku(e.target.value)}
+                                                placeholder="0.00"
+                                            />
+                                            <div className="form-text">
+                                                Ingresa el nuevo Sku para este producto
+                                            </div>
+
+                                        {/* Name */}
+
+                                        <label className="form-label" htmlFor="editName">
+    Nuevo Nombre
+</label>
+<input
+    type="text"
+    className="form-control"
+    id="editName"
+    value={editName}
+    onChange={(e) => setEditName(e.target.value)}
+    placeholder="Ingresa el nombre del producto"
+/>
+<div className="form-text">
+    Ingresa el nuevo nombre para este producto
+</div>
+
+
+
                                         </div>
-                                        <div className="mt-2">
+                                        {/* <div className="mt-2">
                                             <small className="text-muted">
                                                 Precio actual: <strong>${parseFloat(editingProduct.price).toFixed(2)}</strong>
                                             </small>
-                                        </div>
+                                        </div> */}
                                     </>
                                 )}
                             </div>
@@ -784,7 +907,7 @@ const ProductsComponent = () => {
                                                         onClick={() => openEditModal(product)}
                                                     >
                                                         <i className="fas fa-edit me-1"></i>
-                                                        Editar Precio
+                                                        Editar
                                                     </button>
 
                                                     {/* Botón Activar/Desactivar */}
