@@ -148,6 +148,8 @@ class Order(db.Model):
         return {
             "id": self.id,
             "client_name": self.client_name,
+            "delivery_address": self.delivery_address,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
             "created_by_user_id": self.created_by_user_id,
             "total_amount": float(self.total_amount),
             "status": self.status,
