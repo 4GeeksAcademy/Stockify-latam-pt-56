@@ -42,7 +42,6 @@ export const DashBoard = () => {
 
             const data = await response.json();
             dispatch({ type: 'SET_USERS', payload: data.user })
-            // setUsers(data.user);
         } catch (error) {
             console.error("Error al obtener los usuarios:", error);
             await Swal.fire({
@@ -63,6 +62,29 @@ export const DashBoard = () => {
         }
     }
 
+    const fetchProducts = async () => {
+        try {
+            // Asumo que tienes un endpoint para obtener todos los productos
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/products`, {
+                method: 'GET',
+                headers: {
+                    "AUTHORIZATION": `Bearer ${store.token}`,
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            if (!response.ok) throw new Error(`Error en la solicitud: ${response.statusText}`);
+
+            const data = await response.json();
+            // 🚨 IMPORTANTE: Asegúrate de que el payload sea el array de productos
+            dispatch({ type: 'set_products', payload: data.products });
+
+        } catch (error) {
+            console.error("Error al obtener los productos:", error);
+            // Manejo de error
+        }
+    }
+
     const fetchCategories = async () => {
         try {
             const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/categories`);
@@ -76,36 +98,26 @@ export const DashBoard = () => {
         }
     };
 
-    // const fetchInventaryTotalValue = async () => {
-    //     if (!token) {
-    //         console.warn("Token not available. Cannot fetch inventory value.");
-    //         return;
-    //     }
-    //     try {
-    //         const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/inventory/total-value`, {
-    //             method: 'GET',
-    //             headers: {
-    //                 'Content-Type': 'application/json',
-    //                 'Authorization': `Bearer ${token}`
-    //             }
-    //         })
-    //         const result = await response.json();
-
-    //         if (response.ok) {
-    //             dispatch({ type: 'SET_TOTAL_INVENTARY_VALUE', payload: result.total_value })
-    //         }
-    //     } catch (error) {
-    //         console.error('Error loading categories:', error);
-    //     }
-    // }
-
-    const calculateTotalUnits = () => {
+    const calculateTotalInventoryValue = () => {
         if (products.length === 0) return 0;
-        // Se usa un parseo para asegurar que 'stock' es un número antes de sumar
-        return products.reduce((sum, product) => sum + (parseInt(product.stock) || 0), 0);
+        return products.reduce((sum, product) => {
+            // Asegurarse de que stock y price_in_usd sean números válidos
+            const stock = parseInt(product.stock) || 0;
+            const price = parseFloat(product.price) || 0; // Asumo que el precio está en 'price_in_usd'
+            return sum + (stock * price);
+        }, 0);
     };
 
-    // Almacenar el total de unidades calculadas
+    // Calcular el valor total directamente desde store.products. 
+    // Esto se recalcula automáticamente en cada re-render del componente
+    // causado por un cambio en 'products'.
+    const totalInventoryValue = calculateTotalInventoryValue();
+
+    // Opcional: Función para calcular las unidades totales si la quieres
+    const calculateTotalUnits = () => {
+        if (products.length === 0) return 0;
+        return products.reduce((sum, product) => sum + (parseInt(product.stock) || 0), 0);
+    };
     const totalAvailableUnits = calculateTotalUnits()
 
 
@@ -113,8 +125,9 @@ export const DashBoard = () => {
     useEffect(() => {
         fetchCategories();
         fetchUsers()
+        fetchProducts()
 
-    }, [token, totalAvailableUnits]);
+    }, [token, totalAvailableUnits])
 
     return (
         <div className="container">
@@ -204,8 +217,8 @@ export const DashBoard = () => {
                             <i className="fa-solid fa-money-bill-trend-up"></i>
                         </div>
                         <div className="stat-number">
-                            {typeof totalAvailableUnits === 'number'
-                                ? `$${totalAvailableUnits.toFixed(2)}`
+                            {typeof totalInventoryValue === 'number'
+                                ? `$${totalInventoryValue.toFixed(2)}` // Muestra el VALOR TOTAL
                                 : '$0.00'}
                         </div>
                         <div className="stat-label">Inventory Total Value</div>

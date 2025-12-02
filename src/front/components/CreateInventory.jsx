@@ -5,7 +5,7 @@ import useGlobalReducer from '../hooks/useGlobalReducer'; // Asume que tienes es
 
 export const CreateInventory = () => {
     // 1. ESTADOS Y HOOKS
-    const { store } = useGlobalReducer();
+    const { dispatch, store } = useGlobalReducer()
     const userData = store.userData; // Necesario para el rol 'Administrator'
     const token = store.token;
     const totalInventoryValue = store.totalInventoryValue
@@ -16,7 +16,6 @@ export const CreateInventory = () => {
     // Estados para la gestión de ajuste de stock (se usarán dentro del mapeo)
     const [adjustmentQuantities, setAdjustmentQuantities] = useState({});
 
-    console.log(totalInventoryValue)
 
     // 2. FUNCIÓN DE CARGA DE DATOS
     const fetchProducts = async () => {
@@ -34,7 +33,15 @@ export const CreateInventory = () => {
             }
 
             const data = await response.json();
-            setProducts(data.products || []);
+            const loadedProducts = data.products || [];
+
+            // 🟢 PASO CLAVE 1: Actualiza el estado local
+            setProducts(loadedProducts);
+
+            // 🟢 PASO CLAVE 2: Actualiza el store global (Redux)
+            // Esto hará que DashBoard se re-renderice y recalcule el valor total
+            dispatch({ type: 'set_products', payload: loadedProducts });
+
         } catch (err) {
             console.error("Error fetching products:", err);
             setError(err.message);
@@ -79,6 +86,7 @@ export const CreateInventory = () => {
 
             if (response.ok) {
                 alert(`✅ Stock actualizado: Nuevo stock es ${result.new_stock} para ${result.product_name || `ID ${productId}`}`);
+                await fetchProducts();
             } else {
                 alert(`❌ Error al ajustar stock: ${result.msg || response.statusText}`);
             }

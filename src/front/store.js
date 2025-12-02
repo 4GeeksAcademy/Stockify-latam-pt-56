@@ -9,7 +9,6 @@ export const initialStore = () => {
     categories: [],
     products: [],
     cart: [],
-    totalInventoryValue: 0,
     users: [],
   };
 };
@@ -149,12 +148,6 @@ export default function storeReducer(store, action = {}) {
         token: null,
         userData: null,
         cart: [],
-      };
-
-    case "SET_TOTAL_INVENTARY_VALUE":
-      return {
-        ...store,
-        totalInventoryValue: action.payload,
       };
 
     case "SET_USERS":
