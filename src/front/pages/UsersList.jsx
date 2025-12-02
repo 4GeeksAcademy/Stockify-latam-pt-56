@@ -13,8 +13,6 @@ export const UsersList = () => {
     const [activeTab, setActiveTab] = React.useState("userslist");
     const [deleteLoading, setDeleteLoading] = useState(null);
 
-    console.log(users)
-
     // Obtener usuarios
     const fetchUsers = async () => {
         try {

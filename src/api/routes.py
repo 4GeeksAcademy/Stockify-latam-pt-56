@@ -442,7 +442,7 @@ def get_all_categories():
 
 
 @api.route('/user', methods=['GET'])
-@jwt_required_with_roles(['master'])
+@jwt_required_with_roles(['Administrator', 'master'])
 def get_users():
     try:
         users = db.session.execute(db.select(User)).scalars().all()
@@ -752,31 +752,14 @@ def update_product_price(product_id):
         }), 500
 
 
-@api.route('/products/<int:product_id>/stock_adjustment', methods=['PUT'])
+@api.route('/products/<int:product_id>/stock_adjustment', methods=['PATCH'])
 @jwt_required_with_roles(['Administrator'])
 def adjust_stock(product_id):
-    # 1. Verificación de Rol (Solo el Administrador puede hacer ajustes)
-    user_id = get_jwt_identity()
-    try:
-        user_id = int(user_id)
-    except ValueError:
-        return jsonify({"msg": "Error de autenticación, ID de usuario inválido."}), 401
-
-    user = db.session.get(User, user_id)
-
-    if not user:
-        return jsonify({"msg": "Usuario no encontrado."}), 404
-
-    # Finalmente, verifica el rol. **ATENCIÓN: Usa 'role' o 'rol' según tu modelo.**
-    # Si tu modelo tiene 'role':
-    if user.role != 'Administrator':
-        return jsonify({"msg": "Acceso denegado. Solo administradores pueden ajustar stock."}), 403
-
     # 2. Obtener datos de la petición
     data = request.get_json()
     try:
         # Cantidad a sumar o restar
-        adjustment_quantity = int(data.get('quantity'))
+        adjustment_quantity = int(data.get('stock'))
         adjustment_type = data.get('type')              # 'add' o 'subtract'
     except (TypeError, ValueError):
         return jsonify({"msg": "La cantidad debe ser un número entero."}), 400
@@ -812,7 +795,7 @@ def adjust_stock(product_id):
         return jsonify({
             "msg": message,
             "new_stock": product.stock,
-            "product_name": product.name
+            "product_name": product.product_name
         }), 200
 
     except Exception as e:

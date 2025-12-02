@@ -87,9 +87,9 @@ const Home = () => {
                         <div className="border border-warning p-2 rounded">El administrador verá los vendedores disponibles para organizarlos mejor</div>
                         <div className="border border-warning p-2 rounded">El administrador cargará productos</div>
                         <div className="border border-warning p-2 rounded">El vendedor podrá registrarse en la plataforma</div>
- 
-                        
-                        
+
+
+
                     </div>
                 </section>
 
@@ -130,11 +130,11 @@ const Home = () => {
                     <h2 className="text-warning fw-semibold text-center">Funcionalidades Futuras</h2>
                     <ul>
                         <li> El administrador podrá recibir un correo cuando se cree una orden de compra </li>
-                        
-                        <li>El administrador podrá ver el total del inventario </li> 
+
+                        <li>El administrador podrá ver el total del inventario </li>
                         <li>El administrador verá un reporte con todos los pedidos finalizados</li>
-                        
-                        
+
+
                         <li>Los vendedores podrán reservar productos</li>
                     </ul>
                 </section>
@@ -163,7 +163,7 @@ const Home = () => {
                 {/* EQUIPO */}
                 <section className="section-box p-4 mb-4 border border-warning rounded">
                     <h2 className="text-warning fw-semibold text-center">Creadores del Proyecto</h2>
-                    
+
                     <div className="d-flex justify-content-center gap-4">
                         <div className="text-center">
                             <img src="./../public/screenshotjose1.png" alt="Foto 1" className="rounded mb-2" style={{ width: "150px", height: "180px", objectFit: "cover" }} />
@@ -180,7 +180,7 @@ const Home = () => {
                     </div>
                 </section>
 
-                
+
                 <section className="section-box p-4 mb-4 border border-warning rounded text-center">
                     <h2 className="text-warning fw-semibold text-center">Así que ya lo sabes...</h2>
                     <p>
@@ -192,15 +192,6 @@ const Home = () => {
                     <p>¿Qué esperas? Cotizamos tu solución ideal.</p>
                 </section>
             </div>
-
-            {/* FOOTER */}
-            <footer
-                className="text-center py-4 mt-5"
-                style={{ backgroundColor: "#000000", borderTop: "4px solid #b8860b" }}
-            >
-                <p className="mb-1 text-white">© 2025 Stockify. Todos los derechos reservados.</p>
-                <p className="text-warning">Impulsando negocios inteligentes</p>
-            </footer>
         </div>
     );
 };

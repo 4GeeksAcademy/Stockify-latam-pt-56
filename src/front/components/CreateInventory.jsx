@@ -8,13 +8,15 @@ export const CreateInventory = () => {
     const { store } = useGlobalReducer();
     const userData = store.userData; // Necesario para el rol 'Administrator'
     const token = store.token;
-
+    const totalInventoryValue = store.totalInventoryValue
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     // Estados para la gestión de ajuste de stock (se usarán dentro del mapeo)
     const [adjustmentQuantities, setAdjustmentQuantities] = useState({});
+
+    console.log(totalInventoryValue)
 
     // 2. FUNCIÓN DE CARGA DE DATOS
     const fetchProducts = async () => {
@@ -51,7 +53,6 @@ export const CreateInventory = () => {
             return; // Detiene la ejecución si no hay token
 
         }
-        console.log("Token a enviar:", token)
 
         if (userData?.role !== 'Administrator') {
             alert("Acceso denegado. Solo los administradores pueden ajustar stock.");
@@ -63,29 +64,21 @@ export const CreateInventory = () => {
             return;
         }
 
-        const actionText = type === 'add' ? 'AÑADIR' : 'RESTAR/DESCARTAR';
-        const confirmation = window.confirm(
-            `¿Está seguro de ${actionText} ${quantity} unidades del producto ID #${productId}?`
-        );
-
-        if (!confirmation) return;
-
         setLoading(true);
         try {
             const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/products/${productId}/stock_adjustment`, {
-                method: 'PUT',
+                method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ quantity, type })
+                body: JSON.stringify({ stock: quantity, type })
             });
 
             const result = await response.json();
 
             if (response.ok) {
                 alert(`✅ Stock actualizado: Nuevo stock es ${result.new_stock} para ${result.product_name || `ID ${productId}`}`);
-                fetchProducts(); // Recargar la lista
             } else {
                 alert(`❌ Error al ajustar stock: ${result.msg || response.statusText}`);
             }

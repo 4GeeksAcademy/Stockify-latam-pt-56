@@ -49,8 +49,6 @@ const ProductsComponent = () => {
             url += `?${params.join('&')}`;
         }
 
-        console.log("Fetching URL:", url); // Para debug
-
         try {
             const response = await fetch(url);
             const data = await response.json();
@@ -83,7 +81,7 @@ const ProductsComponent = () => {
         let cleanedValue = value;
 
         if (fieldName === "price" || fieldName === "stock") {
-    cleanedValue = value; // Ya viene limpio del input, no lo fuerces a número todavía
+            cleanedValue = value; // Ya viene limpio del input, no lo fuerces a número todavía
 
 
         } else if (fieldName === "category_id") {
@@ -126,8 +124,8 @@ const ProductsComponent = () => {
 
     const createProduct = async () => {
         setLoading(true);
-            let priceFloat = parseFloat(productData.price);
-            let stockFloat = parseFloat(productData.stock);
+        let priceFloat = parseFloat(productData.price);
+        let stockFloat = parseFloat(productData.stock);
         try {
             const url = `${import.meta.env.VITE_BACKEND_URL}/api/product`;
             const response = await fetch(url, {
@@ -137,14 +135,14 @@ const ProductsComponent = () => {
                     'Authorization': `Bearer ${store.token}`
                 },
                 body: JSON.stringify({
-                    product_name : productData.product_name,
-                    category_id : productData.category_id,
-                    price : priceFloat,
-                    product_SKU : productData.product_SKU,
-                    stock : stockFloat
+                    product_name: productData.product_name,
+                    category_id: productData.category_id,
+                    price: priceFloat,
+                    product_SKU: productData.product_SKU,
+                    stock: stockFloat
 
                 })
-            
+
             });
 
             const result = await response.json();
@@ -351,159 +349,9 @@ const ProductsComponent = () => {
     };
 
     // FUNCIÓN PARA ACTUALIZAR PRECIO DEL PRODUCTO
-    /* const updateProductPrice = async (productId, productName) => {
-         if (!editPrice || isNaN(editPrice) || parseFloat(editPrice) < 0) {
-             alert("Por favor ingresa un precio válido");
-             return;
-         }
- 
-         try {
-             setEditLoading(productId);
-             const response = await fetch(
-                 `${import.meta.env.VITE_BACKEND_URL}/api/product/${productId}`,
-                 {
-                     method: 'PATCH',
-                     headers: {
-                         'Content-Type': 'application/json',
-                         'Authorization': `Bearer ${store.token}`
-                     },
-                     body: JSON.stringify({
-                         price: parseFloat(editPrice)
-                     })
-                 }
-             );
- 
-             const result = await response.json();
- 
-             if (response.ok) {
-                 alert('Precio actualizado exitosamente');
-                 fetchProducts();
-                 const modal = bootstrap.Modal.getInstance(document.getElementById("editPriceModal"));
-                 modal.hide();
-                 setEditingProduct(null);
-                 setEditPrice("");
-             } else {
-                 alert(`Error: ${result.msg || 'No se pudo actualizar el precio'}`);
-             }
-         } catch (error) {
-             console.error('Error updating product price:', error);
-             alert('Error de conexión al servidor');
-         } finally {
-             setEditLoading(null);
-         }
-     };*/
-    const updateProduct = async (productId, productName) => {
+    const updateProductPrice = async (productId, productName) => {
         if (!editPrice || isNaN(editPrice) || parseFloat(editPrice) < 0) {
-            await Swal.fire({
-                title: 'Precio Inválido',
-                text: 'Por favor ingresa un precio válido (mayor o igual a 0)',
-                icon: 'warning',
-                confirmButtonText: 'Entendido',
-                confirmButtonColor: '#f59e0b'
-            });
-            return;
-        }
-
-        if (!editStock || isNaN(editStock)  || editStock < 0) {
-            await Swal.fire({
-                title: 'Stock Inválido',
-                text: 'Por favor ingresa un stock válido (mayor o igual a 0)',
-                icon: 'warning',
-                confirmButtonText: 'Entendido',
-                confirmButtonColor: '#f59e0b'
-            });
-            return;
-        }
-
-        if (!editSku) {
-            await Swal.fire({
-                title: 'Sku Inválido',
-                text: 'Por favor ingresa un Sku válido',
-                icon: 'warning',
-                confirmButtonText: 'Entendido',
-                confirmButtonColor: '#f59e0b'
-            });
-            return;
-        }
-        if (!editName || editName.trim() === "") {
-    await Swal.fire({
-        title: 'Nombre Inválido',
-        text: 'Por favor ingresa un nombre válido',
-        icon: 'warning',
-        confirmButtonText: 'Entendido',
-        confirmButtonColor: '#f59e0b'
-    });
-    return;
-}
-
-        
-
-        
-
-        const newPrice = parseFloat(editPrice);
-        const oldPrice = editingProduct ? parseFloat(editingProduct.price) : 0;
-
-         const newStock = parseFloat(editStock);
-        const oldStock = editingProduct ? parseFloat(editingProduct.stock) : 0;
-
-         const newName = editName.trim();
-
-        const oldName = editingProduct ? (editingProduct.product_name) :"";
-        
-
-         const newSku = parseFloat(editSku);
-        const oldSku = editingProduct ? parseFloat(editingProduct.product_SKU) : 0;
-
-        const confirmResult = await Swal.fire({
-            title: '🔄 Actualizar Producto',
-            html: `
-            <div style="text-align: center;">
-                <p>¿Estás seguro de que quieres actualizar el precio de?</p>
-                <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin: 10px 0;">
-                    <strong>"${productName}"</strong>
-                </div>
-                <div style="display: flex; justify-content: center; gap: 20px; margin: 15px 0;">
-                    <div style="text-align: center;">
-                        <small style="color: #6b7280;">Precio Actual</small>
-                        <div style="color: #ef4444; font-weight: bold; font-size: 1.2rem;">
-                            $${oldPrice.toFixed(2)}
-                        </div>
-                    </div>
-                    <div style="align-self: center;">
-                        <i class="fas fa-arrow-right" style="color: #6b7280;"></i>
-                    </div>
-                    <div style="text-align: center;">
-                        <small style="color: #6b7280;">Nuevo Precio</small>
-                        <div style="color: #10b981; font-weight: bold; font-size: 1.2rem;">
-                            $${newPrice.toFixed(2)}
-                        </div>
-                    </div>
-                </div>
-                <small style="color: #6b7280;">
-                    ${newPrice > oldPrice ? '📈 Aumento de precio' : newPrice < oldPrice ? '📉 Disminución de precio' : '🟰 Mismo precio'}
-                </small>
-
-            </div>
-        `,
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#10b981',
-            cancelButtonColor: '#6b7280',
-            confirmButtonText: 'Sí, actualizar',
-            cancelButtonText: 'Cancelar',
-            reverseButtons: true,
-            focusConfirm: false,
-            focusCancel: true
-        });
-
-        if (!confirmResult.isConfirmed) {
-            await Swal.fire({
-                title: 'Actualización Cancelada',
-                text: `El precio de "${productName}" se mantiene en $${oldPrice.toFixed(2)}`,
-                icon: 'info',
-                timer: 2000,
-                showConfirmButton: false
-            });
+            alert("Por favor ingresa un precio válido");
             return;
         }
 
@@ -512,90 +360,240 @@ const ProductsComponent = () => {
             const response = await fetch(
                 `${import.meta.env.VITE_BACKEND_URL}/api/product/${productId}`,
                 {
-                    method: 'PUT',
+                    method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${store.token}`
                     },
                     body: JSON.stringify({
-                        stock: newStock,
-                        sku: newSku,
-                        name: newName,
-                        price: newPrice
+                        price: parseFloat(editPrice)
                     })
                 }
             );
 
-                       
-
-
             const result = await response.json();
 
             if (response.ok) {
-                await Swal.fire({
-                    title: '¡Precio Actualizado!',
-                    html: `
-                    <div style="text-align: center;">
-                        <div style="font-size: 3rem; color: #10b981; margin: 10px 0;">
-                            ✅
-                        </div>
-                        <p>El precio de <strong>"${productName}"</strong> ha sido actualizado</p>
-                        <div style="display: flex; justify-content: center; gap: 20px; margin: 15px 0;">
-                            <div style="text-decoration: line-through; color: #ef4444;">
-                                $${oldPrice.toFixed(2)}
-                            </div>
-                            <div style="font-weight: bold; color: #10b981; font-size: 1.3rem;">
-                                $${newPrice.toFixed(2)}
-                            </div>  
-                        </div>
-                    </div>
-                `,
-                    icon: 'success',
-                    confirmButtonText: 'Continuar',
-                    confirmButtonColor: '#10b981',
-                    timer: 4000,
-                    timerProgressBar: true,
-                    willClose: () => {
-                        fetchProducts();
-                        const modal = bootstrap.Modal.getInstance(document.getElementById("editPriceModal"));
-                        modal.hide();
-                        setEditingProduct(null);
-                        setEditPrice("");
-                    }
-                });
+                alert('Precio actualizado exitosamente');
+                fetchProducts();
+                const modal = bootstrap.Modal.getInstance(document.getElementById("editPriceModal"));
+                modal.hide();
+                setEditingProduct(null);
+                setEditPrice("");
             } else {
-                await Swal.fire({
-                    title: 'Error al Actualizar',
-                    html: `
-                    <div style="text-align: center;">
-                        <div style="font-size: 3rem; margin: 10px 0;">😕</div>
-                        <p>${result.msg || 'No se pudo actualizar el precio del producto'}</p>
-                    </div>
-                `,
-                    icon: 'error',
-                    confirmButtonText: 'Entendido',
-                    confirmButtonColor: '#ef4444'
-                });
+                alert(`Error: ${result.msg || 'No se pudo actualizar el precio'}`);
             }
         } catch (error) {
             console.error('Error updating product price:', error);
-            await Swal.fire({
-                title: 'Error de Conexión',
-                html: `
-                <div style="text-align: center;">
-                    <div style="font-size: 3rem; margin: 10px 0;">📡</div>
-                    <p>No se pudo conectar con el servidor</p>
-                    <small style="color: #6b7280;">Verifica tu conexión a internet</small>
-                </div>
-            `,
-                icon: 'error',
-                confirmButtonText: 'Reintentar',
-                confirmButtonColor: '#ef4444'
-            });
+            alert('Error de conexión al servidor');
         } finally {
             setEditLoading(null);
         }
-    };
+    }
+    // const updateProduct = async (productId, productName) => {
+    //     if (!editPrice || isNaN(editPrice) || parseFloat(editPrice) < 0) {
+    //         await Swal.fire({
+    //             title: 'Precio Inválido',
+    //             text: 'Por favor ingresa un precio válido (mayor o igual a 0)',
+    //             icon: 'warning',
+    //             confirmButtonText: 'Entendido',
+    //             confirmButtonColor: '#f59e0b'
+    //         });
+    //         return;
+    //     }
+
+    //     if (!editStock || isNaN(editStock) || editStock < 0) {
+    //         await Swal.fire({
+    //             title: 'Stock Inválido',
+    //             text: 'Por favor ingresa un stock válido (mayor o igual a 0)',
+    //             icon: 'warning',
+    //             confirmButtonText: 'Entendido',
+    //             confirmButtonColor: '#f59e0b'
+    //         });
+    //         return;
+    //     }
+
+    //     if (!editSku) {
+    //         await Swal.fire({
+    //             title: 'Sku Inválido',
+    //             text: 'Por favor ingresa un Sku válido',
+    //             icon: 'warning',
+    //             confirmButtonText: 'Entendido',
+    //             confirmButtonColor: '#f59e0b'
+    //         });
+    //         return;
+    //     }
+    //     if (!editName || editName.trim() === "") {
+    //         await Swal.fire({
+    //             title: 'Nombre Inválido',
+    //             text: 'Por favor ingresa un nombre válido',
+    //             icon: 'warning',
+    //             confirmButtonText: 'Entendido',
+    //             confirmButtonColor: '#f59e0b'
+    //         });
+    //         return;
+    //     }
+
+
+
+
+
+    //     const newPrice = parseFloat(editPrice);
+    //     const oldPrice = editingProduct ? parseFloat(editingProduct.price) : 0;
+
+    //     const newStock = parseFloat(editStock);
+    //     const oldStock = editingProduct ? parseFloat(editingProduct.stock) : 0;
+
+    //     const newName = editName.trim();
+
+    //     const oldName = editingProduct ? (editingProduct.product_name) : "";
+
+
+    //     const newSku = parseFloat(editSku);
+    //     const oldSku = editingProduct ? parseFloat(editingProduct.product_SKU) : 0;
+
+    //     const confirmResult = await Swal.fire({
+    //         title: '🔄 Actualizar Producto',
+    //         html: `
+    //         <div style="text-align: center;">
+    //             <p>¿Estás seguro de que quieres actualizar el precio de?</p>
+    //             <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin: 10px 0;">
+    //                 <strong>"${productName}"</strong>
+    //             </div>
+    //             <div style="display: flex; justify-content: center; gap: 20px; margin: 15px 0;">
+    //                 <div style="text-align: center;">
+    //                     <small style="color: #6b7280;">Precio Actual</small>
+    //                     <div style="color: #ef4444; font-weight: bold; font-size: 1.2rem;">
+    //                         $${oldPrice.toFixed(2)}
+    //                     </div>
+    //                 </div>
+    //                 <div style="align-self: center;">
+    //                     <i class="fas fa-arrow-right" style="color: #6b7280;"></i>
+    //                 </div>
+    //                 <div style="text-align: center;">
+    //                     <small style="color: #6b7280;">Nuevo Precio</small>
+    //                     <div style="color: #10b981; font-weight: bold; font-size: 1.2rem;">
+    //                         $${newPrice.toFixed(2)}
+    //                     </div>
+    //                 </div>
+    //             </div>
+    //             <small style="color: #6b7280;">
+    //                 ${newPrice > oldPrice ? '📈 Aumento de precio' : newPrice < oldPrice ? '📉 Disminución de precio' : '🟰 Mismo precio'}
+    //             </small>
+
+    //         </div>
+    //     `,
+    //         icon: 'question',
+    //         showCancelButton: true,
+    //         confirmButtonColor: '#10b981',
+    //         cancelButtonColor: '#6b7280',
+    //         confirmButtonText: 'Sí, actualizar',
+    //         cancelButtonText: 'Cancelar',
+    //         reverseButtons: true,
+    //         focusConfirm: false,
+    //         focusCancel: true
+    //     });
+
+    //     if (!confirmResult.isConfirmed) {
+    //         await Swal.fire({
+    //             title: 'Actualización Cancelada',
+    //             text: `El precio de "${productName}" se mantiene en $${oldPrice.toFixed(2)}`,
+    //             icon: 'info',
+    //             timer: 2000,
+    //             showConfirmButton: false
+    //         });
+    //         return;
+    //     }
+
+    //     try {
+    //         setEditLoading(productId);
+    //         const response = await fetch(
+    //             `${import.meta.env.VITE_BACKEND_URL}/api/product/${productId}`,
+    //             {
+    //                 method: 'PUT',
+    //                 headers: {
+    //                     'Content-Type': 'application/json',
+    //                     'Authorization': `Bearer ${store.token}`
+    //                 },
+    //                 body: JSON.stringify({
+    //                     stock: newStock,
+    //                     sku: newSku,
+    //                     name: newName,
+    //                     price: newPrice
+    //                 })
+    //             }
+    //         );
+
+
+
+
+    //         const result = await response.json();
+
+    //         if (response.ok) {
+    //             await Swal.fire({
+    //                 title: '¡Precio Actualizado!',
+    //                 html: `
+    //                 <div style="text-align: center;">
+    //                     <div style="font-size: 3rem; color: #10b981; margin: 10px 0;">
+    //                         ✅
+    //                     </div>
+    //                     <p>El precio de <strong>"${productName}"</strong> ha sido actualizado</p>
+    //                     <div style="display: flex; justify-content: center; gap: 20px; margin: 15px 0;">
+    //                         <div style="text-decoration: line-through; color: #ef4444;">
+    //                             $${oldPrice.toFixed(2)}
+    //                         </div>
+    //                         <div style="font-weight: bold; color: #10b981; font-size: 1.3rem;">
+    //                             $${newPrice.toFixed(2)}
+    //                         </div>  
+    //                     </div>
+    //                 </div>
+    //             `,
+    //                 icon: 'success',
+    //                 confirmButtonText: 'Continuar',
+    //                 confirmButtonColor: '#10b981',
+    //                 timer: 4000,
+    //                 timerProgressBar: true,
+    //                 willClose: () => {
+    //                     fetchProducts();
+    //                     const modal = bootstrap.Modal.getInstance(document.getElementById("editPriceModal"));
+    //                     modal.hide();
+    //                     setEditingProduct(null);
+    //                     setEditPrice("");
+    //                 }
+    //             });
+    //         } else {
+    //             await Swal.fire({
+    //                 title: 'Error al Actualizar',
+    //                 html: `
+    //                 <div style="text-align: center;">
+    //                     <div style="font-size: 3rem; margin: 10px 0;">😕</div>
+    //                     <p>${result.msg || 'No se pudo actualizar el precio del producto'}</p>
+    //                 </div>
+    //             `,
+    //                 icon: 'error',
+    //                 confirmButtonText: 'Entendido',
+    //                 confirmButtonColor: '#ef4444'
+    //             });
+    //         }
+    //     } catch (error) {
+    //         console.error('Error updating product price:', error);
+    //         await Swal.fire({
+    //             title: 'Error de Conexión',
+    //             html: `
+    //             <div style="text-align: center;">
+    //                 <div style="font-size: 3rem; margin: 10px 0;">📡</div>
+    //                 <p>No se pudo conectar con el servidor</p>
+    //                 <small style="color: #6b7280;">Verifica tu conexión a internet</small>
+    //             </div>
+    //         `,
+    //             icon: 'error',
+    //             confirmButtonText: 'Reintentar',
+    //             confirmButtonColor: '#ef4444'
+    //         });
+    //     } finally {
+    //         setEditLoading(null);
+    //     }
+    // };
 
     // FUNCIÓN PARA ABRIR MODAL DE EDICIÓN
     const openEditModal = (product) => {
@@ -612,7 +610,7 @@ const ProductsComponent = () => {
         fetchProducts();
     }, []);
 
-   
+
     return (
         <div id="products-tab" className="tab-content active">
             {/* Search and Filters*/}
@@ -679,29 +677,29 @@ const ProductsComponent = () => {
 
 
 
-                                        <div className="form-group">
-                                            <label className="form-label" htmlFor="productStock">Stock</label>
-                                            <input
-                                                type="text"
-                                                className="form-control"
-                                                id="productStock"
-                                                placeholder="0"
-                                                onInput={(e) => {
-                                                    let value = e.target.value;
-                                                    value = value.replace(/[^0-9.]/g, "");
-                                                    value = value.replace(/(\..*)\./g, "$1");
-                                                    if (value.includes(".")) {
-                                                        const parts = value.split(".");
-                                                        parts[1] = parts[1].slice(0, 2);
-                                                        value = parts.join(".");
-                                                    }
-                                                    e.target.value = value;
-                                                }}
-                                                value={productData.stock}
-                                                onChange={handleInputChange}
-                                            />
-                                        </div>
+                                    <div className="form-group">
+                                        <label className="form-label" htmlFor="productStock">Stock</label>
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            id="productStock"
+                                            placeholder="0"
+                                            onInput={(e) => {
+                                                let value = e.target.value;
+                                                value = value.replace(/[^0-9.]/g, "");
+                                                value = value.replace(/(\..*)\./g, "$1");
+                                                if (value.includes(".")) {
+                                                    const parts = value.split(".");
+                                                    parts[1] = parts[1].slice(0, 2);
+                                                    value = parts.join(".");
+                                                }
+                                                e.target.value = value;
+                                            }}
+                                            value={productData.stock}
+                                            onChange={handleInputChange}
+                                        />
                                     </div>
+                                </div>
 
                                 <div className="form-row">
                                     <div className="form-group">
@@ -756,7 +754,7 @@ const ProductsComponent = () => {
                         <div className="modal-content">
                             <div className="modal-header">
                                 <h1 className="modal-title fs-5" id="editPriceModalLabel">
-                                    Editar
+                                    Editar Precio del Producto
                                 </h1>
                                 <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
@@ -764,34 +762,16 @@ const ProductsComponent = () => {
                                 {editingProduct && (
                                     <>
                                         <p>
-                                            Editando: <strong>{editingProduct.product_name}</strong>
+                                            Editando precio para: <strong>{editingProduct.product_name}</strong>
                                         </p>
                                         <div className="form-group">
                                             <label className="form-label" htmlFor="editPrice">
                                                 Nuevo Precio ($)
                                             </label>
                                             <input
-                                            onInput={(e) =>  {
-                                                let value = e.target.value;
-
-                                                // Solo números y un punto
-                                                value = value.replace(/[^0-9.]/g, "");
-
-                                                // Evitar dos puntos decimales
-                                                value = value.replace(/(\..*)\./g, "$1");
-
-                                                // Limitar a 2 decimales
-                                                if (value.includes(".")) {
-                                                    const parts = value.split(".");
-                                                    parts[1] = parts[1].slice(0, 2); // máximo 2 decimales
-                                                    value = parts.join(".");
-                                                }
-
-                                                e.target.value = value;
-                                            }}
-                                                type="text"
-                                                
-                                                
+                                                type="number"
+                                                step="0.01"
+                                                min="0"
                                                 className="form-control"
                                                 id="editPrice"
                                                 value={editPrice}
@@ -801,88 +781,12 @@ const ProductsComponent = () => {
                                             <div className="form-text">
                                                 Ingresa el nuevo precio para este producto
                                             </div>
-
-
-                                            {/* stock */}
-
-                                            <label className="form-label" htmlFor="editStock">
-                                                Nuevo Stock 
-                                            </label>
-                                            <input
-                                            onInput={(e) =>  {
-                                                let value = e.target.value;
-
-                                                // Solo números y un punto
-                                                value = value.replace(/[^0-9.]/g, "");
-
-                                                // Evitar dos puntos decimales
-                                                value = value.replace(/(\..*)\./g, "$1");
-
-                                                // Limitar a 2 decimales
-                                                if (value.includes(".")) {
-                                                    const parts = value.split(".");
-                                                    parts[1] = parts[1].slice(0, 2); // máximo 2 decimales
-                                                    value = parts.join(".");
-                                                }
-
-                                                e.target.value = value;
-                                            }}
-                                                type="text"
-                                                
-                                                className="form-control"
-                                                id="editStock"
-                                                value={editStock}
-                                                onChange={(e) => setEditStock(e.target.value)}
-                                                placeholder="0.00"
-                                            />
-                                            
-                                            <div className="form-text">
-                                                Ingresa el nuevo stock para este producto
-                                            </div>
-
-                                        {/* Sku */}
-
-
-                                            <label className="form-label" htmlFor="editSku">
-                                                Nuevo Sku
-                                            </label>
-                                            <input
-                                                type="text"
-                                                className="form-control"
-                                                id="editSku"
-                                                value={editSku}
-                                                onChange={(e) => setEditSku(e.target.value)}
-                                                placeholder="PROD-001"
-                                            />
-                                            <div className="form-text">
-                                                Ingresa el nuevo Sku para este producto
-                                            </div>
-
-                                        {/* Name */}
-
-                                        <label className="form-label" htmlFor="editName">
-    Nuevo Nombre
-</label>
-<input
-    type="text"
-    className="form-control"
-    id="editName"
-    value={editName}
-    onChange={(e) => setEditName(e.target.value)}
-    placeholder="Ingresa el nombre del producto"
-/>
-<div className="form-text">
-    Ingresa el nuevo nombre para este producto
-</div>
-
-
-
                                         </div>
-                                        {/* <div className="mt-2">
+                                        <div className="mt-2">
                                             <small className="text-muted">
                                                 Precio actual: <strong>${parseFloat(editingProduct.price).toFixed(2)}</strong>
                                             </small>
-                                        </div> */}
+                                        </div>
                                     </>
                                 )}
                             </div>
@@ -893,7 +797,7 @@ const ProductsComponent = () => {
                                 <button
                                     type="button"
                                     className="btn btn-warning"
-                                    onClick={() => updateProduct(editingProduct.id, editingProduct.product_name)}
+                                    onClick={() => updateProductPrice(editingProduct.id, editingProduct.product_name)}
                                     disabled={editLoading === editingProduct?.id || !editPrice}
                                 >
                                     {editLoading === editingProduct?.id ? (
@@ -903,7 +807,7 @@ const ProductsComponent = () => {
                                         </>
                                     ) : (
                                         <>
-                                            <i className="fas fa-save me-1 onClick="></i>
+                                            <i className="fas fa-save me-1"></i>
                                             Guardar Cambios
                                         </>
                                     )}

@@ -20,12 +20,47 @@ export const DashBoard = () => {
 
     const navigate = useNavigate();
 
-    const sellers = users.filter(user => user.role === 'seller');
+    const sellers = users.filter(user => user.role === 'Seller');
     const totalSellers = sellers.length
 
     const handleLogout = () => {
         dispatch({ type: 'LOGOUT' });
         navigate("/login");
+    }
+
+    const fetchUsers = async () => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}api/user`, {
+                method: 'GET',
+                headers: {
+                    "AUTHORIZATION": `Bearer ${store.token}`,
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            if (!response.ok) throw new Error(`Error en la solicitud: ${response.statusText}`);
+
+            const data = await response.json();
+            dispatch({ type: 'SET_USERS', payload: data.user })
+            // setUsers(data.user);
+        } catch (error) {
+            console.error("Error al obtener los usuarios:", error);
+            await Swal.fire({
+                title: 'Error de Carga',
+                html: `
+                    <div style="text-align: center;">
+                        <div style="font-size: 3rem; margin: 10px 0;">😕</div>
+                        <p>No se pudieron cargar los usuarios</p>
+                        <small style="color: #6b7280;">
+                            Verifica tu conexión e intenta nuevamente
+                        </small>
+                    </div>
+                `,
+                icon: 'error',
+                confirmButtonText: 'Reintentar',
+                confirmButtonColor: '#ef4444'
+            });
+        }
     }
 
     const fetchCategories = async () => {
@@ -41,28 +76,28 @@ export const DashBoard = () => {
         }
     };
 
-    const fetchInventaryTotalValue = async () => {
-        if (!token) {
-            console.warn("Token not available. Cannot fetch inventory value.");
-            return;
-        }
-        try {
-            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/inventory/total-value`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                }
-            })
-            const result = await response.json();
+    // const fetchInventaryTotalValue = async () => {
+    //     if (!token) {
+    //         console.warn("Token not available. Cannot fetch inventory value.");
+    //         return;
+    //     }
+    //     try {
+    //         const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/inventory/total-value`, {
+    //             method: 'GET',
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //                 'Authorization': `Bearer ${token}`
+    //             }
+    //         })
+    //         const result = await response.json();
 
-            if (response.ok) {
-                dispatch({ type: 'SET_TOTAL_INVENTARY_VALUE', payload: result.total_value })
-            }
-        } catch (error) {
-            console.error('Error loading categories:', error);
-        }
-    }
+    //         if (response.ok) {
+    //             dispatch({ type: 'SET_TOTAL_INVENTARY_VALUE', payload: result.total_value })
+    //         }
+    //     } catch (error) {
+    //         console.error('Error loading categories:', error);
+    //     }
+    // }
 
     const calculateTotalUnits = () => {
         if (products.length === 0) return 0;
@@ -77,8 +112,9 @@ export const DashBoard = () => {
 
     useEffect(() => {
         fetchCategories();
-        fetchInventaryTotalValue()
-    }, [token, dispatch]);
+        fetchUsers()
+
+    }, [token, totalAvailableUnits]);
 
     return (
         <div className="container">
@@ -179,7 +215,7 @@ export const DashBoard = () => {
                             <i className="fa-solid fa-user"></i>
                         </div>
                         <div className="stat-number">{totalSellers}</div>
-                        <div className="stat-label">Users</div>
+                        <div className="stat-label">Vendors</div>
                     </div>
                 </div>
 

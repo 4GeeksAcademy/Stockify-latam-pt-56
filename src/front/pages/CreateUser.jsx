@@ -47,8 +47,6 @@ export const CreateUser = ({ onCreationSuccess }) => {
             full_name: formData.full_name
         };
 
-        console.log("Datos que se enviarán:", dataToSend);
-
         try {
             const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user`, {
                 method: 'POST',

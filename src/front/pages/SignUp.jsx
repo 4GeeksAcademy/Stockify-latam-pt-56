@@ -124,7 +124,7 @@ export const SignUp = () => {
     <div>
       <nav
         className="navbar navbar-expand-lg shadow-md"
-        style={{ backgroundColor: "white", borderBottom: "4px solid #b8860b" }}
+        style={{ backgroundColor: "white", borderBottom: "2px solid #b8860b" }}
       >
         <div className="container-fluid">
           <Link className="navbar-brand fw-bold" to="/" style={{ fontSize: "1.2rem" }}>
@@ -146,6 +146,9 @@ export const SignUp = () => {
           <div className="collapse navbar-collapse" id="navbarNav">
             <ul className="navbar-nav ms-auto align-items-center">
               <li className="nav-item me-2">
+                <Link className="navbar-brand fw-bold" to="/" style={{ fontSize: "1rem" }}>
+                  About us
+                </Link>
                 <Link className="btn btn-outline-success btn-sm" to="/login">
                   Login
                 </Link>
@@ -248,7 +251,7 @@ export const SignUp = () => {
 
             <button
               type="button"
-              className="btn btn-outline-secondary w-100 fw-semibold"
+              className="btn btn-outline-secondary w-100 fw-lighter fs-6"
               onClick={() => { navigate("/login") }}
               disabled={loading}
             >

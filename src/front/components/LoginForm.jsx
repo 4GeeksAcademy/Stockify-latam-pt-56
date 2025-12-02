@@ -167,7 +167,7 @@ const LoginForm = () => {
         <div>
             <nav
                 className="navbar navbar-expand-lg shadow-md"
-                style={{ backgroundColor: "white", borderBottom: "4px solid #b8860b" }}
+                style={{ backgroundColor: "white", borderBottom: "2px solid #b8860b" }}
             >
                 <div className="container-fluid">
                     <Link className="navbar-brand fw-bold" to="/" style={{ fontSize: "1.2rem" }}>
@@ -189,8 +189,11 @@ const LoginForm = () => {
                     <div className="collapse navbar-collapse" id="navbarNav">
                         <ul className="navbar-nav ms-auto align-items-center">
                             <li className="nav-item me-2">
+                                <Link className="navbar-brand fw-bold" to="/" style={{ fontSize: "1rem" }}>
+                                    About us
+                                </Link>
                                 <Link className="btn btn-outline-success btn-sm" to="/signup">
-                                    Singup
+                                    Signup
                                 </Link>
                             </li>
                         </ul>
@@ -202,9 +205,13 @@ const LoginForm = () => {
                 <div className="card shadow-lg p-4" style={{ width: "380px", borderRadius: "1rem" }}>
                     <div className='login-container'>
                         <div className='login-form-wrapper'>
-                            <p className="text-start fs-2 fw-bold mb-4">Stockify user sign in</p>
+                            <div className='d-flex align-items-center gap-2 pb-1'>
+                                <i className="fs-4 fa-solid fa-users m-0"></i>
+                                <h3 className="fw-bold m-0">Sign up for Stockify</h3>
+                            </div>
+                            <p className="fw-lighter m-0 pb-3" style={{ fontSize: "0.8rem" }}>Signup in to your stockify account</p>
                             <form className='login-form' onSubmit={handleSubmit}>
-                                <div className=''>
+                                <div className='mb-3 pt-2'>
                                     <label htmlFor="email" className="form-label fw-semibold">Email address</label>
                                     <input
                                         type="email"
@@ -220,16 +227,16 @@ const LoginForm = () => {
                                     {errors.email && <div className="invalid-feedback">{errors.email}</div>}
                                 </div>
 
-                                <div className='d-flex gap-2 justify-content-start align-items-center py-2'>
+                                {/* <div className='d-flex gap-2 justify-content-start align-items-center py-2'>
                                     <input
                                         type='checkbox'
                                         id='remember'
                                         disabled={loading}
                                     />
                                     <label htmlFor="remember" className="form-label fw-lighter m-0">Remember this account</label>
-                                </div>
+                                </div> */}
 
-                                <div className='mb-3 text-start pt-2'>
+                                <div className='mb-3 pt-2'>
                                     <label htmlFor='username' className="form-label fw-semibold">Account username</label>
                                     <input
                                         type="text"
@@ -245,7 +252,7 @@ const LoginForm = () => {
                                     {errors.username && <div className="invalid-feedback">{errors.username}</div>}
                                 </div>
 
-                                <div className='mb-3 text-start'>
+                                <div className='mb-3 pt-2'>
                                     <label htmlFor='password' className="form-label fw-semibold">Password</label>
                                     <input
                                         type={showPassword ? 'text' : 'password'}
@@ -259,9 +266,9 @@ const LoginForm = () => {
                                         disabled={loading}
                                     />
                                     {errors.password && <div className="invalid-feedback">{errors.password}</div>}
-                                    <div className='d-flex gap-4 justify-content-start align-items-center pt-2 flex-column'>
+                                    <div className='d-flex justify-content-center align-items-start pt-2 flex-column'>
 
-                                        <div className='d-flex gap-2 justify-content-start align-items-center pt-2'>
+                                        <div className='d-flex gap-2 align-items-center'>
                                             <input
                                                 type='checkbox'
                                                 id='showPassword'
@@ -269,18 +276,18 @@ const LoginForm = () => {
                                                 onChange={() => setShowPassword(!showPassword)}
                                                 disabled={loading}
                                             />
-                                            <label htmlFor='showPassword' className="form-label fw-lighter m-0">Show Password</label>
+                                            <label htmlFor='showPassword' className="form-label fw-lighter m-0" style={{ fontSize: "0.8rem" }}>Show Password</label>
                                         </div>
-                                        <div className='d-flex gap-2 justify-content-start align-items-center pt-2'>
-                                            <input
-                                                type='checkbox'
-                                                id='showMaster'
-                                                checked={formData.isMaster}
-                                                onChange={() => setFormData({ ...formData, isMaster: !formData.isMaster })}
-                                                disabled={loading}
-                                            />
-                                            <label htmlFor='showMaster' className="form-label fw-lighter m-0">Is master</label>
-                                        </div>
+                                    </div>
+                                    <div className='d-flex gap-2 justify-content-center align-items-center pt-3'>
+                                        <input
+                                            type='checkbox'
+                                            id='showMaster'
+                                            checked={formData.isMaster}
+                                            onChange={() => setFormData({ ...formData, isMaster: !formData.isMaster })}
+                                            disabled={loading}
+                                        />
+                                        <label htmlFor='showMaster' className="form-label fw-lighter m-0">Is master</label>
                                     </div>
                                 </div>
 
