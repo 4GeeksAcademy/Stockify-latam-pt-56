@@ -21,6 +21,7 @@ const ProductsComponent = () => {
     const [editStock, setEditStock] = useState(0);
     const [editName, setEditName] = useState("");
     const [editSku, setEditSku] = useState("");
+    const [products2, setProducts] = useState([])
     const [productData, setProductData] = useState({
         product_name: "",
         price: "",
@@ -54,7 +55,7 @@ const ProductsComponent = () => {
             const data = await response.json();
 
             if (response.ok) {
-                setProducts(data.products); // Actualiza la lista de productos
+                dispatch({ type: 'set_products', payload: data.products }) // Actualiza la lista de productos
             } else {
                 console.error("Error al buscar productos:", data.msg);
                 alert(`Error: ${data.msg}`);
@@ -232,6 +233,7 @@ const ProductsComponent = () => {
             setToggleLoading(null);
         }
     };*/
+
     const toggleProductActive = async (productId, productName, currentStatus) => {
         const action = currentStatus ? "desactivar" : "activar";
         const actionText = currentStatus ? "desactivado" : "activado";
@@ -596,6 +598,7 @@ const ProductsComponent = () => {
     // };
 
     // FUNCIÓN PARA ABRIR MODAL DE EDICIÓN
+
     const openEditModal = (product) => {
         setEditingProduct(product);
         setEditPrice(product.price.toString());
@@ -610,6 +613,20 @@ const ProductsComponent = () => {
         fetchProducts();
     }, []);
 
+    useEffect(() => {
+        // Dispara la función de búsqueda cada vez que la categoría 
+        // seleccionada cambia.
+
+        // 💡 CONSEJO: También podrías incluir 'searchName' para que 
+        // la búsqueda se active al escribir, si lo deseas.
+        // Si incluyes 'categories.length', asegúrate de que no cause doble 
+        // llamada al inicio si 'fetchProducts' ya está en el primer useEffect.
+
+        // Ejecutamos la búsqueda. El primer montaje también lo ejecutará.
+        handleSearch();
+
+    }, [selectedCategory, searchName])
+
 
     return (
         <div id="products-tab" className="tab-content active">
@@ -620,7 +637,7 @@ const ProductsComponent = () => {
                     <input type="text" className="form-control m-0" placeholder="Buscar productos..." value={searchName} onChange={(e) => setSearchName(e.target.value)} />
 
                     <div className="form-group filter-select m-0">
-                        <select className="form-control">
+                        <select className="form-control" value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
                             <option value="">Seleccionar categoría</option>
                             {categories.map((cat) => (
                                 <option key={cat.id} value={cat.id}>
@@ -629,7 +646,7 @@ const ProductsComponent = () => {
                             ))}
                         </select>
                     </div>
-                    <button className="btn btn-primary">
+                    <button className="btn btn-primary" disabled={loading} onClick={handleSearch}>
                         <i className="fas fa-search"></i> Buscar
                     </button>
                 </div>
@@ -822,7 +839,7 @@ const ProductsComponent = () => {
                     <div className="panel-header">
                         <h2><i className="fas fa-list"></i> Lista de productos</h2>
                     </div>
-                    <div className="panel-body scrollable-products" style={{ overflowY: "auto", maxHeight: "45rem" }}>
+                    <div className="panel-body scrollable-products mb-3" style={{ overflowY: "auto", maxHeight: "90vh" }}>
                         <div className="products-grid">
                             {products.length > 0 ? (
                                 products.map((product) => (

@@ -29,11 +29,12 @@ export const CreateCategory = ({ onCategoryCreated }) => {
             return; // Salimos para que NO ejecute el resto
         } else {
             // Para otros campos
-         
-        setFormData(prev => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked : value
-        }));}
+
+            setFormData(prev => ({
+                ...prev,
+                [name]: type === 'checkbox' ? checked : value
+            }));
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -168,7 +169,7 @@ export const CreateCategory = ({ onCategoryCreated }) => {
     return (
         <div className="container-fluid">
             {/* Search Section */}
-            <div className="search-section">
+            {/* <div className="search-section">
                 <div className="d-flex align-items-center justify-content-center">
                     <div className="form-group search-input m-0">
                         <input type="text" className="form-control" placeholder="Buscar categorías..." />
@@ -177,7 +178,7 @@ export const CreateCategory = ({ onCategoryCreated }) => {
                         <i className="fas fa-search"></i> Buscar
                     </button>
                 </div>
-            </div>
+            </div> */}
             <div className="col d-flex gap-2">
                 {store.userData.role == "Administrator" &&
 
@@ -282,7 +283,7 @@ export const CreateCategory = ({ onCategoryCreated }) => {
                     <div className="panel-header">
                         <h2><i className="fas fa-list"></i> Lista de Categorías</h2>
                     </div>
-                    <div className="panel-body" style={{ overflowY: "auto", maxHeight: "45rem" }}>
+                    <div className="panel-body mb-3" style={{ overflowY: "auto", maxHeight: "45rem" }}>
                         {categories.length === 0 ? (
                             <div className="empty-state">
                                 <div className="empty-state-icon">
