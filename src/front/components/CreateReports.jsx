@@ -266,7 +266,6 @@ export const CreateReports = () => {
                             >
                                 <option value="Pending">Pendientes</option>
                                 <option value="Completed">Completadas</option>
-                                <option value="Cancelled">Canceladas</option>
                                 <option value="">Todas</option>
                             </select>
                         </div>

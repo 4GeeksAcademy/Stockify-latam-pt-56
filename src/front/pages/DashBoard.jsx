@@ -6,6 +6,7 @@ import { CreateInventory } from "../components/CreateInventory";
 import { CreateReports } from "../components/CreateReports";
 import { ShoppingCart } from "../components/ShoppingCart";
 import useGlobalReducer from "../hooks/useGlobalReducer";
+import Swal from 'sweetalert2';
 
 
 export const DashBoard = () => {
@@ -13,6 +14,7 @@ export const DashBoard = () => {
     const { dispatch, store } = useGlobalReducer()
     const products = store.products
     const token = store.token
+    const userData = store.userData
     const categories = store.categories
     const [activeTab, setActiveTab] = React.useState("products")
     const users = store.users || []
@@ -23,9 +25,63 @@ export const DashBoard = () => {
     const sellers = users.filter(user => user.role === 'Seller');
     const totalSellers = sellers.length
 
-    const handleLogout = () => {
-        dispatch({ type: 'LOGOUT' });
-        navigate("/login");
+    const handleLogout = async () => {
+        const userDisplayName = store.userData?.username || store.userData?.email || 'Usuario';
+
+        const confirmResult = await Swal.fire({
+            title: '🚪 Cerrar Sesión',
+            html: `
+                <div style="text-align: center;">
+                    <p>¿Estás seguro de que quieres cerrar sesión?</p>
+                    <div style="background: #fffbeb; padding: 15px; border-radius: 8px; margin: 10px 0;">
+                        <strong>${userDisplayName}</strong><br/>
+                        ${store.userData?.email ? `<small style="color: #6b7280;">${store.userData.email}</small>` : ''}
+                    </div>
+                </div>
+            `,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Sí, cerrar sesión',
+            cancelButtonText: 'Cancelar',
+            reverseButtons: true
+        });
+
+        if (confirmResult.isConfirmed) {
+            await Swal.fire({
+                title: '¡Sesión Cerrada!',
+                html: `
+                    <div style="text-align: center;">
+                        <div style="font-size: 3rem; color: #6b7280; margin: 10px 0;">
+                            👋
+                        </div>
+                        <p>Has cerrado sesión exitosamente</p>
+                        <small style="color: #6b7280;">
+                            Redirigiendo al login...
+                        </small>
+                    </div>
+                `,
+                icon: 'success',
+                confirmButtonText: 'Continuar',
+                confirmButtonColor: '#6b7280',
+                timer: 2000,
+                timerProgressBar: true,
+                showConfirmButton: false,
+                willClose: () => {
+                    dispatch({ type: 'LOGOUT' });
+                    navigate("/login");
+                }
+            });
+        } else {
+            await Swal.fire({
+                title: 'Logout Cancelado',
+                text: 'Tu sesión sigue activa',
+                icon: 'info',
+                timer: 1500,
+                showConfirmButton: false
+            });
+        }
     }
 
     const fetchUsers = async () => {
@@ -124,8 +180,13 @@ export const DashBoard = () => {
 
     useEffect(() => {
         fetchCategories();
-        fetchUsers()
-        fetchProducts()
+        {
+            userData.role == "Administrator" && (
+                fetchUsers()
+            )
+        }
+
+        // fetchProducts()
 
     }, [token, totalAvailableUnits])
 
@@ -228,7 +289,7 @@ export const DashBoard = () => {
                             <i className="fa-solid fa-user"></i>
                         </div>
                         <div className="stat-number">{totalSellers}</div>
-                        <div className="stat-label">Vendors</div>
+                        <div className="stat-label">Sellers</div>
                     </div>
                 </div>
 

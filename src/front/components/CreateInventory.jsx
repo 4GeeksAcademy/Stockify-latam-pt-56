@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import useGlobalReducer from '../hooks/useGlobalReducer'; // Asume que tienes este hook
 // import { useDebounce } from "../hooks/useDebounce"; // Opcional, si quieres búsqueda
+import Swal from 'sweetalert2';
 
 
 export const CreateInventory = () => {
@@ -94,7 +95,12 @@ export const CreateInventory = () => {
             const result = await response.json();
 
             if (response.ok) {
-                alert(`✅ Stock actualizado: Nuevo stock es ${result.new_stock} para ${result.product_name || `ID ${productId}`}`);
+                // alert(`✅ Stock actualizado: Nuevo stock es ${result.new_stock} para ${result.product_name || `ID ${productId}`}`);
+                Swal.fire({
+                    title: "Stock actualizado",
+                    icon: "success",
+                    draggable: true
+                });
                 await fetchProducts();
             } else {
                 alert(`❌ Error al ajustar stock: ${result.msg || response.statusText}`);

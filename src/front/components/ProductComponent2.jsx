@@ -631,26 +631,7 @@ const ProductsComponent = () => {
     return (
         <div id="products-tab" className="tab-content active">
             {/* Search and Filters*/}
-            <div className="search-section">
-                <div className="d-flex align-items-center justify-content-center gap-2">
 
-                    <input type="text" className="form-control m-0" placeholder="Buscar productos..." value={searchName} onChange={(e) => setSearchName(e.target.value)} />
-
-                    <div className="form-group filter-select m-0">
-                        <select className="form-control" value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
-                            <option value="">Seleccionar categoría</option>
-                            {categories.map((cat) => (
-                                <option key={cat.id} value={cat.id}>
-                                    {cat.category_name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    <button className="btn btn-primary" disabled={loading} onClick={handleSearch}>
-                        <i className="fas fa-search"></i> Buscar
-                    </button>
-                </div>
-            </div>
 
             <div className="col d-flex gap-2">
                 {/* Create Product Panel */}
