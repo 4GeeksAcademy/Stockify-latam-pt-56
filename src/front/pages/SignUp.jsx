@@ -14,7 +14,7 @@ export const SignUp = () => {
     e.preventDefault();
     setLoading(true);
 
-    // Validación básica de campos
+    // Validación de campos
     if (!email || !password || !username) {
       await Swal.fire({
         title: 'Campos Incompletos',
@@ -47,7 +47,7 @@ export const SignUp = () => {
         const data = await response.json();
         console.log("Master created:", data);
 
-        // ✅ ÉXITO - CUENTA CREADA
+        //  CUENTA CREADA
         await Swal.fire({
           title: '¡Cuenta Creada Exitosamente!',
           html: `
@@ -78,7 +78,7 @@ export const SignUp = () => {
         const errorData = await response.json();
         console.error("Error en el registro:", errorData);
 
-        // ✅ ERROR ESPECÍFICO DEL SERVIDOR
+        //  ERROR ESPECÍFICO DEL SERVIDOR
         await Swal.fire({
           title: 'Error al Crear Cuenta',
           html: `
@@ -99,7 +99,7 @@ export const SignUp = () => {
     } catch (error) {
       console.error("Error connection:", error);
 
-      // ✅ ERROR DE CONEXIÓN
+      // ERROR DE CONEXIÓN
       await Swal.fire({
         title: 'Error de Conexión',
         html: `

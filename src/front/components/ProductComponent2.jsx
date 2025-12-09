@@ -35,17 +35,17 @@ const ProductsComponent = () => {
         let url = `${import.meta.env.VITE_BACKEND_URL}api/products`;
         const params = [];
 
-        // 1. Agregar el nombre de búsqueda
+        //  Agregar el nombre de búsqueda
         if (searchName.trim()) {
             params.push(`name=${encodeURIComponent(searchName.trim())}`);
         }
 
-        // 2. Agregar la categoría (solo si se seleccionó algo)
+        //  Agregar la categoría (solo si se seleccionó algo)
         if (selectedCategory) {
             params.push(`category_id=${selectedCategory}`);
         }
 
-        // 3. Construir la URL final con query parameters
+        //  Construir la URL final con query parameters
         if (params.length > 0) {
             url += `?${params.join('&')}`;
         }
@@ -617,10 +617,6 @@ const ProductsComponent = () => {
         // Dispara la función de búsqueda cada vez que la categoría 
         // seleccionada cambia.
 
-        // 💡 CONSEJO: También podrías incluir 'searchName' para que 
-        // la búsqueda se active al escribir, si lo deseas.
-        // Si incluyes 'categories.length', asegúrate de que no cause doble 
-        // llamada al inicio si 'fetchProducts' ya está en el primer useEffect.
 
         // Ejecutamos la búsqueda. El primer montaje también lo ejecutará.
         handleSearch();

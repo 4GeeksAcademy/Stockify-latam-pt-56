@@ -276,7 +276,7 @@ export const CreateCategory = ({ onCategoryCreated }) => {
                     </div>
 
                 }
-                {/* Create Category Panel */}
+                
 
                 {/* Categories List Panel */}
                 <div className="col panel">
