@@ -132,12 +132,12 @@ export const DashBoard = () => {
             if (!response.ok) throw new Error(`Error en la solicitud: ${response.statusText}`);
 
             const data = await response.json();
-            // 🚨 IMPORTANTE: Asegúrate de que el payload sea el array de productos
+            //  Asegúrate de que el payload sea el array de productos
             dispatch({ type: 'set_products', payload: data.products });
 
         } catch (error) {
             console.error("Error al obtener los productos:", error);
-            // Manejo de error
+            
         }
     }
 
@@ -169,7 +169,7 @@ export const DashBoard = () => {
     // causado por un cambio en 'products'.
     const totalInventoryValue = calculateTotalInventoryValue();
 
-    // Opcional: Función para calcular las unidades totales si la quieres
+    // Función para calcular las unidades totales si la quieres
     const calculateTotalUnits = () => {
         if (products.length === 0) return 0;
         return products.reduce((sum, product) => sum + (parseInt(product.stock) || 0), 0);

@@ -96,7 +96,7 @@ export const CreateReports = () => {
             return;
         }
 
-        // ✅ CONFIRMACIÓN ELEGANTE PARA APROBAR ORDEN
+        //  CONFIRMACIÓN  PARA APROBAR ORDEN
         const confirmResult = await Swal.fire({
             title: '✅ Aprobar Orden',
             html: `
@@ -123,7 +123,7 @@ export const CreateReports = () => {
         });
 
         if (!confirmResult.isConfirmed) {
-            // ✅ Feedback cuando el usuario cancela
+            //  Feedback cuando el usuario cancela
             await Swal.fire({
                 title: 'Aprobación Cancelada',
                 text: `La orden #${orderId} permanece pendiente`,
@@ -145,7 +145,7 @@ export const CreateReports = () => {
             });
 
             if (response.ok) {
-                // ✅ ÉXITO - ORDEN APROBADA
+                //  ORDEN APROBADA
                 await Swal.fire({
                     title: '¡Orden Aprobada!',
                     html: `
@@ -171,7 +171,7 @@ export const CreateReports = () => {
                 });
             } else {
                 const result = await response.json();
-                // ✅ ERROR DEL SERVIDOR
+                //  ERROR DEL SERVIDOR
                 await Swal.fire({
                     title: 'Error al Aprobar',
                     html: `
@@ -191,7 +191,7 @@ export const CreateReports = () => {
             }
         } catch (err) {
             console.error("Error de conexión al aprobar la orden:", err);
-            // ✅ ERROR DE CONEXIÓN
+            //  ERROR DE CONEXIÓN
             await Swal.fire({
                 title: 'Error de Conexión',
                 html: `

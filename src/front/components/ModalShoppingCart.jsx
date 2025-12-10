@@ -79,7 +79,7 @@ export const ModalShoppingCart = () => {
             return;
         }
 
-        // Preparar los ítems de la orden
+        // Preparar los items de la orden
         const order_items = cartItems.map(item => ({
             product_id: item.product.id,
             quantity_sold: item.quantity,
@@ -110,7 +110,7 @@ export const ModalShoppingCart = () => {
             console.log("Respuesta del servidor:", response);
 
             if (response.ok) {
-                // ✅ ÉXITO - ORDEN CREADA
+                //  ORDEN CREADA
                 await Swal.fire({
                     title: '¡Orden Creada Exitosamente!',
                     html: `
@@ -145,7 +145,7 @@ export const ModalShoppingCart = () => {
                 const result = await response.json();
                 console.error("Error del servidor:", result);
 
-                // ✅ ERROR ESPECÍFICO DEL SERVIDOR
+                // ERROR ESPECÍFICO DEL SERVIDOR
                 await Swal.fire({
                     title: 'Error al Crear Orden',
                     html: `
@@ -167,7 +167,7 @@ export const ModalShoppingCart = () => {
         } catch (error) {
             console.error("Error completo al enviar la orden:", error);
 
-            // ✅ ERROR DE CONEXIÓN DETALLADO
+            //  ERROR DE CONEXIÓN DETALLADO
             await Swal.fire({
                 title: 'Error de Conexión',
                 html: `

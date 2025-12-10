@@ -43,19 +43,19 @@ export default function storeReducer(store, action = {}) {
     case "ADD_PRODUCT_TO_CART":
       // El 'payload' es el nuevo producto: action.payload = {id: 5, product_name: 'Tornillo', ...}
 
-      // 1. Crear el nuevo ítem de carrito con cantidad 1
+      //  Crear el nuevo item de carrito con cantidad 1
       const newItem = {
         product: action.payload,
         quantity: 1,
       };
 
-      // 2. BUSCAR si el producto ya existe en el carrito
+      //  Buscar si el producto ya existe en el carrito
       const existingItem = store.cart.find(
         (item) => item.product.id === action.payload.id
       );
 
       if (existingItem) {
-        // 3. Si el producto EXISTE: Incrementar la cantidad de ese ítem
+        //  Si el producto EXISTE, Incrementar la cantidad de ese item
         const updatedCart = store.cart.map((item) => {
           if (item.product.id === action.payload.id) {
             // Creamos una nueva copia del item con la cantidad actualizada
@@ -73,7 +73,7 @@ export default function storeReducer(store, action = {}) {
           cart: updatedCart,
         };
       } else {
-        // 4. Si el producto NO EXISTE: AGREGAR el nuevo ítem al final del array
+        //  Si el producto NO EXISTE: AGREGAR el nuevo item al final del array
         return {
           ...store, // Copiar todo el estado global
           cart: [...store.cart, newItem], // Copiar el array 'cart' existente y AÑADIR el nuevo item
@@ -124,8 +124,8 @@ export default function storeReducer(store, action = {}) {
       return store;
 
     case "CLEAR_CART":
-      // 1. Devolver una copia del estado (...state).
-      // 2. Sobrescribir la propiedad 'cart' con un array vacío.
+      //  Devolver una copia del estado (...state).
+      //  Sobrescribir la propiedad 'cart' con un array vacío.
       return {
         ...store,
         cart: [],

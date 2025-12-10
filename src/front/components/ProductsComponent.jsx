@@ -31,7 +31,7 @@ preview.innerHTML = '<i class="fas fa-image" style="color: var(--gray);"></i>';
     
         // Form Submissions
         document.getElementById('productForm')?.addEventListener('submit', function (e) { //obtiene la etiqueta por Id, en este caso el product form y le pregunta si existe
-            e.preventDefault();  //le add el event listener para cuando se envie el formulario, al dat submit, se ejecuta la función que está adentro al send el form
+            e.preventDefault();  //we add the event listener when the form is sent, so if you give submit, function which is inside is executed when the form is sent
             console.log("enviar"); //print on console when I send the form
         });
 

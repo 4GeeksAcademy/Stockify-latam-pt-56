@@ -17,13 +17,13 @@ export const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<Layout />} errorElement={<h1>Not found!</h1>} >
 
-      {/* --- RUTAS PÚBLICAS --- */}
-      <Route index element={<Home />} />          {/* / → Login */}
-      <Route path="/signup" element={<SignUp />} />    {/* /signup → Registro */}
+      {/*  RUTAS PÚBLICAS  */}
+      <Route index element={<Home />} />          {/* /  Login */}
+      <Route path="/signup" element={<SignUp />} />    {/* /signup o Registro */}
       <Route path="/login" element={<LoginForm />} />
 
 
-      {/* --- RUTAS PROTEGIDAS --- */}
+      {/* RUTAS PROTEGIDAS */}
       <Route path="/masterview" element={
         <ProtectedRoute requiredRole="master">
           <UsersList />  {/* Nueva vista para gestión de usuarios */}

@@ -136,14 +136,14 @@ def login():
                 'message': 'Credencial no valida '
             }), 401
 
-        # Creae identity
+        # Create identity
 
         user_identity = {
             'id': user_by_email.id,
             'rol': user_by_email.role
         }
 
-        # Crear token JWT
+        # Create token JWT
         access_token = create_access_token(identity=str(user_identity))
 
         return jsonify({
@@ -248,7 +248,7 @@ def get_all_users():
 @jwt_required_with_roles(['master'])
 def create_user():
 
-    # 1. OBTENER EL ID DEL MASTER LOGEADO
+    # 1. OBTENER EL ID DEL MASTER LOGUEADO
     # master_id = get_jwt_identity()
 
     data = request.get_json()
@@ -508,7 +508,7 @@ def create_order():
     try:
         calculated_total = 0
 
-        # B. Consultar los productos para VALIDAR PRECIOS y EXISTENCIA (No Stock)
+        # Consultar los productos para Validar precios y existencia (No Stock)
         product_ids = [item['product_id'] for item in data['order_items']]
         products_query = db.session.execute(
             select(Product).where(Product.id.in_(product_ids))
@@ -521,31 +521,31 @@ def create_order():
 
             product = products_map.get(product_id)
 
-            # C. Validación: Asegurar que el producto existe
+            #  Validación: Asegurar que el producto existe
             if not product:
                 return jsonify({"msg": f"Producto con ID {product_id} no encontrado."}), 404
 
-            # Recalcular el precio
+            # Recalculo del precio
             price = float(product.price)
             calculated_total += quantity_sold * price
 
-        # D. Crear la Cabecera de la Orden
+        # Crear la Cabecera de la Orden
         new_order = Order(
             client_name=data['client_name'],
             delivery_address=data['delivery_address'],
             total_amount=calculated_total,
             status='Pending',
-            # 3. ASIGNAR EL ID DEL USUARIO CREADOR
+            # 3. Asignar el ID del usuario creador
             created_by_user_id=created_by_user_id
         )
         db.session.add(new_order)
         db.session.flush()
 
-        # E. Crear solo los Detalles de la Orden (SIN TOCAR EL STOCK)
+        # Crear solo los detalles de la orden (sin tocar el stock)
         for item in data['order_items']:
             product_id = item['product_id']
             quantity_sold = item['quantity_sold']
-            # Usamos el mapa para obtener el objeto
+            # Mapa para obtener el objeto
             product_info = products_map[product_id]
             price_at_sale = float(product_info.price)
 
@@ -557,7 +557,7 @@ def create_order():
             )
             db.session.add(new_order_item)
 
-        # F. COMMIT: Guardar solo la Orden y sus Ítems.
+        # Commit que Guarda solo la Orden y sus items.
         db.session.commit()
 
         return jsonify({
@@ -566,7 +566,7 @@ def create_order():
         }), 201
 
     except Exception as e:
-        # G. ROLLBACK: Si algo falla, deshacer todo
+        # Rollback
         db.session.rollback()
         print(f"Error al crear la orden: {e}")
         return jsonify({"msg": "Error interno del servidor al procesar la orden.", "error": str(e)}), 500
@@ -580,7 +580,7 @@ def approve_order(order_id):
 
     # INICIO DE LA TRANSACCIÓN
     try:
-        # 1. Cargar la Orden y sus Ítems relacionados
+        #  Cargar la Orden y sus items relacionados
         order = db.session.execute(
             select(Order)
             .where(Order.id == order_id)
@@ -595,18 +595,18 @@ def approve_order(order_id):
 
         products_to_update = {}
 
-        # 2. VALIDACIÓN DE STOCK (CRÍTICO)
+        #  Validación del stock
         for item in order.items:
             product = item.product
             quantity_sold = item.quantity_sold
 
-            # 2.1. Validación de existencia
+            #  Validación de existencia
             if not product:
                 return jsonify({"msg": f"Producto ID {item.product_id} no existe en inventario."}), 404
 
-            # 2.2. Validación de Stock
+            # Validación de Stock
             if product.stock < quantity_sold:
-                # Si falla el stock para un ítem, abortamos toda la operación
+                
                 return jsonify({
                     "msg": f"ERROR: Stock insuficiente para aprobar la orden.",
                     "product_name": product.product_name,
@@ -614,22 +614,22 @@ def approve_order(order_id):
                     "required": quantity_sold
                 }), 400
 
-            # Almacenamos la referencia para la actualización
+           
             products_to_update[product.id] = product
 
-        # 3. ACTUALIZACIÓN DEL STOCK Y EL ESTADO
+        # Actualización del stock y el estado
         for item in order.items:
             product = products_to_update[item.product_id]
 
-            # Reducir el stock
+            # Reducción del stock
             product.stock -= item.quantity_sold
             db.session.add(product)
 
-        # 4. Actualizar el estado de la Orden a 'Completed'
+        # Actualizar el estado de la Orden a 'Completed'
         order.status = 'Completed'
         db.session.add(order)
 
-        # 5. COMMIT: Guardar la aprobación de la orden y la reducción de stock
+        #  Commit para  guardar la aprobación de la orden y la reducción de stock
         db.session.commit()
 
         return jsonify({
@@ -651,7 +651,7 @@ def approve_order(order_id):
 @jwt_required_with_roles(['Administrator'])
 def toggle_product_active(product_id):
     try:
-        # Buscar el producto por ID
+        
         product = db.session.execute(
             db.select(Product).filter_by(id=product_id)
         ).scalars().first()
@@ -687,23 +687,23 @@ def get_orders():
     client_name_filter = request.args.get(
         'client_name')  # <-- Debe obtenerse aquí
 
-    # 2. Iniciar la consulta
+    # Iniciar la consulta
     query = db.select(Order)
 
-    # 3. Aplicar filtro de ESTADO (Status)
+    #  Aplicar filtro de ESTADO (Status)
     if status_filter:
         query = query.where(Order.status == status_filter)
 
-    # 4. Aplicar filtro de NOMBRE DE CLIENTE (client_name)
+    #  Aplicar filtro de nombre de cliente (client_name)
     if client_name_filter:
         # ⚠️ CLAVE: Usar LIKE para buscar coincidencias parciales y Case-Insensitive (ilike)
         # Es crucial que la columna en el modelo se llame Order.client_name
         query = query.where(Order.client_name.ilike(f'%{client_name_filter}%'))
 
-    # 5. Ejecutar la consulta
+  
     orders = db.session.execute(query).scalars().all()
 
-    # 6. Serializar y devolver
+    
     return jsonify({"orders": [order.serialize() for order in orders]}), 200
 
 
@@ -714,11 +714,10 @@ def update_product_price(product_id):
         data = request.get_json()
         new_price = data.get('price')
 
-        # Validar que el precio esté presente
+        
         if new_price is None:
             return jsonify({'msg': 'Price is required'}), 400
 
-        # Validar que el precio sea un número positivo
         try:
             new_price = float(new_price)
             if new_price < 0:
@@ -726,7 +725,7 @@ def update_product_price(product_id):
         except ValueError:
             return jsonify({'msg': 'Price must be a valid number'}), 400
 
-        # Buscar el producto
+        
         product = db.session.execute(
             db.select(Product).filter_by(id=product_id)
         ).scalars().first()
@@ -764,18 +763,18 @@ def adjust_stock(product_id):
     except (TypeError, ValueError):
         return jsonify({"msg": "La cantidad debe ser un número entero."}), 400
 
-    # 3. Validación
+    # Validación
     if not all([adjustment_quantity, adjustment_type]) or adjustment_quantity <= 0:
         return jsonify({"msg": "Faltan datos o la cantidad es inválida."}), 400
 
-    # 4. Buscar Producto
+    #  Buscar Producto
     try:
 
         product = db.session.get(Product, product_id)
         if not product:
             return jsonify({"msg": "Producto no encontrado."}), 404
 
-        # 5. Realizar el Ajuste de Stock
+        #  Realizar el Ajuste de Stock
         if adjustment_type == 'add':
             product.stock += adjustment_quantity
             message = f"Se agregaron {adjustment_quantity} unidades al stock."
@@ -790,7 +789,7 @@ def adjust_stock(product_id):
         else:
             return jsonify({"msg": "Tipo de ajuste inválido. Use 'add' o 'subtract'."}), 400
 
-        # 6. Guardar cambios
+        
         db.session.commit()
         return jsonify({
             "msg": message,
@@ -822,7 +821,7 @@ def update_product(product_id):
         if new_price is None or new_stock is None or new_sku is None or new_name is None:
             return jsonify({'msg': 'Remember to fill out all of the fields'}), 400
 
-            # Validar que el precio sea un número positivo
+            
         try:
             new_price = float(new_price)
             if new_price < 0:
@@ -863,22 +862,22 @@ def update_product(product_id):
 @jwt_required_with_roles(['Administrator'])
 def get_inventory_total_value():
     try:
-        # 1. Obtener todos los productos (solo necesitamos precio y stock)
+        #  Obtener todos los productos (solo necesitamos precio y stock)
         # Usamos select(Product) para obtener todos los productos
         products = db.session.execute(select(Product)).scalars().all()
 
         inventory_total_value = 0.0
 
-        # 2. Iterar y calcular
+        #  Iterar y calcular
         for product in products:
-            # Asegúrate de que los campos sean float/int para la multiplicación
+            
             price = float(product.price)
             stock = int(product.stock)
 
             # Acumular la multiplicación (Precio * Stock)
             inventory_total_value += (price * stock)
 
-        # 3. Devolver el resultado
+        #  Devolver el resultado
         return jsonify({
             "msg": "Valor total del inventario calculado exitosamente",
             # Redondear a dos decimales

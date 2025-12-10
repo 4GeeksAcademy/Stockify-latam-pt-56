@@ -93,7 +93,7 @@ const Home = () => {
                     </div>
                 </section>
 
-                {/* DETALLE DE LA GESTIÓN DE PRODUCTOS (Aquí tengo duda en cuanto a lo técnico, todo el bloque) */}
+                {/* DETALLE DE LA GESTIÓN DE PRODUCTOS  */}
                 <section className="section-box p-4 mb-4 border border-warning rounded">
                     <h2 className="text-warning fw-semibold text-center">Gestión de Productos</h2>
                     <ul>

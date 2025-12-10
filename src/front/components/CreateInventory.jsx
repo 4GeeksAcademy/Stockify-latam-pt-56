@@ -5,7 +5,7 @@ import Swal from 'sweetalert2';
 
 
 export const CreateInventory = () => {
-    // 1. ESTADOS Y HOOKS
+    //  ESTADOS Y HOOKS
     const { dispatch, store } = useGlobalReducer()
     const userData = store.userData; // Necesario para el rol 'Administrator'
     const products2 = store.products
@@ -18,7 +18,7 @@ export const CreateInventory = () => {
     const [adjustmentQuantities, setAdjustmentQuantities] = useState({});
 
 
-    // 2. FUNCIÓN DE CARGA DE DATOS
+    // FUNCIÓN DE CARGA DE DATOS
     const fetchProducts = async () => {
         if (!token) return;
 
@@ -36,10 +36,10 @@ export const CreateInventory = () => {
             const data = await response.json();
             const loadedProducts = data.products || [];
 
-            // 🟢 PASO CLAVE 1: Actualiza el estado local
+            //  Actualiza el estado local
             setProducts(loadedProducts);
 
-            // 🟢 PASO CLAVE 2: Actualiza el store global (Redux)
+            //  Actualiza el store global (Reduce)
             dispatch({ type: 'set_products', payload: loadedProducts });
 
         } catch (err) {
@@ -50,7 +50,7 @@ export const CreateInventory = () => {
         }
     };
 
-    // 3. FUNCIÓN DE AJUSTE DE STOCK (Entrada/Descarte)
+    //  FUNCIÓN DE AJUSTE DE STOCK (Entrada/Descarte)
     const handleStockAdjustment = async (productId, type) => {
         // Obtenemos la cantidad del estado de ajuste específico para este producto
         const quantity = parseInt(adjustmentQuantities[productId]);
@@ -71,7 +71,7 @@ export const CreateInventory = () => {
             return;
         }
 
-        // 💡 Opcional: Si es 'subtract', verificar que la cantidad no exceda el stock actual
+        //  Si es 'subtract', verificar que la cantidad no exceda el stock actual
         if (type === 'subtract') {
             const currentStock = products.find(p => p.id === productId)?.stock;
             if (quantity > currentStock) {
@@ -119,12 +119,12 @@ export const CreateInventory = () => {
         }
     };
 
-    // 4. CICLO DE VIDA
+    // CICLO DE VIDA
     useEffect(() => {
         fetchProducts();
     }, [token]);
 
-    // 5. RENDERIZADO
+    //  RENDER
     if (loading) return (
         <div className="d-flex justify-content-center align-items-center py-5">
             <div className="spinner-border text-primary" role="status">
@@ -135,7 +135,7 @@ export const CreateInventory = () => {
     );
     if (error) return <div className="text-center py-5 alert alert-danger">{error}</div>;
 
-    // --- DISEÑO VISUAL MEJORADO ---
+    //  DISEÑO VISUAL MEJORADO 
     return (
         <div className="container py-4">
             <div className="panel panel-header p-3">
@@ -177,7 +177,7 @@ export const CreateInventory = () => {
                                                     </span>
                                                 </td>
 
-                                                {/* 🚨 COLUMNA DE AJUSTE DE STOCK */}
+                                                {/*  COLUMNA DE AJUSTE DE STOCK */}
                                                 {userData?.role === 'Administrator' && (
                                                     <td className="text-center">
                                                         <div className="input-group input-group-sm">

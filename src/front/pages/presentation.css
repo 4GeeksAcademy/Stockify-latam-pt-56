@@ -5,7 +5,7 @@ body {
   padding: 0;
 }
 
-/* Hero Section */
+
 .hero {
   text-align: center;
   padding: 80px 20px;
@@ -23,7 +23,7 @@ body {
   color: #eee;
 }
 
-/* Generic Section Box */
+
 .section-box {
   background-color: #1a1a1a;
   padding: 50px 20px;
@@ -69,7 +69,7 @@ body {
   background-color: #222;
 }
 
-/* Team */
+
 .team-card {
   color: white;
 }
