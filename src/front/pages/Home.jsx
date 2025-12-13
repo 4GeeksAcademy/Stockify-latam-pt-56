@@ -86,7 +86,7 @@ const Home = () => {
                         <div className="border border-warning p-2 rounded">Cantidades, precios unitarios y total automático</div>
                         <div className="border border-warning p-2 rounded">El administrador verá los vendedores disponibles para organizarlos mejor</div>
                         <div className="border border-warning p-2 rounded">El administrador cargará productos</div>
-                        <div className="border border-warning p-2 rounded">El vendedor podrá registrarse en la plataforma</div>
+                        {/* <div className="border border-warning p-2 rounded">El vendedor podrá registrarse en la plataforma</div> */}
 
 
 
@@ -100,7 +100,7 @@ const Home = () => {
                         <li>Crear productos con formulario</li>
                         <li>Cargar imágenes y detalles específicos</li>
                         <li>Clasificar por categorías (materiales, químicos, etc.)</li>
-                        <li>Botón de carrito e integración de ventana</li>
+                        <li>Botón de crear ordenes e integración de ventana</li>
                     </ul>
                 </section>
 
@@ -120,7 +120,7 @@ const Home = () => {
                     <ul>
                         <li>Tendrás la visualización general del stock</li>
                         <li>Cantidad de productos</li>
-                        <li>Stockify te avisará por medio de alertas cuando el inventario sea bajo</li>
+                        <li>Stockify te avisará por medio de alertas en un bandge cuando el inventario sea bajo</li>
                         <li>No olvides, las estadísticas básicas que son parte integral para tu negocio</li>
                     </ul>
                 </section>
@@ -131,7 +131,7 @@ const Home = () => {
                     <ul>
                         <li> El administrador podrá recibir un correo cuando se cree una orden de compra </li>
 
-                        <li>El administrador podrá ver el total del inventario </li>
+                        {/* <li>El administrador podrá ver el total del inventario </li> */}
                         <li>El administrador verá un reporte con todos los pedidos finalizados</li>
 
 
