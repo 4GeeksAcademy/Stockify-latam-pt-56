@@ -9,6 +9,8 @@ export const ModalShoppingCart = () => {
     const categories = store.categories || []
     const cartItems = store?.cart || [];
     const token = store.token
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
     const [clientData, setClientData] = useState({
         full_name: '',
         address: '',
@@ -26,7 +28,7 @@ export const ModalShoppingCart = () => {
         }, 0);
     };
 
-    const totalAmount = calculateTotalAmount()
+    const totalAmount = isModalOpen ? calculateTotalAmount() : 0;
 
     const handleSearchChange = (e) => {
         const { id, value } = e.target;
@@ -223,6 +225,38 @@ export const ModalShoppingCart = () => {
         fetchProducts();
     }, [searchParams.name, searchParams.categoryId])
 
+   useEffect(() => {
+    const modalEl = document.getElementById('shoppingCartModal');
+    const modal = document.getElementById('shoppingCartModal');
+
+
+    if (!modalEl) return;
+    const handleModalClose = () => {
+        setSearchParams({
+            name: '',
+            categoryId: '',
+        });
+    };
+
+    const handleOpen = () => setIsModalOpen(true);
+    const handleClose = () => {
+        setIsModalOpen(false);
+        setClientData({ full_name: '', address: '' });
+        dispatch({ type: 'CLEAR_CART' });
+    };
+    modal.addEventListener('hidden.bs.modal', handleModalClose);
+    modalEl.addEventListener('shown.bs.modal', handleOpen);
+    modalEl.addEventListener('hidden.bs.modal', handleClose);
+
+    return () => {
+        modal.removeEventListener('hidden.bs.modal', handleModalClose);
+        modalEl.removeEventListener('shown.bs.modal', handleOpen);
+        modalEl.removeEventListener('hidden.bs.modal', handleClose);
+    };
+}, []);
+
+
+
     return (
         <div
             className="modal fade"
@@ -308,13 +342,16 @@ export const ModalShoppingCart = () => {
                                             <ProductInList />
                                         </div>
                                         {/* Total de la compra */}
-                                        <div className="d-flex justify-content-between align-items-center gap-3 px-3 pt-5">
-                                            <div className="d-flex justify-content-between align-items-center gap-3">
-                                                <i className="fa-solid fa-dollar-sign fs-3 fw-bold"></i>
-                                                <h5 className="fs-3 fw-bold m-0">TOTAL AMOUNT:</h5>
-                                            </div>
-                                            <p className="fs-3 fw-bold">${totalAmount.toFixed(2)}</p>
-                                        </div>
+                                        {isModalOpen && cartItems.length > 0 && (
+    <div className="d-flex justify-content-between align-items-center gap-3 px-3 pt-5">
+        <div className="d-flex justify-content-between align-items-center gap-3">
+            <i className="fa-solid fa-dollar-sign fs-3 fw-bold"></i>
+            <h5 className="fs-3 fw-bold m-0">TOTAL AMOUNT:</h5>
+        </div>
+        <p className="fs-3 fw-bold">${totalAmount.toFixed(2)}</p>
+    </div>
+)}
+
                                     </div>
                                     {/* Parte derecha del modal */}
                                     <div className="col-6">
